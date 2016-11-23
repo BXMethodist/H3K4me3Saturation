@@ -1,7 +1,7 @@
-# import pandas as pd
 import numpy as np
 import os
 import csv
+import matplotlib.pyplot as plt
 
 
 def genomeSize(path="./hg19_chr_sizes.txt"):
@@ -20,13 +20,42 @@ def genomeSize(path="./hg19_chr_sizes.txt"):
     return genome
 
 
+def plotConverge(table, xaxis, yaxis, xTitle, yTitle, Title, cutoff=0, color="r-"):
+    table = np.asarray(table)
+    fig, ax = plt.subplots()
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    plt.plot(table[:, xaxis], table[:, yaxis], color, linewidth=2.0)
+    plt.ylabel(yTitle, fontname="Times New Roman")
+    plt.xlabel(xTitle, fontname="Times New Roman")
+    plt.title(Title +" with cutoff" + str(cutoff), fontname="Times New Roman")
+    Title = Title.replace(" ", "_")
+    plt.savefig(Title + "with_cutoff" + str(cutoff), dpi=None, facecolor='w', edgecolor='w',
+            orientation='portrait', papertype=None, format=None,
+            transparent=False, bbox_inches=None,
+            frameon=None)
+
+
+
 class H3K4me3Saturation:
-    def __init__(self):
+    def __init__(self, iterations):
         self.genome = genomeSize()
-        self.results = []
+        self.iterations = iterations
+        self.coverage = None
+        self.region = None
+        self.regionLength = None
+        self.numberSample = None
 
 
-    def saturated(self, path):
+    def initialization(self, sampleNumber):
+        self.coverage = [[i+1] for i in range(sampleNumber)]
+        self.region = [[i+1] for i in range(sampleNumber)]
+        self.regionLength = [[i + 1] for i in range(sampleNumber)]
+
+
+    def saturated(self, path, sampleSequence, cutoff=0):
 
         #really need pandas to read heteregous data table.
 
@@ -47,10 +76,11 @@ class H3K4me3Saturation:
                 continue
             start = int(info[1])/10
             end = int(info[2])/10
+            height = float(info[6])
             chrName = info[0]
-            if chrName in self.genome:
-                self.genome[chrName][start-1:end] = 1
-
+            if height >= cutoff:
+                if chrName in self.genome:
+                    self.genome[chrName][start-1:end] = 1
         totalCoverage = 0
         totalIsland = 0
 
@@ -71,7 +101,9 @@ class H3K4me3Saturation:
         else:
             avgLength = totalCoverage*1.0/totalIsland*10
 
-        self.results.append([totalCoverage*10, totalIsland, avgLength])
+        self.coverage[sampleSequence].append(totalCoverage*10)
+        self.region[sampleSequence].append(totalIsland)
+        self.regionLength[sampleSequence].append(avgLength)
 
 
     def converge(self, prev, current, convergeCap = 10):
@@ -87,26 +119,58 @@ class H3K4me3Saturation:
         return converge > convergeCap
 
 
-    def trainMap(self, directories):
+    def reset(self):
+        self.genome = genomeSize()
+
+
+    def draw(self, cutoff):
+
+        plotConverge(self.coverage, 0, [i+1 for i in range(self.iterations)], "Number of Sample", "Coverage",
+                     "H3K4me3 Coverage VS Number of Sample", cutoff)
+
+        plotConverge(self.region, 0, [i + 1 for i in range(self.iterations)], "Number of Sample", "Region Number",
+                     "H3K4me3 Region Number VS Number of Sample", cutoff)
+
+        plotConverge(self.regionLength, 0, [i + 1 for i in range(self.iterations)], "Number of Sample", "Region Length",
+                     "H3K4me3 Region Length VS Number of Sample", cutoff)
+
+
+
+
+    def trainMap(self, directories, cutoff=0):
         listFiles = os.listdir(directories)
+
+        self.numberSample = len(listFiles)
+
+        self.initialization(self.numberSample)
 
         n = 0
 
-        while n <=0:
+        while n <=self.iterations:
             n+=1
             np.random.shuffle(listFiles)
-
+            seq = 0
             for file in listFiles:
-                self.saturated(directories+'/'+file)
+                self.saturated(directories+'/'+file, seq, cutoff=cutoff)
+                seq += 1
 
-            output = open(n+"H3K4me3.csv", "wb")
+            output = open(str(n)+"H3K4me3.csv", "wb")
             writer = csv.writer(output)
-            for row in self.results:
-                writer.writerow(row)
+            for i in range(self.numberSample):
+                writer.writerow([self.coverage[i][0],
+                                 self.coverage[i][n],
+                                 self.region[i][n],
+                                 self.regionLength[i][n]])
 
             output.close()
 
-            self.genome = genomeSize()
+            self.reset()
+
+        self.draw(cutoff)
+
+
+
+
 
 
 
