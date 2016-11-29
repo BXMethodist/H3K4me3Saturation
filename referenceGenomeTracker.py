@@ -20,14 +20,14 @@ def genomeSize(path="./hg19_chr_sizes.txt"):
     return genome
 
 
-def plotConverge(table, xaxis, yaxis, xTitle, yTitle, Title, cutoff=0, color="r-"):
+def plotConverge(table, xaxis, yaxis_start, yaxis_end,  xTitle, yTitle, Title, cutoff=0, color="r-"):
     table = np.asarray(table)
     fig, ax = plt.subplots()
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
-    plt.plot(table[:, xaxis], table[:, yaxis], color, linewidth=2.0)
+    plt.plot(table[:, xaxis], table[:, yaxis_start:yaxis_end], color, linewidth=2.0)
     plt.ylabel(yTitle, fontname="Times New Roman")
     plt.xlabel(xTitle, fontname="Times New Roman")
     plt.title(Title +" with cutoff" + str(cutoff), fontname="Times New Roman")
@@ -90,7 +90,9 @@ class H3K4me3Saturation:
             if newCoverage == 0:
                 continue
             else:
-                islandNumber = np.sum(((np.roll(value, 1) - value) != 0).astype(int))
+                sign = ((np.roll(value, 1) - value) != 0).astype(int)
+                sign[0] = 0
+                islandNumber = np.sum(sign)
                 if value[0] == 1:
                     islandNumber+=1
                 if value[-1] == 1:
@@ -125,13 +127,13 @@ class H3K4me3Saturation:
 
     def draw(self, cutoff):
 
-        plotConverge(self.coverage, 0, [i+1 for i in range(self.iterations)], "Number of Sample", "Coverage",
+        plotConverge(self.coverage, 0, 1, self.iterations+1 , "Number of Sample", "Coverage",
                      "H3K4me3 Coverage VS Number of Sample", cutoff)
 
-        plotConverge(self.region, 0, [i + 1 for i in range(self.iterations)], "Number of Sample", "Region Number",
+        plotConverge(self.region, 0, 1, self.iterations+1, "Number of Sample", "Region Number",
                      "H3K4me3 Region Number VS Number of Sample", cutoff)
 
-        plotConverge(self.regionLength, 0, [i + 1 for i in range(self.iterations)], "Number of Sample", "Region Length",
+        plotConverge(self.regionLength, 0, 1, self.iterations+1, "Number of Sample", "Region Length",
                      "H3K4me3 Region Length VS Number of Sample", cutoff)
 
 
