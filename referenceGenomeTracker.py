@@ -117,7 +117,7 @@ class H3K4me3Saturation:
         for chr, index in refmap.items():
             output.write(">" + chr + "\n")
             for i in range(index.shape[0]):
-                writer.writerrow(index[i, :])
+                writer.writerow(index[i, :])
         output.close()
 
 
