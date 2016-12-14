@@ -103,6 +103,7 @@ class H3K4me3Saturation:
                 vector = np.append(vector, 0)
 
             # sign change mark the start of the peak and the end to the peak, the end mark is exclusive
+            # and this is the index of vector with step = 10, not real genome position
             signchange = ((np.roll(vector, 1) - vector) != 0).astype(int)
             peaksindex = np.where(signchange == 1)[0]
 
