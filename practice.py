@@ -1,5 +1,12 @@
 import numpy as np
 
-a = [ 1, 2, 3]
-a = np.sign(a)
-print ((np.roll(a, 1) - a) != 0).astype(int)
+a = np.array([1,1,-1,-2,-3,4,5])
+asign = np.sign(a)
+
+
+signchange = ((np.roll(asign, 1) - asign) != 0).astype(int)
+print signchange
+
+itemindex = np.where(signchange==1)
+
+print itemindex

@@ -1,0 +1,12 @@
+#! /bin/sh
+
+#PBS -N DanposRecall200
+#PBS -e DanposRecall200.err
+#PBS -l pmem=12000mb
+#PBS -q highmem
+
+module load python
+module load danpos
+
+cd /home/tmhbxx3/archive
+python danposRecall.py

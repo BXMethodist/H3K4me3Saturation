@@ -20,24 +20,6 @@ def genomeSize(path="./hg19_chr_sizes.txt"):
     return genome
 
 
-def plotConverge(table, xaxis, yaxis_start, yaxis_end,  xTitle, yTitle, Title, cutoff=0, color="r-"):
-    table = np.asarray(table)
-    fig, ax = plt.subplots()
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
-    plt.plot(table[:, xaxis], table[:, yaxis_start:yaxis_end], color, linewidth=2.0)
-    plt.ylabel(yTitle, fontname="Times New Roman")
-    plt.xlabel(xTitle, fontname="Times New Roman")
-    plt.title(Title +" with cutoff" + str(cutoff), fontname="Times New Roman")
-    Title = Title.replace(" ", "_")
-    plt.savefig(Title + "with_cutoff" + str(cutoff), dpi=None, facecolor='w', edgecolor='w',
-            orientation='portrait', papertype=None, format=None,
-            transparent=False, bbox_inches=None,
-            frameon=None)
-
-
 
 class H3K4me3Saturation:
     def __init__(self, iterations):
@@ -48,26 +30,12 @@ class H3K4me3Saturation:
         self.regionLength = None
         self.numberSample = None
 
-
     def initialization(self, sampleNumber):
-        self.coverage = [[i+1] for i in range(sampleNumber)]
-        self.region = [[i+1] for i in range(sampleNumber)]
-        self.regionLength = [[i + 1] for i in range(sampleNumber)]
+        self.coverage = [[0] * self.iterations for i in range(sampleNumber)]
+        self.region = [[0] * self.iterations for i in range(sampleNumber)]
+        self.regionLength = [[0] * self.iterations for i in range(sampleNumber)]
 
-
-    def saturated(self, path, sampleSequence, cutoff=0):
-
-        #really need pandas to read heteregous data table.
-
-        # df = pd.read_excel(path)
-        # rowNum = df.shape[0]
-        #
-        # for i in range(rowNum):
-        #     start = df.ix[i, :]['start']/10
-        #     end = df.ix[i, :]['end']/10
-        #     chrName = df.ix[i, :]['chr']
-        #     self.genome[chrName][start-1:end] = 1
-
+    def saturated(self, path, sampleSequence, iteration, cutoff=0):
         file = open(path, "rb")
 
         for line in file.readlines():
@@ -80,7 +48,7 @@ class H3K4me3Saturation:
             chrName = info[0]
             if height >= cutoff:
                 if chrName in self.genome:
-                    self.genome[chrName][start-1:end] = 1
+                    self.genome[chrName][start - 1:end] = 1
         totalCoverage = 0
         totalIsland = 0
 
@@ -98,14 +66,15 @@ class H3K4me3Saturation:
                 if value[-1] == 1:
                     islandNumber+=1
                 totalIsland += islandNumber/2
+
         if totalIsland == 0:
             avgLength = 0
         else:
             avgLength = totalCoverage*1.0/totalIsland*10
 
-        self.coverage[sampleSequence].append(totalCoverage*10)
-        self.region[sampleSequence].append(totalIsland)
-        self.regionLength[sampleSequence].append(avgLength)
+        self.coverage[sampleSequence][iteration] = totalCoverage * 10
+        self.region[sampleSequence][iteration] = totalIsland
+        self.regionLength[sampleSequence][iteration] = avgLength
 
 
     def converge(self, prev, current, convergeCap = 10):
@@ -113,7 +82,7 @@ class H3K4me3Saturation:
         curCoverage, curNumber = current
 
         converge = 0
-        if prevCoverage*1.1 > curCoverage and (prevNumber*0.9<curNumber):
+        if prevCoverage * 1.1 > curCoverage and (prevNumber * 0.9 < curNumber):
             converge += 1
         else:
             converge = 0
@@ -125,21 +94,34 @@ class H3K4me3Saturation:
         self.genome = genomeSize()
 
 
-    def draw(self, cutoff):
+    def saveRefMap(self, cutoff):
+        refmap = {}
+        for chr, vector in self.genome.items():
+            if vector[0] == 1:
+                vector = np.insert(vector, 0, 0)
+            if vector[-1] == 1:
+                vector = np.append(vector, 0)
 
-        plotConverge(self.coverage, 0, 1, self.iterations+1 , "Number of Sample", "Coverage",
-                     "H3K4me3 Coverage VS Number of Sample", cutoff)
+            # sign change mark the start of the peak and the end to the peak, the end mark is exclusive
+            signchange = ((np.roll(vector, 1) - vector) != 0).astype(int)
+            peaksindex = np.where(signchange == 1)
 
-        plotConverge(self.region, 0, 1, self.iterations+1, "Number of Sample", "Region Number",
-                     "H3K4me3 Region Number VS Number of Sample", cutoff)
+            rowNumber = peaksindex.shape[0] / 2
+            colNumber = 2
+            peaksindex = peaksindex.reshape((rowNumber, colNumber))
 
-        plotConverge(self.regionLength, 0, 1, self.iterations+1, "Number of Sample", "Region Length",
-                     "H3K4me3 Region Length VS Number of Sample", cutoff)
+            refmap[chr] = peaksindex
+
+        output = open(str(cutoff) + "_refmap.csv", "w")
+        writer = csv.writer(output)
+        for chr, index in refmap.items():
+            output.write(">" + chr + "\n")
+            for i in index.shape[0]:
+                writer.writerrow(index[i, :])
+        output.close()
 
 
-
-
-    def trainMap(self, directories, cutoff=0):
+    def trainMap(self, directories, cutoff=0, saveRefMap=True):
         listFiles = os.listdir(directories)
 
         self.numberSample = len(listFiles)
@@ -148,36 +130,25 @@ class H3K4me3Saturation:
 
         n = 0
 
-        while n <=self.iterations:
-            n+=1
+        while n < self.iterations:
             np.random.shuffle(listFiles)
             seq = 0
             for file in listFiles:
-                self.saturated(directories+'/'+file, seq, cutoff=cutoff)
+                self.saturated(directories + '/' + file, seq, n, cutoff=cutoff)
                 seq += 1
 
-            output = open(str(n)+"H3K4me3.csv", "wb")
-            writer = csv.writer(output)
-            for i in range(self.numberSample):
-                writer.writerow([self.coverage[i][0],
-                                 self.coverage[i][n],
-                                 self.region[i][n],
-                                 self.regionLength[i][n]])
-
-            output.close()
+            if saveRefMap and n == 0:
+                self.saveRefMap(cutoff)
 
             self.reset()
 
-        self.draw(cutoff)
+            n += 1
 
+        table = np.zeros((self.numberSample, 4))
+        table[:, 0] = np.arange(1, self.numberSample + 1)
+        table[:, 1] = np.mean(self.coverage, axis=1)
+        table[:, 2] = np.mean(self.regionLength, axis=1)
+        table[:, 3] = np.mean(self.region, axis=1)
 
-
-
-
-
-
-
-
-
-
+        np.savetxt(str(cutoff) + ".csv", table, delimiter=",")
 
