@@ -116,7 +116,7 @@ class H3K4me3Saturation:
         writer = csv.writer(output)
         for chr, index in refmap.items():
             output.write(">" + chr + "\n")
-            for i in index.shape[0]:
+            for i in range(index.shape[0]):
                 writer.writerrow(index[i, :])
         output.close()
 
