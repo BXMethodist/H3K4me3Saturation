@@ -104,7 +104,7 @@ class H3K4me3Saturation:
 
             # sign change mark the start of the peak and the end to the peak, the end mark is exclusive
             signchange = ((np.roll(vector, 1) - vector) != 0).astype(int)
-            peaksindex = np.where(signchange == 1)
+            peaksindex = np.where(signchange == 1)[0]
 
             rowNumber = peaksindex.shape[0] / 2
             colNumber = 2

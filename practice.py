@@ -7,6 +7,6 @@ asign = np.sign(a)
 signchange = ((np.roll(asign, 1) - asign) != 0).astype(int)
 print signchange
 
-itemindex = np.where(signchange==1)
+itemindex = np.where(signchange==1)[0]
 
-print itemindex
+print type(itemindex), itemindex
