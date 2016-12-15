@@ -2,10 +2,10 @@
 
 # import pandas as pd
 import numpy as np, os, csv
-from referenceGenomeTracker import *
+from refMap import *
 from time import time
 
-refMap = H3K4me3Saturation(5)
+refMap = refMap(5)
 # start = time()
 
 cutoffs = [25,50]

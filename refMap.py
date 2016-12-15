@@ -2,28 +2,14 @@ import numpy as np
 import os
 import csv
 import matplotlib.pyplot as plt
+from clusterUtils import *
 
-
-def genomeSize(path="./hg19_chr_sizes.txt"):
-    genome = {}
-
-    file = open(path, "r")
-    for line in file.readlines():
-        chrName, chrSize = line.split("\t")
-        size = int(chrSize.rstrip())
-        if size%10 == 0:
-            size = size/10
-        else:
-            size = size/10+1
-        genome[chrName] = np.zeros(size)
-    file.close()
-    return genome
-
-
-
-class H3K4me3Saturation:
+class refMap:
+    ### take a directory of wig files, generate reference map
+    ### based on number of iterations, generate saturation map for coverage, average peak size and number of average peak number
+    ### use plotSaturation.py to make figure
     def __init__(self, iterations):
-        self.genome = genomeSize()
+        self.genome = genome_size()
         self.iterations = iterations
         self.coverage = None
         self.region = None
@@ -91,7 +77,7 @@ class H3K4me3Saturation:
 
 
     def reset(self):
-        self.genome = genomeSize()
+        self.genome = genome_size()
 
 
     def saveRefMap(self, cutoff):
