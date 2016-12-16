@@ -6,8 +6,8 @@ if __name__ == "__main__":
 
     wigFiles = [path for path in os.listdir(wigPath) if path.endswith("wig")]
 
-    for wig_file in wigFiles:
+    for wig_file in wigFiles[0:100]:
         path = wigPath + wig_file
 
         wig = Wig.Wig(path)
-        wig.save_split_chr()
+        wig.save_split_chr(10000)

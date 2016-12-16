@@ -35,9 +35,15 @@ class Wig:
                     step = int(cur_line[3][cur_line[3].find("=") + 1:])
                 if cur_line[4].startswith("span="):
                     span = int(cur_line[4][cur_line[4].find("=") + 1:])
-                self.genome[chr_name] = wigChrom.WigChrom(chr_name, start, self.genome_size[chr_name], step, span)
+                if chr_name in self.genome_size:
+                    size = self.genome_size[chr_name]
+                    self.genome[chr_name] = wigChrom.WigChrom(chr_name, start, size, step, span)
+                else:
+                    chr_name = "unknown"
                 cur_position = 0 + start - 1
             else:
+                if chr_name == "unknown":
+                    continue
                 if cur_position < self.genome[chr_name].signals.shape[0]:
                     self.genome[chr_name].signals[cur_position] = float(cur_line[0])
                 cur_position += 1
@@ -55,10 +61,12 @@ class Wig:
         else:
             number_split = chromosome.signals.shape[0]/split_vector_size + 1
         for i in range(number_split):
-            self.splitted_chroms[chr_name][i*split_vector_size] = \
-                chromosome.get_signals(i*split_vector_size, (i+1)*split_vector_size)
+            start = i*split_vector_size
+            end = (i+1)*split_vector_size #if (i+1)*split_vector_size < chromosome.signals.shape[0] else -1
 
-    def save_split_chr(self, path="/home/tmhbxx3/archive/WigChrSplits/"):
+            self.splitted_chroms[chr_name][start] = chromosome.signals[start:end]
+
+    def save_split_chr(self, split_vector_size, path="/home/tmhbxx3/archive/WigChrSplits/"):
         # save the splited array to corresponding folder, the first line of file will always be
         # fixedStep chrom=chrX start=1  step=10 span=10
         # create map size for splited file
@@ -67,14 +75,14 @@ class Wig:
             path += "/"
 
         for chr_name, chromosome in self.genome.items():
-            self.split_chr(chr_name, 1000000)
+            self.split_chr(chr_name, split_vector_size)
             output_path = path + chr_name + "_"
             # print self.splitted_chroms
 
             for key, value in self.splitted_chroms[chr_name].items():
                 vector_size = value.shape[0]
-                start = str(key)
-                end = str(key + vector_size*chromosome.step)
+                start = str(key*chromosome.step)
+                end = str(key*chromosome.step + vector_size*chromosome.step)
                 step = str(chromosome.step)
                 final_output_path = output_path + start + "_" + end + "_" + step + "/"
 
@@ -83,3 +91,4 @@ class Wig:
 
                 output_file_name = final_output_path + self.file_name + "_" + chr_name + "_" + start + "_" + end + "_" + step + ".txt"
                 np.savetxt(output_file_name, value, delimiter=",")
+

@@ -1,6 +1,6 @@
 import numpy as np
 
-# a = np.array([1,1,-1,-2,-3,4,5, 6])
+a = np.array([1,1,-1,-2,-3,4,5, 6])
 # asign = np.sign(a)
 #
 # a = a.reshape((2,4))
@@ -11,8 +11,7 @@ import numpy as np
 # print signchange
 #
 # itemindex = np.where(signchange==1)[0]
-#
+
 # print type(itemindex), itemindex
 
-a = "s  s   s a a   a"
-print a.split()
+print a[0:800]
