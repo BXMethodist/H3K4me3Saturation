@@ -2,6 +2,8 @@ import numpy as np
 
 
 class WigChrom:
+    ## This is a class for storing the chromosome information from a wig file
+
     def __init__(self, chr_name, start, size, step, span, fixed=True):
         self.chr_name = chr_name
         self.start = start

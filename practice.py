@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 a = np.array([1,1,-1,-2,-3,4,5, 6])
 # asign = np.sign(a)
@@ -14,4 +15,5 @@ a = np.array([1,1,-1,-2,-3,4,5, 6])
 
 # print type(itemindex), itemindex
 
-print a[0:800]
+a[a<0] = 0
+print a

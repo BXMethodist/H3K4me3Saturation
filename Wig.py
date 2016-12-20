@@ -1,9 +1,10 @@
-import os
-import numpy as np
 from clusterUtils import *
+import os
 import wigChrom
 
+
 class Wig:
+    ## This is the class for input a list Wig files and generate the partitions for the wig files
     def __init__(self, wig_file, genome_size_path="/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt"):
         # address of genomesize file on server "/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt"
         self.genome_size = genome_size_chrom(genome_size_path)
@@ -56,7 +57,7 @@ class Wig:
 
         self.splitted_chroms[chr_name] = {}
 
-        if chromosome.signals.shape[0]%split_vector_size == 0:
+        if chromosome.signals.shape[0] % split_vector_size == 0:
             number_split = chromosome.signals.shape[0]/split_vector_size
         else:
             number_split = chromosome.signals.shape[0]/split_vector_size + 1
@@ -89,6 +90,13 @@ class Wig:
                 if not os.path.isdir(final_output_path):
                     os.system("mkdir " + final_output_path)
 
-                output_file_name = final_output_path + self.file_name + "_" + chr_name + "_" + start + "_" + end + "_" + step + ".txt"
+                output_file_name = final_output_path + self.file_name + "_" + chr_name + "_" + start \
+                                        + "_" + end + "_" + step + ".txt"
                 np.savetxt(output_file_name, value, delimiter=",")
+
+
+
+
+
+
 
