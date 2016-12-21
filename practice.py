@@ -1,19 +1,30 @@
 import numpy as np
-import pandas as pd
+from scipy.stats import pearsonr
 
-a = np.array([1,1,-1,-2,-3,4,5, 6])
-# asign = np.sign(a)
-#
-# a = a.reshape((2,4))
-#
-# print a, type(a)
-#
-# signchange = ((np.roll(asign, 1) - asign) != 0).astype(int)
-# print signchange
-#
-# itemindex = np.where(signchange==1)[0]
+a = [0,1,1, 0]
+b = [1,2,2,1]
+c =[ -1, -2, -2, -1]
+d = [ 0, 0, 1, 1]
 
-# print type(itemindex), itemindex
 
-a[a<0] = 0
-print a
+result = []
+result.append(a)
+result.append(b)
+result.append(c)
+result.append(d)
+
+
+result = np.asarray(result)
+
+
+pe = np.corrcoef(result)
+
+index = np.argmin(pe)
+
+print index
+
+min = pe.flat[index]
+
+print pe, min
+
+print np.where(pe==min)
