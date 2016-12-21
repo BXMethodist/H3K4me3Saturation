@@ -1,8 +1,7 @@
 import numpy as np, pandas as pd, scipy
 from sklearn.cluster import AffinityPropagation
 from sklearn import metrics
-from sklearn.datasets.samples_generator import make_blobs
-from scipy.stats import pearsonr
+from scipy.spatial.distance import euclidean
 
 
 def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, convergence_iter=15, max_iter=200,
@@ -17,6 +16,10 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
 
     S : array-like, shape (n_samples, n_samples)
         Matrix of similarities between points
+
+    max_cutoff: the min cut_off to group sample together by affinity metrics
+
+    min_cutoff: the max cut_off to find the most distinct pair by affinity metrics
 
     preference : array-like, shape (n_samples,) or float, optional
         Preferences for each point - points with larger values of
@@ -67,114 +70,144 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
     References
     ----------
     """
-    ###
+
     n_samples = S.shape[0]
+    cluster_centers_indices = []
+    labels = []
+    frontiers = np.zeros(n_samples)
+    n_iter = 0
+
+    affinity_matrix = S.copy()
 
     if S.shape[0] != S.shape[1]:
         raise ValueError("S must be a square array (shape=%s)" % repr(S.shape))
-    if preference is not None:
-        first_distinct = preference
-    if damping < 0.5 or damping >= 1:
-        raise ValueError('damping must be >= 0.5 and < 1')
+    # if preference is not None:
+    #     first_distinct = preference
+    # if damping < 0.5 or damping >= 1:
+    #     raise ValueError('damping must be >= 0.5 and < 1')
 
+    # find the most distinct pattern, if no distinct pattern is found, then return as one pattern
+    while True and n_iter < max_iter:
+        distinct_index = np.argmin(affinity_matrix)
+        min_distance = affinity_matrix.flat[distinct_index]
 
+        if min_distance > min_cutoff:
+            break
 
+        distinct_pairs = np.asarray(np.where(affinity_matrix == min_distance)).T
+        distinct_set = remove_duplicate(distinct_pairs)
 
-    random_state = np.random.RandomState(0)
+        distinct_set = filter_close_pair(S, cluster_centers_indices, distinct_set, min_cutoff)
 
-    # Place preference on the diagonal of S
-    S.flat[::(n_samples + 1)] = preference
+        if len(distinct_set) == 0:
+            break
+        elif len(distinct_set) == 1:
+            first_distinct = distinct_set[0]
+        else:
+            print "more than one pair are very different!"
+            first_distinct = most_different_pair(X, distinct_set)
 
-    A = np.zeros((n_samples, n_samples))
-    R = np.zeros((n_samples, n_samples))  # Initialize messages
-    # Intermediate results
-    tmp = np.zeros((n_samples, n_samples))
+        cluster_centers_indices += first_distinct
 
-    # Remove degeneracies
-    S += ((np.finfo(np.double).eps * S + np.finfo(np.double).tiny * 100) *
-          random_state.randn(n_samples, n_samples))
+        affinity_x = affinity_matrix[first_distinct[0], :]
+        affinity_y = affinity_matrix[first_distinct[1], :]
 
-    # Execute parallel affinity propagation updates
-    e = np.zeros((n_samples, convergence_iter))
+        cluster_x = np.intersect1d(np.where(affinity_x > max_cutoff), np.where(affinity_x <=1))
+        cluster_y = np.intersect1d(np.where(affinity_y > max_cutoff), np.where(affinity_y <=1))
 
-    ind = np.arange(n_samples)
+        labels.append(cluster_x)
+        labels.append(cluster_y)
 
-    for it in range(max_iter):
-        # tmp = A + S; compute responsibilities
-        np.add(A, S, tmp)
-        I = np.argmax(tmp, axis=1)
-        Y = tmp[ind, I]  # np.max(A + S, axis=1)
-        tmp[ind, I] = -np.inf
-        Y2 = np.max(tmp, axis=1)
+        frontiers[cluster_x] = 1
+        frontiers[cluster_y] = 1
 
-        # tmp = Rnew
-        np.subtract(S, Y[:, None], tmp)
-        tmp[ind, I] = S[ind, I] - Y2
+        affinity_matrix[cluster_x, :] = float("inf")
+        affinity_matrix[:, cluster_x] = float("inf")
 
-        # Damping
-        tmp *= 1 - damping
-        R *= damping
-        R += tmp
+        affinity_matrix[cluster_y, :] = float("inf")
+        affinity_matrix[:, cluster_y] = float("inf")
 
-        # tmp = Rp; compute availabilities
-        np.maximum(R, 0, tmp)
-        tmp.flat[::n_samples + 1] = R.flat[::n_samples + 1]
+        if np.sum(frontiers) == n_samples:
+            break
+        n_iter += 1
+    return cluster_centers_indices, labels, n_iter
 
-        # tmp = -Anew
-        tmp -= np.sum(tmp, axis=0)
-        dA = np.diag(tmp).copy()
-        tmp.clip(0, np.inf, tmp)
-        tmp.flat[::n_samples + 1] = dA
+def remove_duplicate(pairs):
+    """Remove duplicate pairs and return distinct dissimilar pairs
 
-        # Damping
-        tmp *= 1 - damping
-        A *= damping
-        A -= tmp
+        Parameters
+        ----------
+        pairs: ndarray, contains pair of sample index.
 
-        # Check for convergence
-        E = (np.diag(A) + np.diag(R)) > 0
-        e[:, it % convergence_iter] = E
-        K = np.sum(E, axis=0)
+        Return
+        ----------
+        a list of tuple containing pair of sample index.
 
-        if it >= convergence_iter:
-            se = np.sum(e, axis=1)
-            unconverged = (np.sum((se == convergence_iter) + (se == 0))
-                           != n_samples)
-            if (not unconverged and (K > 0)) or (it == max_iter):
-                if verbose:
-                    print("Converged after %d iterations." % it)
-                break
-    else:
-        if verbose:
-            print("Did not converge")
+        Notes
+        -----
+        This function should only be called by .fit function
 
-    I = np.where(np.diag(A + R) > 0)[0]
-    K = I.size  # Identify exemplars
+        References
+        ----------
+        """
 
-    if K > 0:
-        c = np.argmax(S[:, I], axis=1)
-        c[I] = np.arange(K)  # Identify clusters
-        # Refine the final set of exemplars and clusters and return results
-        for k in range(K):
-            ii = np.where(c == k)[0]
-            j = np.argmax(np.sum(S[ii[:, np.newaxis], ii], axis=0))
-            I[k] = ii[j]
+    distinct_set = set()
 
-        c = np.argmax(S[:, I], axis=1)
-        c[I] = np.arange(K)
-        labels = I[c]
-        # Reduce labels to a sorted, gapless, list
-        cluster_centers_indices = np.unique(labels)
-        labels = np.searchsorted(cluster_centers_indices, labels)
-    else:
-        labels = np.empty((n_samples, 1))
-        cluster_centers_indices = None
-        labels.fill(np.nan)
+    for i in range(pairs.shape[0]):
+        x, y = pairs[i]
+        if (x, y) not in distinct_set and (y, x) not in distinct_set:
+            distinct_set.add((x, y))
+    distinct_set = list(distinct_set)
+    return distinct_set
 
-    if return_n_iter:
-        return cluster_centers_indices, labels, it + 1
-    else:
-        return cluster_centers_indices, labels
+def most_different_pair(X, pairs):
+    """Get the most distinct pair after the screening of first affinity metrics
+
+            Parameters
+            ----------
+            X: ndarray, contains original sample data
+            pairs: a list of pairs get from the first affinity metrics screening
+
+            Return
+            ----------
+            a most distinct pair, [x, y]
+
+            Notes
+            -----
+
+            References
+            ----------
+            """
+    max_distance = float("-inf")
+    distinct_pair = None
+    for pair in pairs:
+        sample_x, sample_y = X[pair[0], :], X[pair[1], :]
+        cur_distance = euclidean(sample_x, sample_y)
+        if cur_distance > max_distance:
+            max_distance = cur_distance
+            distinct_pair = pair
+    return distinct_pair
+
+def filter_close_pair(affinity_matrix, cluster_centers_indices, distinct_set, min_cutoff):
+    """Make sure the new cluster are also very different with the old ones.
+
+                Parameters
+                ----------
+                affinity_matrix: ndarray, the similarity matrix get from certain similarity function
+                cluster_centers_indices: existing clusters index
+                distinct_set: potential new cluster index
+                min_cutoff: minimum similarity cutoff
+
+                Return
+                ----------
+                a filtered distinct pair, [x, y]
+
+                Notes
+                -----
+
+                References
+                ----------
+                """
 
 
 ###############################################################################
@@ -272,6 +305,8 @@ class DistinctAffinityPropagation():
         # TO DO
         X = np.asarray(X)
 
+        self.data = X
+
         self.affinity_matrix_ = self.affinity(X)
 
         ####
@@ -299,3 +334,18 @@ class DistinctAffinityPropagation():
         """
         ## TO DO
         pass
+
+if __name__ == "__main__":
+    cluster = DistinctAffinityPropagation()
+    df = pd.read_csv("./csv/chr3_187450000_187470000.csv", sep="\t")
+    data = df.as_matrix()
+    sample_names = data[:, 0]
+    data_values = data[:, 1:].astype(np.float64)
+
+    cluster.fit(data_values, 0.5, 0)
+
+    np.set_printoptions(threshold=np.nan)
+
+    # print cluster.affinity_matrix_
+
+    print cluster.cluster_centers_indices_
