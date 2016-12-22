@@ -41,6 +41,7 @@ def plotSaturation(title, array, parameters, n, subplot=True):
     ax.set_color_cycle([cm(1. * i / len(parameters)) for i in range(len(parameters))])
 
     ax.plot(array[:, 0], array[:, 1:], linewidth=2.0)
+    # ax.plot(array, linewidth=2.0)
 
     ax.set_title(title+" VS Sample Number", fontname="Times New Roman")
     ax.set_xlabel("Number of H3K4me3 Chip-Seq Sample", fontname="Times New Roman")

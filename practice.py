@@ -1,10 +1,11 @@
 import numpy as np
 from scipy.stats import pearsonr
 import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
 
-a = [0,1,1, 0]
+a = [1,1,0, 0]
 b = [1,2,2,1]
-c =[ -1, -2, -2, -1]
+c =[ -1,-2,-2,-1]
 d = [ 0, 0, 1, 1]
 
 
@@ -14,28 +15,24 @@ result.append(b)
 result.append(c)
 result.append(d)
 
+print np.argmax(result, axis=0)
+
 
 result = np.asarray(result, dtype=np.float64)
 
-r = result.copy()
-r[0,0] = np.nan
+print cosine_similarity(result)
 
-print np.mean(result, axis = 0)
-
-# print result
+# pe = np.corrcoef(result)
 #
-# print r
-
-
-pe = np.corrcoef(result)
+# print pe
+# #
+# pe[0,0] = np.nan
 #
-pe[0,0] = np.nan
-
-index = np.argmin(pe)
-
-print index
-
-print pe
+# index = np.argmin(pe)
+#
+# print index
+#
+# print pe
 
 # index = np.argmin(pe)
 #

@@ -101,5 +101,28 @@ def get_split_chr(chr_name, start, end, vector_size=10000, step=10, cutoff=100,
 
     return result_array
 
+def quantile_normalization(array, axis=0):
+    array = np.asarray(array)
+    if axis == 0:
+        array = array.T
+    elif axis == 1:
+        pass
+    else:
+        return
+
+    df = pd.DataFrame(array)
+    rank_mean = df.stack().groupby(df.rank(method='first').stack().astype(int)).mean()
+    quantile_normalized = df.rank(method='min').stack().astype(int).map(rank_mean).unstack()
+
+    result = quantile_normalized.as_matrix()
+
+    if axis == 0:
+        return result.T
+    elif axis == 1:
+        return result
+
+
+
+
 if __name__ == "__main__":
     get_split_chr("chr3", 187450000, 187470000)

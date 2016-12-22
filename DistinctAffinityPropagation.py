@@ -1,7 +1,8 @@
 import numpy as np, pandas as pd, scipy
-from sklearn.cluster import AffinityPropagation
-from sklearn import metrics
 from scipy.spatial.distance import euclidean
+from scipy.spatial.distance import cosine
+from sklearn.metrics.pairwise import cosine_similarity
+from clusterUtils import quantile_normalization
 
 
 def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, convergence_iter=15, max_iter=200,
@@ -13,6 +14,9 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
 
     Parameters
     ----------
+
+    X : array-like, shape (n_samples, n_features)
+        Original samples matrix
 
     S : array-like, shape (n_samples, n_samples)
         Matrix of similarities between points
@@ -59,9 +63,8 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
     labels : array, shape (n_samples,)
         cluster labels for each point
 
-    n_iter : int
-        number of iterations run. Returned only if `return_n_iter` is
-        set to True.
+    seeds : array, shape (n_clusters, n_features)
+        the final representation of the clusters
 
     Notes
     -----
@@ -74,6 +77,7 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
     n_samples = S.shape[0]
     cluster_centers_indices = []
     labels = []
+    seeds = []
     frontiers = np.zeros(n_samples)
     n_iter = 0
 
@@ -87,50 +91,119 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
     #     raise ValueError('damping must be >= 0.5 and < 1')
 
     # find the most distinct pattern, if no distinct pattern is found, then return as one pattern
-    while True and n_iter < max_iter:
-        distinct_index = np.argmin(affinity_matrix)
-        min_distance = affinity_matrix.flat[distinct_index]
+    # this is the initialization step
+    distinct_index = np.argmin(affinity_matrix)
+    min_distance = affinity_matrix.flat[distinct_index]
 
-        if min_distance > min_cutoff:
-            break
+    if min_distance > min_cutoff:
+        # TO DO: return the entire samples as one cluster
+        labels.append(np.arange(n_samples))
+        representation = [np.mean(X, axis=0)]
+        return cluster_centers_indices, labels, seeds, representation
 
-        distinct_pairs = np.asarray(np.where(affinity_matrix == min_distance)).T
-        distinct_set = remove_duplicate(distinct_pairs)
+    distinct_pairs = np.asarray(np.where(affinity_matrix == min_distance)).T
+    distinct_set = remove_duplicate(distinct_pairs)
 
-        distinct_set = filter_close_pair(S, cluster_centers_indices, distinct_set, min_cutoff)
+    if len(distinct_set) == 1:
+        first_distinct = distinct_set[0]
+    else:
+        # print "more than one pair are very different!"
+        first_distinct = most_different_pair(X, distinct_set)
 
-        if len(distinct_set) == 0:
-            break
-        elif len(distinct_set) == 1:
-            first_distinct = distinct_set[0]
+    # print first_distinct
+
+    for i in range(len(first_distinct)):
+        affinity_x = affinity_matrix[first_distinct[i], :]
+        cluster_x = np.intersect1d(np.where(affinity_x > max_cutoff), np.where(affinity_x <= 1))
+        if len(cluster_x) >= 5:
+            labels.append(cluster_x)
+            cluster_centers_indices.append(first_distinct[i])
+            seeds.append(X[first_distinct[i]])
+
+            frontiers[cluster_x] = 1
+            affinity_matrix[cluster_x, :] = float("inf")
+            affinity_matrix[:, cluster_x] = float("inf")
         else:
-            print "more than one pair are very different!"
-            first_distinct = most_different_pair(X, distinct_set)
+            frontiers[first_distinct[i]] = 1
 
-        cluster_centers_indices += first_distinct
+    while True and n_iter < max_iter:
+        samples_left = np.where(frontiers==0)[0]
 
-        affinity_x = affinity_matrix[first_distinct[0], :]
-        affinity_y = affinity_matrix[first_distinct[1], :]
+        new_centers = []
 
-        cluster_x = np.intersect1d(np.where(affinity_x > max_cutoff), np.where(affinity_x <=1))
-        cluster_y = np.intersect1d(np.where(affinity_y > max_cutoff), np.where(affinity_y <=1))
+        for sample in samples_left:
+            distinct_qualifier = [S[sample, x] <= min_cutoff for x in cluster_centers_indices]
 
-        labels.append(cluster_x)
-        labels.append(cluster_y)
+            if all(distinct_qualifier):
+                new_centers.append(sample)
 
-        frontiers[cluster_x] = 1
-        frontiers[cluster_y] = 1
+        if len(new_centers) == 0:
+            break
+        elif len(new_centers) > 1:
+            # TO DO: create new function to get better performance
+            best_new_center = accumulate_selecter(X, cluster_centers_indices, new_centers)
+        else:
+            best_new_center = new_centers[0]
 
-        affinity_matrix[cluster_x, :] = float("inf")
-        affinity_matrix[:, cluster_x] = float("inf")
+        affinity_new_center = affinity_matrix[best_new_center, :]
+        cluster_new_center = np.intersect1d(np.where(affinity_new_center > max_cutoff),
+                                            np.where(affinity_new_center <= 1))
 
-        affinity_matrix[cluster_y, :] = float("inf")
-        affinity_matrix[:, cluster_y] = float("inf")
+        if len(cluster_new_center) >= 5:
+            labels.append(cluster_new_center)
+            cluster_centers_indices.append(best_new_center)
+            seeds.append(X[best_new_center])
+
+            frontiers[cluster_new_center] = 1
+
+            affinity_matrix[cluster_new_center, :] = float("inf")
+            affinity_matrix[:, cluster_new_center] = float("inf")
+
+        else:
+            frontiers[best_new_center] = 1
 
         if np.sum(frontiers) == n_samples:
             break
         n_iter += 1
-    return cluster_centers_indices, labels, n_iter
+
+    representation = [np.mean(X[label], axis=0) for label in labels]
+    representation = np.asarray(representation)
+
+    enriched_representation = []
+    for i in range(representation.shape[0]):
+        max_value = np.amax(representation[i, :])
+        enriched_rep = representation[i, :] * representation[i, :] / max_value
+        enriched_representation.append(enriched_rep)
+
+    feature_mark = np.argmax(enriched_representation, axis=0)
+    for i in range(len(representation)):
+        representation[i][feature_mark!=i] = 0
+
+
+    ### use representation to recluster
+    reclusters = labels
+    for i in range(representation.shape[0]):
+        new_seed = representation[i, :]
+        similarity = cosine_similarity(X, new_seed).T[0]
+        reclusters[i] = np.where(similarity > max_cutoff)[0]
+
+    return cluster_centers_indices, reclusters, seeds, representation
+
+    # return cluster_centers_indices, labels, n_iter
+
+def signal_reduction(sample, array1, array2):
+    signal_enrich = np.zeros(sample.shape[0])
+    result1 = sample - array1
+    result1[result1<0] = 0
+    signal_enrich += np.sum(result1, axis=0)
+    result2 = sample - array2
+    result2[result2 < 0] = 0
+    signal_enrich += np.sum(result2, axis=0)
+
+    return signal_enrich
+
+
+
 
 def remove_duplicate(pairs):
     """Remove duplicate pairs and return distinct dissimilar pairs
@@ -186,21 +259,21 @@ def most_different_pair(X, pairs):
         if cur_distance > max_distance:
             max_distance = cur_distance
             distinct_pair = pair
+
     return distinct_pair
 
-def filter_close_pair(affinity_matrix, cluster_centers_indices, distinct_set, min_cutoff):
+def accumulate_selecter(samples, cluster_centers_indices, candidates):
     """Make sure the new cluster are also very different with the old ones.
 
                 Parameters
                 ----------
-                affinity_matrix: ndarray, the similarity matrix get from certain similarity function
+                samples: ndarray, (nsample, nfeatures)
                 cluster_centers_indices: existing clusters index
-                distinct_set: potential new cluster index
-                min_cutoff: minimum similarity cutoff
+                candidates: potential new cluster index
 
                 Return
                 ----------
-                a filtered distinct pair, [x, y]
+                the most distinct candidates
 
                 Notes
                 -----
@@ -208,6 +281,16 @@ def filter_close_pair(affinity_matrix, cluster_centers_indices, distinct_set, mi
                 References
                 ----------
                 """
+    max_distance = float("-inf")
+    best_candidate = None
+    for candidate in candidates:
+        cur_distance = 0
+        for center in cluster_centers_indices:
+            cur_distance += euclidean(samples[candidate], samples[center])
+        if cur_distance > max_distance:
+            best_candidate = candidate
+            max_distance = cur_distance
+    return best_candidate
 
 
 ###############################################################################
@@ -311,7 +394,7 @@ class DistinctAffinityPropagation():
 
         ####
 
-        self.cluster_centers_indices_, self.labels_, self.n_iter_ = \
+        self.cluster_centers_indices_, self.labels_, self.seeds_, self.representation_ = \
             affinity_propagation(X,
                 self.affinity_matrix_, max_cutoff, min_cutoff,
                 self.preference, max_iter=self.max_iter, convergence_iter=self.convergence_iter,
@@ -319,7 +402,7 @@ class DistinctAffinityPropagation():
 
         return self
 
-    def predict(self, X):
+    def predict(self, X, assign_type="hard"):
         """Predict the closest cluster each sample in X belongs to.
 
         Parameters
@@ -330,22 +413,76 @@ class DistinctAffinityPropagation():
         Returns
         -------
         labels : array, shape (n_samples,)
-            Index of the cluster each sample belongs to.
+            Index of the cluster each sample belongs to. if the assignment type is 'hard'
+        probablity: array, shape(n_samples, n_probablities) if the assignment type is 'soft'
         """
         ## TO DO
-        pass
+        X = np.asarray(X)
+        if X.ndim == 1:
+            print "please convert to samples as array, shape (n_samples, ) which is 2d array"
+            return
+
+        probabilities = np.zeros((X.shape[0], len(self.labels_)))
+        for i in range(X.shape[0]):
+            sample = X[i, :]
+            prob = cosine_similarity(self.representation_, sample).T
+            prob = prob/np.sum(prob)
+            probabilities[i, :] = prob
+        if assign_type == 'hard':
+            return np.argmax(probabilities, axis=1)
+        elif assign_type == 'soft':
+            return probabilities
 
 if __name__ == "__main__":
-    cluster = DistinctAffinityPropagation()
+    cluster = DistinctAffinityPropagation(affinity=cosine_similarity)
     df = pd.read_csv("./csv/chr3_187450000_187470000.csv", sep="\t")
     data = df.as_matrix()
     sample_names = data[:, 0]
     data_values = data[:, 1:].astype(np.float64)
+    data_values = data_values[:, 500:1500]
 
-    cluster.fit(data_values, 0.5, 0)
+    cluster.fit(data_values, 0.7, 0.3)
+
+    print cluster.cluster_centers_indices_
+    print [len(x) for x in cluster.labels_]
+    test_sample = data_values[(191,233), :].copy()
+    # print test_sample
+
+
 
     np.set_printoptions(threshold=np.nan)
 
-    # print cluster.affinity_matrix_
+    total = 0
 
-    print cluster.cluster_centers_indices_
+    for label in cluster.labels_:
+        total += len(label)
+    result = np.zeros((total, data_values.shape[1]))
+
+    cur_pos = 0
+
+    for i in range(len(cluster.labels_)):
+        result[cur_pos:cur_pos+len(cluster.labels_[i])] = data_values[cluster.labels_[i]]
+        cur_pos += len(cluster.labels_[i])
+    df = pd.DataFrame(result)
+    df.to_csv("./csv/leftclusters.csv", sep="\t")
+
+
+    from visualizationUtils import plotSaturation, heatmap
+
+    if len(cluster.labels_) > 1:
+        i = 0
+        for label in cluster.labels_:
+            plot_data = data_values[label]
+            plotSaturation("Clusters"+str(i), plot_data, data_values[cluster.cluster_centers_indices_[i]],
+                           cluster.representation_[i], len(cluster.labels_[i]), i, subplot=False)
+            i += 1
+
+            df = pd.DataFrame(plot_data)
+            df.to_csv("./csv/"+"cluster"+str(i)+".csv")
+            heatmap("./csv/"+"cluster"+str(i)+".csv", "cluster"+str(i))
+    else:
+        plotSaturation("Clusters", data_values, [],
+                       cluster.representation_[0], len(cluster.labels_[0]), 0, subplot=False)
+
+
+    print cluster.predict(test_sample, assign_type='soft')
