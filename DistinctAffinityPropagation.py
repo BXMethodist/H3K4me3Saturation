@@ -2,7 +2,7 @@ import numpy as np, pandas as pd, scipy
 from scipy.spatial.distance import euclidean
 from scipy.spatial.distance import cosine
 from sklearn.metrics.pairwise import cosine_similarity
-from clusterUtils import quantile_normalization
+from clusterUtils import *
 
 
 def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, convergence_iter=15, max_iter=200,
@@ -169,23 +169,23 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
     representation = [np.mean(X[label], axis=0) for label in labels]
     representation = np.asarray(representation)
 
-    enriched_representation = []
-    for i in range(representation.shape[0]):
-        max_value = np.amax(representation[i, :])
-        enriched_rep = representation[i, :] * representation[i, :] / max_value
-        enriched_representation.append(enriched_rep)
-
-    feature_mark = np.argmax(enriched_representation, axis=0)
-    for i in range(len(representation)):
-        representation[i][feature_mark!=i] = 0
+    # enriched_representation = []
+    # for i in range(representation.shape[0]):
+    #     max_value = np.amax(representation[i, :])
+    #     enriched_rep = representation[i, :] * representation[i, :] / max_value
+    #     enriched_representation.append(enriched_rep)
+    #
+    # feature_mark = np.argmax(enriched_representation, axis=0)
+    # for i in range(len(representation)):
+    #     representation[i][feature_mark!=i] = 0
 
 
     ### use representation to recluster
     reclusters = labels
-    for i in range(representation.shape[0]):
-        new_seed = representation[i, :]
-        similarity = cosine_similarity(X, new_seed).T[0]
-        reclusters[i] = np.where(similarity > max_cutoff)[0]
+    # for i in range(representation.shape[0]):
+    #     new_seed = representation[i, :]
+    #     similarity = cosine_similarity(X, new_seed).T[0]
+    #     reclusters[i] = np.where(similarity > max_cutoff)[0]
 
     return cluster_centers_indices, reclusters, seeds, representation
 
@@ -416,7 +416,9 @@ class DistinctAffinityPropagation():
             Index of the cluster each sample belongs to. if the assignment type is 'hard'
         probablity: array, shape(n_samples, n_probablities) if the assignment type is 'soft'
         """
-        ## TO DO
+
+        ## TO DO This need to be revised
+
         X = np.asarray(X)
         if X.ndim == 1:
             print "please convert to samples as array, shape (n_samples, ) which is 2d array"
@@ -434,21 +436,44 @@ class DistinctAffinityPropagation():
             return probabilities
 
 if __name__ == "__main__":
-    cluster = DistinctAffinityPropagation(affinity=cosine_similarity)
+
+    # cosine
+    # cluster = DistinctAffinityPropagation(affinity=cosine_similarity)
+
+    # pearson correlation
+    cluster = DistinctAffinityPropagation(affinity=np.corrcoef)
+
+    # df = pd.read_csv("./csv/chr8_128742000_128755000.csv", sep="\t")
     df = pd.read_csv("./csv/chr3_187450000_187470000.csv", sep="\t")
+
+
     data = df.as_matrix()
     sample_names = data[:, 0]
     data_values = data[:, 1:].astype(np.float64)
-    data_values = data_values[:, 500:1500]
+    print data_values.shape
 
-    cluster.fit(data_values, 0.7, 0.3)
+    # normalized by means
+    data_values = mean_normalization(data_values)
+    print data_values.shape
+
+    #quantile
+    # data_values = quantile_normalization(data_values)
+
+    #max_peak normalization
+    # data_values = max_normalization(data_values)
+
+    # smooth
+    data_values = smooth_normalization(data_values)
+    print data_values.shape
+
+    # data_values = data_values[:, 500:1500]
+
+    cluster.fit(data_values, 0.8, 0.4)
 
     print cluster.cluster_centers_indices_
     print [len(x) for x in cluster.labels_]
     test_sample = data_values[(191,233), :].copy()
     # print test_sample
-
-
 
     np.set_printoptions(threshold=np.nan)
 
