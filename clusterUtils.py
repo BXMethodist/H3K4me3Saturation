@@ -155,4 +155,4 @@ def max_normalization(array, max_peak=500, axis=1):
 
 
 if __name__ == "__main__":
-    get_split_chr("chr8", 128742000, 128755000, cutoff=25)
+    get_split_chr("chr3", 187450000, 187470000, cutoff=20)

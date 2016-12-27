@@ -108,8 +108,11 @@ class refMap:
         output.close()
 
 
-    def trainMap(self, directories, cutoff=0, saveRefMap=True):
+    def trainMap(self, directories, surfix=None, cutoff=0, saveRefMap=True):
         listFiles = os.listdir(directories)
+
+        if surfix is not None:
+            listFiles = [x for x in listFiles if x.endswith(surfix)]
 
         self.numberSample = len(listFiles)
 
