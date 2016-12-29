@@ -491,7 +491,7 @@ def region_cluster(directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", aff
         df = pd.DataFrame(result, index=result_index)
         df.to_csv("./cluster_csv/" + pos_surfix + "_clusters.csv", sep="\t")
 
-        from visualizationUtils import plotSaturation, heatmap
+        from visualizationUtils import plotSaturation #, heatmap
 
         if len(cluster.labels_) > 1:
             i = 0
@@ -502,9 +502,9 @@ def region_cluster(directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", aff
                                cluster.representation_[i], len(cluster.labels_[i]))
                 i += 1
 
-                df = pd.DataFrame(plot_data)
-                df.to_csv("./tempcsv/" + "cluster" + str(i) + ".csv")
-                heatmap("./tempcsv/" + "cluster" + str(i) + ".csv", pos_surfix + "_cluster" + str(i))
+                # df = pd.DataFrame(plot_data)
+                # df.to_csv("./tempcsv/" + "cluster" + str(i) + ".csv")
+                # heatmap("./tempcsv/" + "cluster" + str(i) + ".csv", pos_surfix + "_cluster" + str(i))
         else:
             plotSaturation(pos_surfix + "_cluster0", data_values, [],
                            cluster.representation_[0], len(cluster.labels_[0]))
@@ -516,7 +516,7 @@ if __name__ == "__main__":
     # group reference region
 
     # cutoff the region's data
-    get_split_chr("chr3", 187450000, 187470000, cutoff=25)
+    # get_split_chr("chr3", 187450000, 187470000, cutoff=25)
 
     # call cluster
-    region_cluster("./csv")
+    region_cluster()
