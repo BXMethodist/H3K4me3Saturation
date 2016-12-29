@@ -7,8 +7,8 @@ from scipy.cluster.hierarchy import linkage
 import rpy2.robjects as robjects
 
 
-def plotSaturation(title, array, original_seed, rep, parameters, n, subplot=True, verbose=False):
-    fig = plt.figure(n)
+def plotSaturation(title, array, original_seed, rep, parameters):
+    fig = plt.figure(figsize=(8,2))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -69,7 +69,7 @@ def heatmap(path, name):
         # col_breaks = c(seq(-1,0,length=100),  # for red
         # seq(0.01,1,length=100))           # for yellow
         # seq(0.51,1,length=100))             # for green
-        png("./pictures/heatmaps'''+name+'''.png",    # create PNG for the heat map
+        png("./pictures/heatmaps_'''+name+'''.png",    # create PNG for the heat map
         width = 15*300,        # 5 x 300 pixels
         height = 15*300,
         res = 600,            # 300 pixels per inch

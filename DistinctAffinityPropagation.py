@@ -371,7 +371,7 @@ class DistinctAffinityPropagation():
         self.preference = preference
         self.affinity = affinity
 
-    def fit(self, X, max_cutoff, min_cutoff):
+    def fit(self, X, max_cutoff, min_cutoff, mean_target=200, smooth_period=20):
         """ Create affinity matrix from negative euclidean distances, then
         apply affinity propagation clustering.
 
@@ -387,6 +387,11 @@ class DistinctAffinityPropagation():
 
         # TO DO
         X = np.asarray(X)
+
+        if mean_target:
+            X = mean_normalization(X, target_signal=mean_target)
+        if smooth_period:
+            X = smooth_normalization(X, smooth=smooth_period)
 
         self.data = X
 
@@ -435,79 +440,83 @@ class DistinctAffinityPropagation():
         elif assign_type == 'soft':
             return probabilities
 
-if __name__ == "__main__":
+def region_cluster(directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", affinity=np.corrcoef):
+    if not os.path.isdir("./pictures"):
+        os.system("mkdir pictures")
+    if not os.path.isdir("./tempcsv"):
+        os.system("mkdir temcsv")
+    if not os.path.isdir("./cluster_csv"):
+        os.system("mkdir cluster_csv")
 
-    # cosine
-    # cluster = DistinctAffinityPropagation(affinity=cosine_similarity)
+    if not directory.endswith("/"):
+        directory += "/"
 
-    # pearson correlation
-    cluster = DistinctAffinityPropagation(affinity=np.corrcoef)
+    list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")]
 
-    # df = pd.read_csv("./csv/chr8_128742000_128755000.csv", sep="\t")
-    df = pd.read_csv("./csv/chr3_187450000_187470000.csv", sep="\t")
+    print list_files
 
+    for file_name in list_files:
+        cluster = DistinctAffinityPropagation(affinity)
+        df = pd.read_csv(directory+file_name, sep="\t")
 
-    data = df.as_matrix()
-    sample_names = data[:, 0]
-    data_values = data[:, 1:].astype(np.float64)
-    print data_values.shape
+        pos_surfix = file_name[file_name.rfind("/") + 1:-4]
 
-    # normalized by means
-    data_values = mean_normalization(data_values)
-    print data_values.shape
+        data = df.as_matrix()
+        # sample_names = data[:, 0]
+        data_values = data[:, 1:].astype(np.float64)
+        print data_values.shape
 
-    #quantile
-    # data_values = quantile_normalization(data_values)
+        cluster.fit(data_values, 0.8, 0.4)
 
-    #max_peak normalization
-    # data_values = max_normalization(data_values)
+        data_values = cluster.data
 
-    # smooth
-    data_values = smooth_normalization(data_values)
-    print data_values.shape
+        print cluster.cluster_centers_indices_
+        print [len(x) for x in cluster.labels_]
 
-    # data_values = data_values[:, 500:1500]
+        np.set_printoptions(threshold=np.nan)
 
-    cluster.fit(data_values, 0.8, 0.4)
+        total = 0
 
-    print cluster.cluster_centers_indices_
-    print [len(x) for x in cluster.labels_]
-    test_sample = data_values[(191,233), :].copy()
-    # print test_sample
-
-    np.set_printoptions(threshold=np.nan)
-
-    total = 0
-
-    for label in cluster.labels_:
-        total += len(label)
-    result = np.zeros((total, data_values.shape[1]))
-
-    cur_pos = 0
-
-    for i in range(len(cluster.labels_)):
-        result[cur_pos:cur_pos+len(cluster.labels_[i])] = data_values[cluster.labels_[i]]
-        cur_pos += len(cluster.labels_[i])
-    df = pd.DataFrame(result)
-    df.to_csv("./csv/leftclusters.csv", sep="\t")
-
-
-    from visualizationUtils import plotSaturation, heatmap
-
-    if len(cluster.labels_) > 1:
-        i = 0
         for label in cluster.labels_:
-            plot_data = data_values[label]
-            plotSaturation("Clusters"+str(i), plot_data, data_values[cluster.cluster_centers_indices_[i]],
-                           cluster.representation_[i], len(cluster.labels_[i]), i, subplot=False)
-            i += 1
+            total += len(label)
+        result = np.zeros((total, data_values.shape[1]))
+        result_index = np.zeros(total)
 
-            df = pd.DataFrame(plot_data)
-            df.to_csv("./csv/"+"cluster"+str(i)+".csv")
-            heatmap("./csv/"+"cluster"+str(i)+".csv", "cluster"+str(i))
-    else:
-        plotSaturation("Clusters", data_values, [],
-                       cluster.representation_[0], len(cluster.labels_[0]), 0, subplot=False)
+        cur_pos = 0
+
+        for i in range(len(cluster.labels_)):
+            result[cur_pos:cur_pos + len(cluster.labels_[i])] = data_values[cluster.labels_[i]]
+            result_index[cur_pos:cur_pos + len(cluster.labels_[i])] = i
+            cur_pos += len(cluster.labels_[i])
+        df = pd.DataFrame(result, index=result_index)
+        df.to_csv("./cluster_csv/" + pos_surfix + "_clusters.csv", sep="\t")
+
+        from visualizationUtils import plotSaturation, heatmap
+
+        if len(cluster.labels_) > 1:
+            i = 0
+            for label in cluster.labels_:
+                plot_data = data_values[label]
+                plotSaturation(pos_surfix + "_cluster" + str(i), plot_data,
+                               data_values[cluster.cluster_centers_indices_[i]],
+                               cluster.representation_[i], len(cluster.labels_[i]))
+                i += 1
+
+                df = pd.DataFrame(plot_data)
+                df.to_csv("./tempcsv/" + "cluster" + str(i) + ".csv")
+                heatmap("./tempcsv/" + "cluster" + str(i) + ".csv", pos_surfix + "_cluster" + str(i))
+        else:
+            plotSaturation(pos_surfix + "_cluster0", data_values, [],
+                           cluster.representation_[0], len(cluster.labels_[0]))
 
 
-    print cluster.predict(test_sample, assign_type='soft')
+if __name__ == "__main__":
+    # open a reference map
+
+    # group reference region
+
+    # cutoff the region's data
+    get_split_chr("chr3", 187450000, 187470000, cutoff=25)
+
+    # call cluster
+    region_cluster("./csv")

@@ -1,4 +1,5 @@
 import numpy as np, os, pandas as pd
+from collections import defaultdict
 
 
 def genome_size(path="/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt", step=10):
@@ -25,7 +26,6 @@ def genome_size_chrom(path="/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.t
     genome_size_file.close()
     return genome
 
-
 def get_split_chr(chr_name, start, end, vector_size=10000, step=10, merge=10, cutoff=100,
                   delimiter="\t", path="/home/tmhbxx3/archive/WigChrSplits"):
     if not path.endswith("/"):
@@ -33,6 +33,9 @@ def get_split_chr(chr_name, start, end, vector_size=10000, step=10, merge=10, cu
 
     if abs(start - end) >= vector_size*step*2:
         return
+
+    if not os.path.isdir("./csv"):
+        os.system("mkdir csv")
 
     output_path = path + chr_name + "_"
 
@@ -105,7 +108,7 @@ def get_split_chr(chr_name, start, end, vector_size=10000, step=10, merge=10, cu
     output_elements = [chr_name, str(start), str(end)]
     output = "_".join(output_elements)
 
-    df.to_csv(output + ".csv", sep=delimiter)
+    df.to_csv("./csv/" + output + ".csv", sep=delimiter)
 
     return result_array
 
@@ -152,7 +155,51 @@ def max_normalization(array, max_peak=500, axis=1):
     factors = max_peak / (np.amax(array, axis=axis)).reshape(n_sample, 1)
     return np.multiply(array, factors)
 
+def peak_combiner(peak_ref_map, combine_cut_off, step=10):
+    combine_cut_off = combine_cut_off/step
 
+    input_file = open(peak_ref_map, "r")
+
+    region_map = defaultdict(list)
+
+    start = None
+    end = None
+    chr_name = None
+    for line in input_file.readlines():
+        if line.startswith(">"):
+            if start is not None:
+                region_map[chr_name].append((start, end))
+            chr_name = line.rstrip()[1:]
+            start = None
+            end = None
+        else:
+            line = line.rstrip().split(",")
+            x, y = int(line[0]), int(line[1])
+            if start is None:
+                start = x
+                end = y
+            elif x - end <= combine_cut_off:
+                end = y
+            elif x - end > combine_cut_off:
+                region_map[chr_name].append((start, end))
+                start = x
+                end = y
+    if start is not None:
+        region_map[chr_name].append((start, end))
+
+    file_name = peak_ref_map[peak_ref_map.rfind("/")+1: peak_ref_map.rfind(".")]
+
+    input_path = peak_ref_map[:peak_ref_map.rfind("/")+1]
+
+    output_file = open(input_path+file_name+"_combined.csv", "r")
+
+    for key, value in region_map.iteritems():
+        output_file.write(">"+key+"\n")
+        for region in value:
+            output_file.write(region[0]+","+region[1]+"\n")
+    output_file.close()
+    return region_map
 
 if __name__ == "__main__":
-    get_split_chr("chr3", 187450000, 187470000, cutoff=20)
+    # get_split_chr("chr3", 187450000, 187470000, cutoff=25)
+    peak_combiner("/home/tmhbxx3/archive/25_refmap.csv", 4000)
