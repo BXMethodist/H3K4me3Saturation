@@ -444,7 +444,7 @@ def region_cluster(directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", aff
     if not os.path.isdir("./pictures"):
         os.system("mkdir pictures")
     if not os.path.isdir("./tempcsv"):
-        os.system("mkdir temcsv")
+        os.system("mkdir tempcsv")
     if not os.path.isdir("./cluster_csv"):
         os.system("mkdir cluster_csv")
 
