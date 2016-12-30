@@ -93,15 +93,22 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
     # find the most distinct pattern, if no distinct pattern is found, then return as one pattern
     # this is the initialization step
     distinct_index = np.argmin(affinity_matrix)
+
+    # print distinct_index
+    # print affinity_matrix
+
     min_distance = affinity_matrix.flat[distinct_index]
 
-    if min_distance > min_cutoff:
+    # print min_distance, type(min_distance)
+
+    if min_distance > min_cutoff or np.isnan(min_distance):
         # TO DO: return the entire samples as one cluster
         labels.append(np.arange(n_samples))
         representation = [np.mean(X, axis=0)]
         return cluster_centers_indices, labels, seeds, representation
 
     distinct_pairs = np.asarray(np.where(affinity_matrix == min_distance)).T
+
     distinct_set = remove_duplicate(distinct_pairs)
 
     if len(distinct_set) == 1:
@@ -165,6 +172,11 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
         if np.sum(frontiers) == n_samples:
             break
         n_iter += 1
+
+    if len(labels) == 0:
+        labels.append(np.arange(n_samples))
+        representation = [np.mean(X, axis=0)]
+        return cluster_centers_indices, labels, seeds, representation
 
     representation = [np.mean(X[label], axis=0) for label in labels]
     representation = np.asarray(representation)
@@ -387,7 +399,7 @@ class DistinctAffinityPropagation():
 
         # TO DO
         X = np.asarray(X)
-
+        # print X
         if mean_target:
             X = mean_normalization(X, target_signal=mean_target)
         if smooth_period:
@@ -440,7 +452,7 @@ class DistinctAffinityPropagation():
         elif assign_type == 'soft':
             return probabilities
 
-def region_cluster(directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", affinity=np.corrcoef):
+def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", affinity=np.corrcoef):
     if not os.path.isdir("./pictures"):
         os.system("mkdir pictures")
     if not os.path.isdir("./tempcsv"):
@@ -451,11 +463,13 @@ def region_cluster(directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", aff
     if not directory.endswith("/"):
         directory += "/"
 
-    list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")]
-
-    print list_files
+    if list_files is None:
+        list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")]
 
     for file_name in list_files:
+
+        print file_name
+
         cluster = DistinctAffinityPropagation(affinity)
         df = pd.read_csv(directory+file_name, sep="\t")
 
@@ -466,12 +480,15 @@ def region_cluster(directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", aff
         data_values = data[:, 1:].astype(np.float64)
         print data_values.shape
 
+        if data_values.shape[0] == 1:
+            continue
+
         cluster.fit(data_values, 0.8, 0.4)
 
         data_values = cluster.data
 
-        print cluster.cluster_centers_indices_
-        print [len(x) for x in cluster.labels_]
+        # print cluster.cluster_centers_indices_
+        # print [len(x) for x in cluster.labels_]
 
         np.set_printoptions(threshold=np.nan)
 
@@ -505,18 +522,21 @@ def region_cluster(directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", aff
                 # df = pd.DataFrame(plot_data)
                 # df.to_csv("./tempcsv/" + "cluster" + str(i) + ".csv")
                 # heatmap("./tempcsv/" + "cluster" + str(i) + ".csv", pos_surfix + "_cluster" + str(i))
+
+        ### TO DO:
         else:
+            # print cluster.representation_
+            # print "norm_X is ", cluster.data
             plotSaturation(pos_surfix + "_cluster0", data_values, [],
                            cluster.representation_[0], len(cluster.labels_[0]))
 
 
 if __name__ == "__main__":
     # open a reference map
+    # map_path ="/home/tmhbxx3/archive/25_refmap_combined.csv"
+    # finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
+    # files_read_for_clusters = get_map(map_path, finished_job=finished_job)
+    # region_cluster(list_files=files_read_for_clusters)
 
-    # group reference region
 
-    # cutoff the region's data
-    # get_split_chr("chr3", 187450000, 187470000, cutoff=25)
-
-    # call cluster
-    region_cluster()
+    region_cluster(directory="./csv")

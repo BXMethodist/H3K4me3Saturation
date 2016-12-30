@@ -4,6 +4,10 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 
+a = np.asarray([1,2,3])
+print a.shape[0]
+
+
 # a = np.asarray([[1,2,3,4,5,6,7,8,9,10,11,12], [1,2,3,4,5,6,7,8,9,10,11,12], [1,2,3,4,5,6,7,8,9,10,11,12]])
 #
 # a = a *[1,2,3]
@@ -15,14 +19,14 @@ import pandas as pd
 # # b = pd.rolling_mean(df, 3, center=True, min_periods=1)
 #
 # print df.rolling(window=2, center=True, axis=1).mean().values
-
-x1 = np.arange(12).reshape((3, 4))
-x2 = np.asarray([1,2,3]).reshape(3,1)
-print x1.shape
-
-print x2, x2.shape
-
-print np.multiply(x1, x2)
+#
+# x1 = np.arange(12).reshape((3, 4))
+# x2 = np.asarray([1,2,3]).reshape(3,1)
+# print x1.shape
+#
+# print x2, x2.shape
+#
+# print np.multiply(x1, x2)
 
 
 # a = [1,1,0, 0]

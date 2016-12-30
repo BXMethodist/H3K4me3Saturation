@@ -44,47 +44,46 @@ def get_split_chr(chr_name, start, end, vector_size=10000, step=10, merge=10, cu
     start_name = start - start % unit_size
     end_name = (end/unit_size)*unit_size + unit_size if end % unit_size != 0 else end
 
-    second_file = None
+    folder_names = []
 
-    if end_name - start_name == unit_size:
-        first_file = output_path + str(start_name) + "_" + str(end_name) + "_" + str(step)+ "/"
-    else:
-        first_file = output_path + str(start_name) + "_" + str(start_name + unit_size) + "_" + str(step) + "/"
-        second_file = output_path + str(start_name + unit_size) + "_" + str(end_name) + "_" + str(step) + "/"
+    while start_name != end_name:
+        folder_name = output_path + str(start_name) + "_" + str(start_name + unit_size) + "_" + str(step) + "/"
+        start_name += unit_size
+        folder_names.append(folder_name)
+        print folder_name
 
-    print first_file
-    print second_file
-
-    sample_number = len(os.listdir(first_file))
+    sample_number = len(os.listdir(folder_names[0]))
 
     sample_size = (end - start)/step if (end - start) % step == 0 else (end - start)/step + 1
 
     result_array = np.zeros((sample_number, sample_size))
 
-    if second_file is None:
-        start_index = (start - start_name)/step
-        end_index = (end - start_name)/step if (end - start_name) % step == 0 else (end - start_name)/step + 1
+    # print result_array.shape
 
-        file_names = os.listdir(first_file)
-        for i in range(len(file_names)):
-            cur_array = np.genfromtxt(first_file + file_names[i])
-            result_array[i, :] = cur_array[start_index:end_index]
-    else:
-        start_index = (start - start_name) / step
-        mid_index = vector_size - start_index
-        end_index = (end - start_name - unit_size)/step if (end - start_name - unit_size) % step == 0 \
-            else (end - start_name - unit_size)/step + 1
+    start_index = start % unit_size / step
+    end_index = end % unit_size/ step
+    output_index = 0
 
-        file_names = os.listdir(first_file)
-        for i in range(len(file_names)):
-            cur_array = np.genfromtxt(first_file + file_names[i])
+    for i in range(len(folder_names)):
+        if i == 0:
+            cur_start = start_index
+        else:
+            cur_start = 0
+        if i == len(folder_names) - 1:
+            cur_end = end_index
+        else:
+            cur_end = vector_size
 
-            result_array[i, 0:mid_index] = cur_array[start_index:]
+        # print cur_start, cur_end, output_index
 
-        file_names = os.listdir(second_file)
-        for i in range(len(file_names)):
-            cur_array = np.genfromtxt(second_file + file_names[i])
-            result_array[i, mid_index:] = cur_array[0:end_index]
+        file_names = os.listdir(folder_names[i])
+        for j in range(len(file_names)):
+            cur_array = np.genfromtxt(folder_names[i]+file_names[j])
+
+            # print cur_array.shape
+
+            result_array[j, output_index:output_index+cur_end-cur_start] = cur_array[cur_start:cur_end]
+        output_index += cur_end-cur_start
 
     # fileter out the data below the cutoff
     copy_result = result_array.copy()
@@ -103,14 +102,18 @@ def get_split_chr(chr_name, start, end, vector_size=10000, step=10, merge=10, cu
 
     ####
 
-    df = pd.DataFrame(result_array, index=sample_names)
+    if sample_number - len(row_to_delete) > 5:
 
-    output_elements = [chr_name, str(start), str(end)]
-    output = "_".join(output_elements)
+        df = pd.DataFrame(result_array, index=sample_names)
 
-    df.to_csv(path+"code/csv/" + output + ".csv", sep=delimiter)
+        output_elements = [chr_name, str(start), str(end)]
+        output = "_".join(output_elements)
 
-    return result_array
+        df.to_csv(path+"code/csv/" + output + ".csv", sep=delimiter)
+
+        return output+".csv"
+    else:
+        return None
 
 def quantile_normalization(array, axis=0):
     array = np.asarray(array)
@@ -200,24 +203,39 @@ def peak_combiner(peak_ref_map, combine_cut_off, step=10):
     output_file.close()
     return region_map
 
-def get_map(refmap, step=10, sep=","):
+def get_map(refmap, step=10, sep=",", finished_job=[]):
+    finished_job = set(finished_job)
+
     input_file = open(refmap, "r")
 
-    region_map = defaultdict(list)
-
+    files_read_for_cluster = []
     chr_name = None
+
+    region_map = defaultdict(list)
 
     for line in input_file.readlines():
         if line.startswith(">"):
             chr_name = line.rstrip()[1:]
         else:
             line = line.rstrip().split(sep)
-            start = int(line[0])*step
-            end = int(line[1])*step
-            get_split_chr(chr_name, start, end)
-    return
+            start = int(line[0]) * step
+            end = int(line[1]) * step
+            region_map[chr_name].append((start, end))
+
+    chr_name = "chr3"
+
+    for line in region_map[chr_name][0:1000]:
+        start, end = line
+
+        output_name = chr_name + "_" + str(start) + "_" + str(end) + ".csv"
+
+        if output_name not in finished_job:
+            file_name = get_split_chr(chr_name, start, end)
+            if file_name is not None:
+                files_read_for_cluster.append(file_name)
+    return files_read_for_cluster
 
 if __name__ == "__main__":
-    get_split_chr("chr3", 187450000, 187470000, cutoff=25)
+    get_split_chr("chr3", 122562770, 122562820, cutoff=25)
     # peak_combiner("/home/tmhbxx3/archive/25_refmap.csv", 4000)
     pass
