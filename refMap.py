@@ -2,7 +2,7 @@ import numpy as np
 import os
 import csv
 import matplotlib.pyplot as plt
-from clusterUtils import *
+from refMapUtils import *
 
 class refMap:
     ### take a directory of wig files, generate reference map
@@ -35,6 +35,7 @@ class refMap:
             if height >= cutoff:
                 if chrName in self.genome:
                     self.genome[chrName][start - 1:end] = 1
+        file.close()
         totalCoverage = 0
         totalIsland = 0
 

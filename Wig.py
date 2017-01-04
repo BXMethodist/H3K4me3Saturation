@@ -94,6 +94,12 @@ class Wig:
                                         + "_" + end + "_" + step + ".txt"
                 np.savetxt(output_file_name, value, delimiter=",")
 
+    def get_coverage(self, cutoff):
+        coverage = 0
+        for chr_name, chromosome in self.genome.items():
+            coverage += (chromosome.signals>=cutoff).sum() * chromosome.step
+        return coverage
+
 
 
 

@@ -8,9 +8,9 @@ from time import time
 refMap = refMap(1)
 # start = time()
 
-cutoffs = [25]
+cutoffs = [50, 100, 200, 400]
 
-wigPath = "/archive/tmhkxc48/BroadH3K4me3/broadpeak201401/H3K4me3/dregion/pooled/"
+# wigPath = "/archive/tmhkxc48/BroadH3K4me3/broadpeak201401/H3K4me3/dregion/pooled/"
 
 kfPath = "/home/tmhbxx3/archive/KaifuH3K4me3Fnor"
 
