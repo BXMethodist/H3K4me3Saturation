@@ -26,7 +26,7 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     ax.plot(np.arange(array.shape[1]), rep, linewidth=0.5)
 
     if original_seed != []:
-        ax.set_color_cycle(['green'])
+        ax.set_color_cycle(['blue'])
         ax.plot(np.arange(array.shape[1]), original_seed, linewidth=0.5)
     # if verbose:
     #     legend = ax.legend(parameters, loc='center right', bbox_to_anchor=(1.3, 0.5))
