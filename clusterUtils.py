@@ -221,6 +221,11 @@ def get_map(refmap, step=10, sep=",", finished_job=[]):
     return files_read_for_cluster
 
 if __name__ == "__main__":
-    get_split_chr("chr3", 122562770, 122562820, cutoff=25)
-    # peak_combiner("/home/tmhbxx3/archive/25_refmap.csv", 4000)
-    pass
+    # get_split_chr("chr3", 122562770, 122562820, cutoff=25)
+
+    prefix = "/home/tmhbxx3/archive/refmap_saturation/code/"
+    surffix = "_refmap.csv"
+    cutoffs = [25, 50, 100, 200, 400]
+    for cutoff in cutoffs:
+        path = prefix + str(cutoff) + surffix
+        peak_combiner(path, 2000)

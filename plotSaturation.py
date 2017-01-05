@@ -29,7 +29,7 @@ def add_subplot_axes(ax,rect,axisbg='w'):
     return subax
 
 
-def plotSaturation(title, array, parameters, n, subplot=True):
+def plotSaturation(title, array, parameters, n, subplot=True, x_reverse=False, diagonal=False, plot_legend=False):
 
     fig = plt.figure(n)
     ax = fig.add_subplot(111)
@@ -43,24 +43,43 @@ def plotSaturation(title, array, parameters, n, subplot=True):
     ax.plot(array[:, 0], array[:, 1:], linewidth=2.0)
     # ax.plot(array, linewidth=2.0)
 
-    ax.set_title(title+" VS Sample Number", fontname="Times New Roman")
-    ax.set_xlabel("Number of H3K4me3 Chip-Seq Sample", fontname="Times New Roman")
-    ax.set_ylabel(title, fontname="Times New Roman")
+    # ax.set_title(title+" VS Sample Number", fontname="Times New Roman")
+    # ax.set_xlabel("Number of H3K4me3 Chip-Seq Sample", fontname="Times New Roman")
+    # ax.set_ylabel(title, fontname="Times New Roman")
 
-    legend = ax.legend(parameters, loc='center right', bbox_to_anchor=(1.3, 0.5))
+    ax.set_title(title, fontname="Times New Roman")
+    ax.set_xlabel("Cutoff", fontname="Times New Roman")
+    ax.set_ylabel("Coverage", fontname="Times New Roman")
+
+    if plot_legend:
+        legend = ax.legend(parameters, loc='center right', bbox_to_anchor=(1.3, 0.5))
 
     if subplot:
         inside_ax = inset_axes(ax,
                                 width="35%",  # width = 30% of parent_bbox
                                 height="35%",  # height : 1 inch
                                 loc=5)
-        inside_ax.set_color_cycle([cm(1. * i / len(parameters)) for i in range(3, len(parameters))])
-        inside_ax.plot(array[:, 0], array[:, 4:], linewidth=2.0)
+        inside_ax.set_color_cycle([cm(1. * i / len(parameters)) for i in range(0, len(parameters))])
+
+        if x_reverse:
+            inside_ax.set_xlim(ax.get_xlim()[::-1])
+
+        inside_ax.plot(array[20:, 0], array[20:, 1:], linewidth=2.0)
 
         inside_ax.tick_params(labelsize=10)
 
-    fig.savefig("./"+title, dpi=600, facecolor='w', edgecolor='w',
-                orientation='portrait', bbox_extra_artists=(legend,), bbox_inches='tight')
+    if x_reverse:
+        ax.set_xlim(ax.get_xlim()[::-1])
+
+    if diagonal:
+        ax.plot(array[:, 0], array[:, 0], linewidth=2.0, color="orange")
+
+    if plot_legend:
+        fig.savefig("./pictures/"+title, dpi=600, facecolor='w', edgecolor='w',
+                    orientation='portrait', bbox_extra_artists=(legend,), bbox_inches='tight')
+    else:
+        fig.savefig("./pictures/" + title, dpi=600, facecolor='w', edgecolor='w',
+                    orientation='portrait')
 
 
 def csvFiles():

@@ -100,6 +100,26 @@ class Wig:
             coverage += (chromosome.signals>=cutoff).sum() * chromosome.step
         return coverage
 
+    def get_avg_peak_size(self, cutoff):
+        coverage = self.get_coverage(cutoff)
+        peak_number = self.get_peak_number(cutoff)
+        return coverage/peak_number
+
+    def get_peak_number(self, cutoff):
+        peak_number = 0
+        for chr_name, chromosome in self.genome.items():
+            peak_map = np.zeros(chromosome.signals.shape[0])
+            peak_map[chromosome.signals>=cutoff] = 1
+            sign = ((np.roll(peak_map, 1) - peak_map) != 0).astype(int)
+            sign[0] = 0
+            islandNumber = np.sum(sign)
+            if peak_map[0] == 1:
+                islandNumber += 1
+            if peak_map[-1] == 1:
+                islandNumber += 1
+            peak_number += islandNumber / 2
+        return peak_number
+
 
 
 
