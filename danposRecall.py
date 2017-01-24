@@ -1,45 +1,35 @@
-# This is one is to call Danpos to run dpeak with different peak height cutoff
 
 
 import os
 
+def danposRecall(k, cutoff):
+    wigPath = "/archive/tmhkxc48/BroadH3K4me3/broadpeak201401/H3K4me3/dregion/pooled/"
 
-# def danposRecall(k, cutoff):
-#     wigPath = "/archive/tmhkxc48/BroadH3K4me3/broadpeak201401/H3K4me3/dregion/pooled/"
-#
-#     wigFiles = [path for path in os.listdir(wigPath) if path.endswith("wig")]
-#
-#
-#     n = 0
-#     for wig in wigFiles:
-#         if 180*k <=n< 180*(k+1):
-#             cmd = "python /archive/tmhkxc48/tools/danposTemp/danpos.py dpeak "+wigPath+wig+" -q "+str(cutoff)+" -f 0 -z 0 -o /home/tmhbxx3/archive/KFH3K4me3/"+str(cutoff)+"cutoff"
-#             os.system(cmd)
-#         n+=1
+    wigFiles = [path for path in os.listdir(wigPath) if path.endswith("wig")]
 
+    n = 0
+    m = 0
 
+    finishedjob = os.listdir("/home/tmhbxx3/archive/KFH3K4me3/" + str(cutoff) + "cutoff/pooled")
+    finishedjob = [x.replace("archive_tmhkxc48_BroadH3K4me3_broadpeak201401_H3K4me3_dregion_pooled_", "") for x in
+                   finishedjob]
+    finishedjob = [x.replace(".peaks.xls", ".wig") for x in finishedjob]
 
+    finishedjob = set(finishedjob)
 
-# danposRecall(1, 500)
+    for wig in wigFiles:
+        if k*60 <=n <= (k+1)*60:
+            if wig not in finishedjob:
+                cmd = "python /archive/tmhkxc48/tools/danposTemp/danpos.py dpeak "+wigPath+wig+" -q "+str(cutoff)+" -f 0 -z 0 -o /home/tmhbxx3/archive/KFH3K4me3/"+str(cutoff)+"cutoff"
+                #os.system(cmd)
+                #print cmd
+                m +=1
+                print wig
+        n+=1
+    print m
 
-# bed1 = "/archive/tmhkxc48/BroadH3K4me3/test/ENCFF218WSN.chr21.bed"
-# bed2 = "/archive/tmhkxc48/BroadH3K4me3/test/ENCFF621OIP.chr21.bed"
-#
-#
-# cmd1 = "python /archive/tmhkxc48/tools/danposTemp/danpos.py dpeak "
-# cmd2 = " -c 400000 --extend 200 --frsz 200 -q "
-#
-#
-# for i in range(10, 310, 10):
-#     os.system("mkdir "+str(i))
-#
-#     cmd = cmd1 + bed1 + cmd2 + str(i) +" -o /home/tmhbxx3/archive/test/"+str(i)
-#     os.system(cmd)
-#
-#     cmd = cmd1 + bed2 + cmd2 + str(i) +" -o /home/tmhbxx3/archive/test/"+str(i)
-#     os.system(cmd)
-
-
+if __name__ == "__main__":
+    danposRecall(0, 90)
 
 
 

@@ -70,16 +70,66 @@ import os
 #
 # fig.savefig("./pictures/chr21", dpi=600, facecolor='w', edgecolor='w',
 #                 orientation='portrait')
+#
+# peak_map = [0,1,0,0,0,1,1,0,0,1,0]
+# peak_map = np.asarray(peak_map)
+#
+#
+# sign = ((np.roll(peak_map, 1) - peak_map) != 0).astype(int)
+# sign[0] = 0
+# islandNumber = np.sum(sign)
+# if peak_map[0] == 1:
+#     islandNumber += 1
+# if peak_map[-1] == 1:
+#     islandNumber += 1
+# print islandNumber/2
 
-peak_map = [0,1,0,0,0,1,1,0,0,1,0]
-peak_map = np.asarray(peak_map)
+import pandas as pd, numpy as np
+import matplotlib.pyplot as plt
+
+plt.xlim((0,340))
+
+df = pd.read_csv("chr3_clusters_count.csv", sep=",", index_col=0)
+
+result = {}
+for i in range(5):
+    result[i+1] ={}
+    for j in range(5,338):
+        result[i+1][j]=0
+
+for i in range(0, 5):
+    cur_values = df[df["#Cluster"]==i+1]['#sample_enriched'].values
+    for value in cur_values:
+        result[i+1][value]+=1
+    # print result[i+1]
 
 
-sign = ((np.roll(peak_map, 1) - peak_map) != 0).astype(int)
-sign[0] = 0
-islandNumber = np.sum(sign)
-if peak_map[0] == 1:
-    islandNumber += 1
-if peak_map[-1] == 1:
-    islandNumber += 1
-print islandNumber/2
+
+new_df = pd.DataFrame(result)
+
+new_df.columns =['1','2','3','4','5']
+
+for i in range(1,6):
+    new_df[str(i)] = new_df[str(i)].cumsum()/new_df[str(i)].sum()
+
+
+
+print new_df
+
+plot = new_df.plot(x=new_df.index, xlim=(0,340), colormap='prism', title='Number of Enriched Samples vs Number of Clusters')
+fig = plot.get_figure()
+
+fig.savefig("output.png")
+
+
+# print df['#Sample_Clustered'].sum()
+
+
+# df['cum_sum_sample_clustered'] = np.cumsum(df['#Sample_Clustered'].values)*1.0/df['#Sample_Clustered'].sum()
+#
+# import matplotlib.pyplot as plt
+#
+# plt.scatter(df['#Cluster'], df['#Sample_Clustered'], c=df['#Cluster'], cmap='prism', edgecolors='gray')
+# plt.xlim((0,6))
+# plt.ylim((0,340))
+# plt.show()

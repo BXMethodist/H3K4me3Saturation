@@ -85,21 +85,10 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
 
     if S.shape[0] != S.shape[1]:
         raise ValueError("S must be a square array (shape=%s)" % repr(S.shape))
-    # if preference is not None:
-    #     first_distinct = preference
-    # if damping < 0.5 or damping >= 1:
-    #     raise ValueError('damping must be >= 0.5 and < 1')
 
-    # find the most distinct pattern, if no distinct pattern is found, then return as one pattern
-    # this is the initialization step
     distinct_index = np.argmin(affinity_matrix)
 
-    # print distinct_index
-    # print affinity_matrix
-
     min_distance = affinity_matrix.flat[distinct_index]
-
-    # print min_distance, type(min_distance)
 
     if min_distance > min_cutoff or np.isnan(min_distance):
         # TO DO: return the entire samples as one cluster
@@ -114,10 +103,7 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
     if len(distinct_set) == 1:
         first_distinct = distinct_set[0]
     else:
-        # print "more than one pair are very different!"
         first_distinct = most_different_pair(X, distinct_set)
-
-    # print first_distinct
 
     for i in range(len(first_distinct)):
         affinity_x = affinity_matrix[first_distinct[i], :]
@@ -506,6 +492,8 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
             result_index[cur_pos:cur_pos + len(cluster.labels_[i])] = i
             cur_pos += len(cluster.labels_[i])
         df = pd.DataFrame(result, index=result_index)
+
+        #save the cluster information after normalization
         df.to_csv("./cluster_csv/" + pos_surfix + "_clusters.csv", sep="\t")
 
         from visualizationUtils import plotSaturation #, heatmap

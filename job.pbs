@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -r n
-#PBS -N wig_spliter
+#PBS -N tophat
 #PBS -q mediummem
 #PBS -o output.out
 #PBS -e error.err
@@ -9,9 +9,9 @@
 #PBS -l walltime=96:00:00
 #PBS -l nodes=1:ppn=1
 #PBS -l pmem=16000mb
-cd /home/tmhbxx3/archive/test
+
+cd /home/tmhbxx3/archive/ec_vs_hsc/bamfiles
 
 module load python/2.7.11
-module load /archive/tmhkxc48/tools/danposTemp/danpos.py
 
-python ./test.py
+python ./tophat.py
