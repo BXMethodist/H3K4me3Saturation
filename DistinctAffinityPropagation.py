@@ -86,38 +86,39 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
     if S.shape[0] != S.shape[1]:
         raise ValueError("S must be a square array (shape=%s)" % repr(S.shape))
 
-    distinct_index = np.argmin(affinity_matrix)
+    while len(cluster_centers_indices) == 0:
+        distinct_index = np.argmin(affinity_matrix)
 
-    min_distance = affinity_matrix.flat[distinct_index]
+        min_distance = affinity_matrix.flat[distinct_index]
 
-    if min_distance > min_cutoff or np.isnan(min_distance):
-        # TO DO: return the entire samples as one cluster
-        labels.append(np.arange(n_samples))
-        representation = [np.mean(X, axis=0)]
-        return cluster_centers_indices, labels, seeds, representation
+        if min_distance > min_cutoff or np.isnan(min_distance):
+            # TO DO: return the entire samples as one cluster
+            labels.append(np.arange(n_samples))
+            representation = [np.mean(X, axis=0)]
+            return cluster_centers_indices, labels, seeds, representation
 
-    distinct_pairs = np.asarray(np.where(affinity_matrix == min_distance)).T
+        distinct_pairs = np.asarray(np.where(affinity_matrix == min_distance)).T
 
-    distinct_set = remove_duplicate(distinct_pairs)
+        distinct_set = remove_duplicate(distinct_pairs)
 
-    if len(distinct_set) == 1:
-        first_distinct = distinct_set[0]
-    else:
-        first_distinct = most_different_pair(X, distinct_set)
-
-    for i in range(len(first_distinct)):
-        affinity_x = affinity_matrix[first_distinct[i], :]
-        cluster_x = np.intersect1d(np.where(affinity_x > max_cutoff), np.where(affinity_x <= 1))
-        if len(cluster_x) >= 5:
-            labels.append(cluster_x)
-            cluster_centers_indices.append(first_distinct[i])
-            seeds.append(X[first_distinct[i]])
-
-            frontiers[cluster_x] = 1
-            affinity_matrix[cluster_x, :] = float("inf")
-            affinity_matrix[:, cluster_x] = float("inf")
+        if len(distinct_set) == 1:
+            first_distinct = distinct_set[0]
         else:
-            frontiers[first_distinct[i]] = 1
+            first_distinct = most_different_pair(X, distinct_set)
+
+        for i in range(len(first_distinct)):
+            affinity_x = affinity_matrix[first_distinct[i], :]
+            cluster_x = np.intersect1d(np.where(affinity_x > max_cutoff), np.where(affinity_x <= 1))
+            if len(cluster_x) >= 5:
+                labels.append(cluster_x)
+                cluster_centers_indices.append(first_distinct[i])
+                seeds.append(X[first_distinct[i]])
+
+                frontiers[cluster_x] = 1
+                affinity_matrix[cluster_x, :] = float("inf")
+                affinity_matrix[:, cluster_x] = float("inf")
+            else:
+                frontiers[first_distinct[i]] = 1
 
     while True and n_iter < max_iter:
         samples_left = np.where(frontiers==0)[0]
@@ -134,7 +135,7 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
             break
         elif len(new_centers) > 1:
             # TO DO: create new function to get better performance
-            best_new_center = accumulate_selecter(X, cluster_centers_indices, new_centers)
+            best_new_center = accumulate_selecter(X, cluster_centers_indices, new_centers, S)
         else:
             best_new_center = new_centers[0]
 
@@ -260,7 +261,7 @@ def most_different_pair(X, pairs):
 
     return distinct_pair
 
-def accumulate_selecter(samples, cluster_centers_indices, candidates):
+def accumulate_selecter(samples, cluster_centers_indices, candidates, affinity_matrix):
     """Make sure the new cluster are also very different with the old ones.
 
                 Parameters
@@ -268,7 +269,7 @@ def accumulate_selecter(samples, cluster_centers_indices, candidates):
                 samples: ndarray, (nsample, nfeatures)
                 cluster_centers_indices: existing clusters index
                 candidates: potential new cluster index
-
+                affinity_matrix: distance matrix for all the samples, original one, not modified.
                 Return
                 ----------
                 the most distinct candidates
@@ -279,6 +280,41 @@ def accumulate_selecter(samples, cluster_centers_indices, candidates):
                 References
                 ----------
                 """
+    best_candidates = []
+    min_dis = None
+    for candidate in candidates:
+        cur_best = np.max(affinity_matrix[candidate, cluster_centers_indices])
+        if min_dis is None:
+            min_dis = cur_best
+            best_candidates.append(candidate)
+        elif min_dis == cur_best:
+            best_candidates.append(candidate)
+        elif min_dis > cur_best:
+            min_dis = cur_best
+            best_candidates = [candidate]
+    if len(best_candidates) == 1:
+        return best_candidates[0]
+
+    candidates = best_candidates
+
+    best_candidates_total_dis = []
+    total_dis = None
+    for candidate in candidates:
+        cur_best = np.sum(affinity_matrix[candidate, cluster_centers_indices])
+        if total_dis is None:
+            total_dis = cur_best
+            best_candidates_total_dis.append(candidate)
+        elif total_dis == cur_best:
+            best_candidates_total_dis.append(candidate)
+        elif total_dis > cur_best:
+            total_dis = cur_best
+            best_candidates_total_dis = [candidate]
+
+    if len(best_candidates_total_dis) == 1:
+        return best_candidates_total_dis[0]
+
+    candidates = best_candidates_total_dis
+
     max_distance = float("-inf")
     best_candidate = None
     for candidate in candidates:
