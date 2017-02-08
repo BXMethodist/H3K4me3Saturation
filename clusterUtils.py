@@ -3,6 +3,10 @@ from collections import defaultdict
 
 
 def genome_size_chrom(path="/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt"):
+    """
+    :param path: the location where is the genome size file
+    :return: a dictionary in which key is the chromosome name (str), value is the chromosome size (int)
+    """
     genome = {}
     genome_size_file = open(path, "r")
     for line in genome_size_file.readlines():
@@ -11,8 +15,21 @@ def genome_size_chrom(path="/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.t
     genome_size_file.close()
     return genome
 
+
 def get_split_chr(chr_name, start, end, vector_size=10000, step=10, merge=10, cutoff=25,
                   delimiter="\t", path="/home/tmhbxx3/archive/WigChrSplits"):
+    """
+    :param chr_name: name of the chromosome
+    :param start: start position, number before step/bin
+    :param end: end position, number before step/bin
+    :param vector_size: default is 10000, this is decided by how you store the splitted wig files
+    :param step: bin size, default is 10.
+    :param merge: the number of bin want to merge, currently is not implemented
+    :param cutoff: currently is 25. The signal cutoff.
+    :param delimiter: the delimiter when splitted wig files used
+    :param path: where the splitted wig files are stored
+    :return: the output filename (without directory)
+    """
     if not path.endswith("/"):
         path += "/"
 
@@ -100,7 +117,13 @@ def get_split_chr(chr_name, start, end, vector_size=10000, step=10, merge=10, cu
     else:
         return None
 
+
 def quantile_normalization(array, axis=0):
+    """
+    :param array: a numpy array, row is the sample, column is the index in specific reference peak
+    :param axis: Normalization axis
+    :return: numpy array
+    """
     array = np.asarray(array)
     if axis == 0:
         array = array.T
@@ -119,7 +142,14 @@ def quantile_normalization(array, axis=0):
     elif axis == 1:
         return result
 
+
 def mean_normalization(array, axis=1, target_signal=200):
+    """
+    :param array:  numpy array
+    :param axis: normalize axis
+    :param target_signal: target mean, normalize all samples' mean to the target
+    :return: numpy array
+    """
     if array.ndim == 1:
         print "please convert to samples as array, shape (n_samples, ) which is 2d array"
         return
@@ -131,10 +161,23 @@ def mean_normalization(array, axis=1, target_signal=200):
 
 
 def smooth_normalization(array, smooth=20, axis=1):
+    """
+    :param array: numpy array
+    :param smooth: smooth target, note this is value after step which means 20 is actually 200 bp.
+    :param axis:
+    :return: numpy array
+    """
     df = pd.DataFrame(array)
     return df.rolling(min_periods=1, window=smooth, center=True, axis=axis).mean().values
 
+
 def max_normalization(array, max_peak=500, axis=1):
+    """
+    :param array: numpy array
+    :param max_peak: normalize the maximum summit in all the sample to the same max_peak target.
+    :param axis:
+    :return: numpy array
+    """
     if array.ndim == 1:
         print "please convert to samples as array, shape (n_samples, ) which is 2d array"
         return
@@ -143,7 +186,16 @@ def max_normalization(array, max_peak=500, axis=1):
     factors = max_peak / (np.amax(array, axis=axis)).reshape(n_sample, 1)
     return np.multiply(array, factors)
 
+
 def peak_combiner(peak_ref_map, combine_cut_off, step=10):
+    """
+    TO DO: the logic for recombine the peak need to be redefined, currently, the region are combined too much
+
+    :param peak_ref_map: a reference map containing chromosome name, start, end
+    :param combine_cut_off: the cut_off of combining peak
+    :param step: bin/step size
+    :return: a combined reference map
+    """
     combine_cut_off = combine_cut_off/step
 
     input_file = open(peak_ref_map, "r")
@@ -188,7 +240,16 @@ def peak_combiner(peak_ref_map, combine_cut_off, step=10):
     output_file.close()
     return region_map
 
-def get_map(refmap, step=10, sep=",", finished_job=[]):
+
+def get_map(refmap, step=10, sep=",", finished_job=()):
+    """
+    Currently restrict to chr3
+    :param refmap: the txt file containing the reference map, with chromosome name, start, end (value after step)
+    :param step: step/bin size
+    :param sep:
+    :param finished_job: finished job names
+    :return: the file names of the reference peak cluster table file name
+    """
     finished_job = set(finished_job)
 
     input_file = open(refmap, "r")
@@ -219,6 +280,7 @@ def get_map(refmap, step=10, sep=",", finished_job=[]):
             if file_name is not None:
                 files_read_for_cluster.append(file_name)
     return files_read_for_cluster
+
 
 if __name__ == "__main__":
     # get_split_chr("chr3", 122562770, 122562820, cutoff=25)

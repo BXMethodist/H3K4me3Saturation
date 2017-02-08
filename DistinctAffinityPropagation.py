@@ -474,6 +474,7 @@ class DistinctAffinityPropagation():
         elif assign_type == 'soft':
             return probabilities
 
+
 def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", affinity=np.corrcoef):
     if not os.path.isdir("./pictures"):
         os.system("mkdir pictures")
@@ -489,9 +490,6 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
         list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")]
 
     for file_name in list_files:
-
-        print file_name
-
         cluster = DistinctAffinityPropagation(affinity)
         df = pd.read_csv(directory+file_name, sep="\t")
 
@@ -500,7 +498,6 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
         data = df.as_matrix()
         # sample_names = data[:, 0]
         data_values = data[:, 1:].astype(np.float64)
-        print data_values.shape
 
         if data_values.shape[0] == 1:
             continue
