@@ -554,10 +554,10 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
 if __name__ == "__main__":
     # open a reference map
-    # map_path ="./csv"
-    # finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
-    # files_read_for_clusters = get_map(map_path, finished_job=finished_job)
-    region_cluster(list_files=['csv/chr3_187450000_187470000.csv'], directory="./")
+    map_path ="./75_refmap_combined.csv"
+    finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
+    files_read_for_clusters = get_map(map_path, finished_job=finished_job)
+    # region_cluster(list_files=['csv/chr3_187450000_187470000.csv'], directory="./")
 
 
     # region_cluster(directory="./csv")

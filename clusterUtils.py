@@ -196,34 +196,46 @@ def peak_combiner(peak_ref_map, combine_cut_off, step=10):
     :param step: bin/step size
     :return: a combined reference map
     """
+    n= 0
     combine_cut_off = combine_cut_off/step
-
     input_file = open(peak_ref_map, "r")
-
     region_map = defaultdict(list)
 
     start = None
     end = None
     chr_name = None
+    max_peak = None
     for line in input_file.readlines():
         if line.startswith(">"):
             if start is not None:
                 region_map[chr_name].append((start, end))
+                n +=1
             chr_name = line.rstrip()[1:]
             start = None
             end = None
+            max_peak = None
         else:
             line = line.rstrip().split(",")
             x, y = int(line[0]), int(line[1])
+            cur_peak_width = y - x
+
             if start is None:
                 start = x
                 end = y
-            elif x - end <= combine_cut_off:
+                max_peak = y - x
+            elif x - end <= combine_cut_off and x - end <= max_peak:
                 end = y
-            elif x - end > combine_cut_off:
+                if cur_peak_width > max_peak:
+                    max_peak = cur_peak_width
+            elif x - end > combine_cut_off or x - end > max_peak:
                 region_map[chr_name].append((start, end))
+                n += 1
                 start = x
                 end = y
+                max_peak = y - x
+    print n
+    input_file.close()
+
     if start is not None:
         region_map[chr_name].append((start, end))
 
@@ -264,6 +276,7 @@ def get_map(refmap, step=10, sep=",", finished_job=()):
             chr_name = line.rstrip()[1:]
         else:
             line = line.rstrip().split(sep)
+            print line
             start = int(line[0]) * step
             end = int(line[1]) * step
             region_map[chr_name].append((start, end))
@@ -285,9 +298,9 @@ def get_map(refmap, step=10, sep=",", finished_job=()):
 if __name__ == "__main__":
     # get_split_chr("chr3", 122562770, 122562820, cutoff=25)
 
-    prefix = "/home/tmhbxx3/archive/refmap_saturation/code/"
+    # prefix = "/home/tmhbxx3/archive/refmap_saturation/code/"
     surffix = "_refmap.csv"
-    cutoffs = [25, 50, 100, 200, 400]
+    cutoffs = [75, 100]
     for cutoff in cutoffs:
-        path = prefix + str(cutoff) + surffix
-        peak_combiner(path, 2000)
+        path = str(cutoff) + surffix
+        peak_combiner(path, 1000)
