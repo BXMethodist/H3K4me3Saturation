@@ -441,39 +441,6 @@ class DistinctAffinityPropagation():
 
         return self
 
-    def predict(self, X, assign_type="hard"):
-        """Predict the closest cluster each sample in X belongs to.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape (n_samples, n_features)
-            New data to predict.
-
-        Returns
-        -------
-        labels : array, shape (n_samples,)
-            Index of the cluster each sample belongs to. if the assignment type is 'hard'
-        probablity: array, shape(n_samples, n_probablities) if the assignment type is 'soft'
-        """
-
-        ## TO DO This need to be revised
-
-        X = np.asarray(X)
-        if X.ndim == 1:
-            print "please convert to samples as array, shape (n_samples, ) which is 2d array"
-            return
-
-        probabilities = np.zeros((X.shape[0], len(self.labels_)))
-        for i in range(X.shape[0]):
-            sample = X[i, :]
-            prob = cosine_similarity(self.representation_, sample).T
-            prob = prob/np.sum(prob)
-            probabilities[i, :] = prob
-        if assign_type == 'hard':
-            return np.argmax(probabilities, axis=1)
-        elif assign_type == 'soft':
-            return probabilities
-
 
 def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", affinity=np.corrcoef):
     if not os.path.isdir("./pictures"):
@@ -554,10 +521,10 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
 if __name__ == "__main__":
     # open a reference map
-    map_path ="./75_refmap_combined.csv"
-    finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
-    files_read_for_clusters = get_map(map_path, finished_job=finished_job)
-    # region_cluster(list_files=['csv/chr3_187450000_187470000.csv'], directory="./")
+    # map_path ="./75_refmap_combined.csv"
+    # finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
+    # files_read_for_clusters = get_map(map_path, finished_job=finished_job)
+    region_cluster(list_files=['csv/chr3_187450000_187470000.csv'], directory="./")
 
 
     # region_cluster(directory="./csv")

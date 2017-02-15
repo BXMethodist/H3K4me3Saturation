@@ -24,10 +24,18 @@ def plotSaturation(title, array, original_seed, rep, parameters):
 
     ax.set_color_cycle(['red'])
     ax.plot(np.arange(array.shape[1]), rep, linewidth=0.5)
+    peaks = rep.copy()
+    peaks[peaks > 200] = 200
+    peaks[peaks < 200] = 0
+    # ax.set_color_cycle(['grey'])
+    # ax.plot(np.arange(array.shape[1]), peaks, linewidth=0.5)
+    plt.fill_between(np.arange(array.shape[1]), peaks, color='red')
 
     if original_seed != []:
         ax.set_color_cycle(['blue'])
         ax.plot(np.arange(array.shape[1]), original_seed, linewidth=0.5)
+
+
     # if verbose:
     #     legend = ax.legend(parameters, loc='center right', bbox_to_anchor=(1.3, 0.5))
 
