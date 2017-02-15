@@ -1,4 +1,4 @@
-class peak():
+class region():
     """
     Store the inforamtion of a reference peak:
         Parameters
@@ -17,10 +17,12 @@ class peak():
         step
         """
 
-    def __init__(self, chromosome, start, end, signals, step=10):
+    def __init__(self, chromosome, start, end, signals, peaks, step=10, cutoff=200):
         self.chromosome = chromosome
         self.start = start
         self.end = end
         self.signals = signals
         self.step = step
+        self.peaks = peaks
+        self.cutoff = cutoff
 

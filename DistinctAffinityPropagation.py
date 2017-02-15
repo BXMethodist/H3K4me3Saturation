@@ -456,6 +456,8 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
     if list_files is None:
         list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")]
 
+    regions = defaultdict(set)
+
     for file_name in list_files:
         cluster = DistinctAffinityPropagation(affinity)
         df = pd.read_csv(directory+file_name, sep="\t")
@@ -497,16 +499,15 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
         df.to_csv("./cluster_csv/" + pos_surfix + "_clusters.csv", sep="\t")
 
         from visualizationUtils import plotSaturation #, heatmap
-
         if len(cluster.labels_) > 1:
             i = 0
             for label in cluster.labels_:
                 plot_data = data_values[label]
-                plotSaturation(pos_surfix + "_cluster" + str(i), plot_data,
+                region = plotSaturation(pos_surfix + "_cluster" + str(i), plot_data,
                                data_values[cluster.cluster_centers_indices_[i]],
                                cluster.representation_[i], len(cluster.labels_[i]))
                 i += 1
-
+                regions[(region.chromosome, region.start, region.end)].add(region)
                 # df = pd.DataFrame(plot_data)chr3_187450000_187470000.csv
                 # df.to_csv("./tempcsv/" + "cluster" + str(i) + ".csv")
                 # heatmap("./tempcsv/" + "cluster" + str(i) + ".csv", pos_surfix + "_cluster" + str(i))
@@ -515,16 +516,22 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
         else:
             # print cluster.representation_
             # print "norm_X is ", cluster.data
-            plotSaturation(pos_surfix + "_cluster0", data_values, [],
+            region = plotSaturation(pos_surfix + "_cluster0", data_values, [],
                            cluster.representation_[0], len(cluster.labels_[0]))
+            regions[(region.chromosome, region.start, region.end)].add(region)
+    return regions
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # open a reference map
     # map_path ="./75_refmap_combined.csv"
     # finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
     # files_read_for_clusters = get_map(map_path, finished_job=finished_job)
-    region_cluster(list_files=['csv/chr3_187450000_187470000.csv'], directory="./")
+regions = region_cluster()
 
+import pickle
+
+with open('chr3_75refmap_regions' + '.pkl', 'wb') as f:
+    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
 
     # region_cluster(directory="./csv")

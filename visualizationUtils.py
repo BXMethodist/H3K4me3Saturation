@@ -7,6 +7,7 @@ import pandas as pd
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
 from scipy.spatial.distance import pdist,squareform
 from scipy.cluster.hierarchy import linkage
+from region import region
 # import rpy2.robjects as robjects
 
 
@@ -31,6 +32,10 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     # ax.plot(np.arange(array.shape[1]), peaks, linewidth=0.5)
     plt.fill_between(np.arange(array.shape[1]), peaks, color='red')
 
+    chromosome, start, end = title.split("_")[:-1]
+
+    refregion = region(chromosome, start, end, signals=rep, peaks=peaks)
+
     if original_seed != []:
         ax.set_color_cycle(['blue'])
         ax.plot(np.arange(array.shape[1]), original_seed, linewidth=0.5)
@@ -42,6 +47,7 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     fig.savefig("./pictures/"+title, dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
 
+    return refregion
 
 # def heatmap(path, name):
 #     # df = pd.DataFrame(array, index=index)
