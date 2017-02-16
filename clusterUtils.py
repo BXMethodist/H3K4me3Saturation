@@ -104,18 +104,18 @@ def get_split_chr(chr_name, start, end, vector_size=10000, step=10, merge=10, cu
 
     ####
 
-    if sample_number - len(row_to_delete) > 5:
+    # if sample_number - len(row_to_delete) > 5:
 
-        df = pd.DataFrame(result_array, index=sample_names)
+    df = pd.DataFrame(result_array, index=sample_names)
 
-        output_elements = [chr_name, str(start), str(end)]
-        output = "_".join(output_elements)
+    output_elements = [chr_name, str(start), str(end)]
+    output = "_".join(output_elements)
 
-        df.to_csv(path+"code/csv/" + output + ".csv", sep=delimiter)
+    df.to_csv(path+"code/csv/" + output + ".csv", sep=delimiter)
 
-        return output+".csv"
-    else:
-        return None
+    return output+".csv"
+    # else:
+    #     return None
 
 
 def quantile_normalization(array, axis=0):

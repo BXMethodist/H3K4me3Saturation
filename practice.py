@@ -87,39 +87,39 @@ import os
 import pandas as pd, numpy as np
 import matplotlib.pyplot as plt
 
-plt.xlim((0,340))
-
-df = pd.read_csv("chr3_clusters_count.csv", sep=",", index_col=0)
-
-result = {}
-for i in range(5):
-    result[i+1] ={}
-    for j in range(5,338):
-        result[i+1][j]=0
-
-for i in range(0, 5):
-    cur_values = df[df["#Cluster"]==i+1]['#sample_enriched'].values
-    for value in cur_values:
-        result[i+1][value]+=1
-    # print result[i+1]
-
-
-
-new_df = pd.DataFrame(result)
-
-new_df.columns =['1','2','3','4','5']
-
-for i in range(1,6):
-    new_df[str(i)] = new_df[str(i)].cumsum()/new_df[str(i)].sum()
-
-
-
-print new_df
-
-plot = new_df.plot(x=new_df.index, xlim=(0,340), colormap='prism', title='Number of Enriched Samples vs Number of Clusters')
-fig = plot.get_figure()
-
-fig.savefig("output.png")
+# plt.xlim((0,340))
+#
+# df = pd.read_csv("chr3_clusters_count.csv", sep=",", index_col=0)
+#
+# result = {}
+# for i in range(5):
+#     result[i+1] ={}
+#     for j in range(5,338):
+#         result[i+1][j]=0
+#
+# for i in range(0, 5):
+#     cur_values = df[df["#Cluster"]==i+1]['#sample_enriched'].values
+#     for value in cur_values:
+#         result[i+1][value]+=1
+#     # print result[i+1]
+#
+#
+#
+# new_df = pd.DataFrame(result)
+#
+# new_df.columns =['1','2','3','4','5']
+#
+# for i in range(1,6):
+#     new_df[str(i)] = new_df[str(i)].cumsum()/new_df[str(i)].sum()
+#
+#
+#
+# print new_df
+#
+# plot = new_df.plot(x=new_df.index, xlim=(0,340), colormap='prism', title='Number of Enriched Samples vs Number of Clusters')
+# fig = plot.get_figure()
+#
+# fig.savefig("output.png")
 
 
 # print df['#Sample_Clustered'].sum()
@@ -133,3 +133,5 @@ fig.savefig("output.png")
 # plt.xlim((0,6))
 # plt.ylim((0,340))
 # plt.show()
+A = np.asarray([1,2,3,2])
+print np.max(A)
