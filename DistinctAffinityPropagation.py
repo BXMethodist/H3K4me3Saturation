@@ -145,7 +145,7 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
         cluster_new_center = np.intersect1d(np.where(affinity_new_center > max_cutoff),
                                             np.where(affinity_new_center <= 1))
 
-        if len(cluster_new_center) >= 5:
+        if len(cluster_new_center) >= 5 and len(cluster_new_center) >= S.shape[0]/50:
             labels.append(cluster_new_center)
             cluster_centers_indices.append(best_new_center)
             seeds.append(X[best_new_center])
