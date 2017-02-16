@@ -119,6 +119,8 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
                 affinity_matrix[:, cluster_x] = float("inf")
             else:
                 frontiers[first_distinct[i]] = 1
+                affinity_matrix[first_distinct[i], :] = float("inf")
+                affinity_matrix[:, first_distinct[i]] = float("inf")
 
     while True and n_iter < max_iter:
         samples_left = np.where(frontiers==0)[0]
@@ -155,6 +157,8 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
 
         else:
             frontiers[best_new_center] = 1
+            affinity_matrix[best_new_center, :] = float("inf")
+            affinity_matrix[:, best_new_center] = float("inf")
 
         if np.sum(frontiers) == n_samples:
             break
@@ -459,6 +463,7 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
     regions = defaultdict(set)
 
     for file_name in list_files:
+        print file_name
         cluster = DistinctAffinityPropagation(affinity)
         df = pd.read_csv(directory+file_name, sep="\t")
 
@@ -527,11 +532,14 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
     # map_path ="./75_refmap_combined.csv"
     # finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
     # files_read_for_clusters = get_map(map_path, finished_job=finished_job)
-regions = region_cluster()
 
-import pickle
 
-with open('chr3_75refmap_regions' + '.pkl', 'wb') as f:
-    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+
+regions = region_cluster(directory='./csv')
+#
+# import pickle
+#
+# with open('chr3_75refmap_regions' + '.pkl', 'wb') as f:
+#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
 
     # region_cluster(directory="./csv")
