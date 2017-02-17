@@ -106,10 +106,11 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
         else:
             first_distinct = most_different_pair(X, distinct_set)
 
+        print first_distinct
         for i in range(len(first_distinct)):
             affinity_x = affinity_matrix[first_distinct[i], :]
             cluster_x = np.intersect1d(np.where(affinity_x > max_cutoff), np.where(affinity_x <= 1))
-            if len(cluster_x) >= 5:
+            if len(cluster_x) >= 5 and len(cluster_x) >= S.shape[0]/50:
                 labels.append(cluster_x)
                 cluster_centers_indices.append(first_distinct[i])
                 seeds.append(X[first_distinct[i]])
@@ -535,11 +536,11 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
 
 
-regions = region_cluster()
+regions = region_cluster(directory='./csv')
 #
-import pickle
-
-with open('chr3_75refmap_regions' + '.pkl', 'wb') as f:
-    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
-
-    region_cluster(directory="./csv")
+# import pickle
+#
+# with open('chr3_75refmap_regions' + '.pkl', 'wb') as f:
+#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+#
+#     region_cluster(directory="./csv")
