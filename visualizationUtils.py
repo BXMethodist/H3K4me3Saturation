@@ -26,10 +26,12 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     ax.set_color_cycle(['red'])
     ax.plot(np.arange(array.shape[1]), rep, linewidth=0.5)
     peaks = rep.copy()
-    peaks[peaks > 200] = np.max(rep)/10.0
+    draw = np.max(rep)/10
     peaks[peaks < 200] = 0
+    peaks[peaks > 200] = draw
+
     # ax.set_color_cycle(['grey'])
-    # ax.plot(np.arange(array.shape[1]), peaks, linewidth=0.5)
+    ax.plot(np.arange(array.shape[1]), peaks, linewidth=1)
     plt.fill_between(np.arange(array.shape[1]), peaks, color='red')
 
     chromosome, start, end = title.split("_")[:-1]

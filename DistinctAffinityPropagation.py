@@ -91,7 +91,7 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
 
         min_distance = affinity_matrix.flat[distinct_index]
 
-        if min_distance > min_cutoff or np.isnan(min_distance) or S.shape[0] < 50:
+        if min_distance > min_cutoff or np.isnan(min_distance) or S.shape[0] < 60:
             # TO DO: return the entire samples as one cluster
             labels.append(np.arange(n_samples))
             representation = [np.mean(X, axis=0)]
@@ -529,17 +529,17 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
 # if __name__ == "__main__":
     # open a reference map
-map_path ="./75_refmap_combined.csv"
-finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
-files_read_for_clusters = get_map(map_path, finished_job=finished_job)
+# map_path ="./75_refmap_combined.csv"
+# finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
+# files_read_for_clusters = get_map(map_path, finished_job=finished_job)
 
 
 
-regions = region_cluster(directory='./csv')
+regions = region_cluster()
 #
-# import pickle
-#
-# with open('chr3_75refmap_regions' + '.pkl', 'wb') as f:
-#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+import pickle
 
-    # region_cluster(directory="./csv")
+with open('chr3_75refmap_regions' + '.pkl', 'wb') as f:
+    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+
+    region_cluster(directory="./csv")
