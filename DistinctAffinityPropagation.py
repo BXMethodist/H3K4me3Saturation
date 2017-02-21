@@ -522,9 +522,12 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
         else:
             # print cluster.representation_
             # print "norm_X is ", cluster.data
-            region = plotSaturation(pos_surfix + "_cluster0", data_values, [],
-                           cluster.representation_[0], len(cluster.labels_[0]))
-            regions += region
+            # region = plotSaturation(pos_surfix + "_cluster0", data_values, [],
+            #                cluster.representation_[0], len(cluster.labels_[0]))
+            # regions += region
+
+            # diable single cluster photo for now
+            pass
     return regions
 
 

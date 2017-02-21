@@ -48,7 +48,11 @@ class peak():
         self.signals = signals
         self.step = step
         self.width = end - start
-        self.height = np.max(self.signals)
+        if len(self.signals) != 0:
+            self.height = np.max(self.signals)
+        else:
+            self.height = None
+        print self.chromosome, self.start, self.end, self.height
 
 
 def callpeak(chromosome, start, end, signals, step):
@@ -98,6 +102,8 @@ def splitable(chromosome, start, end, signals):
 
     split_local_mins_index = np.where(split_local_mins)[0]
 
+    splitable_indexes = []
+
     for min in split_local_mins_index:
         left_part = signals[:left+min]
         right_part = signals[left+min:]
@@ -106,11 +112,14 @@ def splitable(chromosome, start, end, signals):
         right_peak_height = np.max(right_part)
         min_height = split_region[min]
 
-        print left_peak_height, right_peak_height, min_height
+        # print left_peak_height, right_peak_height, min_height
         if left_peak_height > 2 * min_height and right_peak_height > 2 * min_height:
             print "split"
-            return left+min
-    return None
+            splitable_indexes.append(left+min)
+    if len(splitable_indexes) == 0:
+        return None
+    else:
+        return np.mean(splitable_indexes)
 
 def callpeakbycutoff(chromosome, start, end, signals, cutoff=200, step=10):
     peaks = []
