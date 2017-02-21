@@ -84,6 +84,9 @@ def splitable(chromosome, start, end, signals):
     min_index = np.where(local_min)[0]
     max_index = np.where(local_max)[0]
 
+    if len(max_index)==0 or len(min_index) == 0:
+        return None
+
     left = max_index[0]
     right = max_index[-1]
 

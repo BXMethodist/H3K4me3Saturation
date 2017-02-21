@@ -536,7 +536,8 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
 
 
-regions = region_cluster(directory='./csv')
+# regions = region_cluster(directory='./csv')
+regions = region_cluster()
 
 # print regions
 #

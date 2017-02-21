@@ -47,6 +47,7 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     fig.savefig("./pictures/"+title, dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
 
+    plt.close('all')
     return peaks
 
 # def heatmap(path, name):
