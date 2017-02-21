@@ -31,8 +31,8 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     draw = np.max(rep)/10
 
     for p in peaks:
-        ax.plot(np.arange(p.start-int(start), p.end-int(start)), [draw]*(p.end-p.start), linewidth=1)
-        plt.fill_between(np.arange(p.start-int(start), p.end-int(start)), [draw]*(p.end-p.start), color='red')
+        # ax.plot(np.arange((p.start-int(start))/10, (p.end-int(start))/10-1), [draw]*((p.end-p.start)/10-1), linewidth=1)
+        plt.fill_between(np.arange((p.start-int(start))/10, (p.end-int(start))/10-10), [draw]*((p.end-p.start)/10-10), color='red')
 
     #######
 

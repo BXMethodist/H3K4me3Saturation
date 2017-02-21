@@ -28,13 +28,15 @@ class region():
         self.step = step
         self.cutoff = cutoff
 
-        peaks_by_cutoff= callpeakbycutoff(self.chromosome, self.start, self.end, self.signals, cutoff=self.cutoff)
+        peaks_by_cutoff= callpeakbycutoff(self.chromosome, self.start, self.end, self.signals,
+                                          cutoff=self.cutoff, step=self.step)
+        # print [(peak[0], peak[1], peak[2]) for peak in peaks_by_cutoff]
 
         self.peaks = []
 
         for peak in peaks_by_cutoff:
             cur_chr, cur_start, cur_end, cur_signals = peak
-            cur_peaks = callpeak(cur_chr, cur_start, cur_end, cur_signals)
+            cur_peaks = callpeak(cur_chr, cur_start, cur_end, cur_signals, self.step)
             self.peaks += cur_peaks
 
 
@@ -49,7 +51,7 @@ class peak():
         self.height = np.max(self.signals)
 
 
-def callpeak(chromosome, start, end, signals):
+def callpeak(chromosome, start, end, signals, step):
     peaks = []
 
     frontiers = []
@@ -62,8 +64,8 @@ def callpeak(chromosome, start, end, signals):
         if split_index is None:
             peaks.append((cur_chromosome, cur_start, cur_end, cur_signals))
         else:
-            left = (cur_chromosome, cur_start, cur_start+split_index, cur_signals[:split_index])
-            right = (cur_chromosome, cur_start+split_index, cur_end, cur_signals[split_index:])
+            left = (cur_chromosome, cur_start, cur_start+split_index*step, cur_signals[:split_index])
+            right = (cur_chromosome, cur_start+split_index*step, cur_end, cur_signals[split_index:])
             frontiers.append(left)
             frontiers.append(right)
 
@@ -89,19 +91,23 @@ def splitable(chromosome, start, end, signals):
     if len(split_region) == 0:
         return None
 
-    min = np.where(split_region==np.min(split_region))[0][0]
+    split_local_mins = np.r_[True, split_region[1:] < split_region[:-1]] & np.r_[split_region[:-1] < split_region[1:], True]
 
-    left_part = signals[:left+min]
-    right_part = signals[right-min:]
+    split_local_mins_index = np.where(split_local_mins)[0]
 
-    left_peak_height = np.max(left_part)
-    right_peak_height = np.max(right_part)
-    min_height = split_region[min]
+    for min in split_local_mins_index:
+        left_part = signals[:left+min]
+        right_part = signals[left+min:]
 
-    if left_peak_height > 2 * min_height and right_peak_height > 2 * min_height:
-        return left+min
-    else:
-        return None
+        left_peak_height = np.max(left_part)
+        right_peak_height = np.max(right_part)
+        min_height = split_region[min]
+
+        print left_peak_height, right_peak_height, min_height
+        if left_peak_height > 2 * min_height and right_peak_height > 2 * min_height:
+            print "split"
+            return left+min
+    return None
 
 def callpeakbycutoff(chromosome, start, end, signals, cutoff=200, step=10):
     peaks = []
@@ -111,7 +117,7 @@ def callpeakbycutoff(chromosome, start, end, signals, cutoff=200, step=10):
         return peaks
     elif len(peaks_index) == 1:
         index = peaks_index[0]
-        peak = (chromosome, start+index, start+index+1, np.asarray([signals[index]]))
+        peak = (chromosome, start+index*step, start+(index+1)*step, np.asarray([signals[index]]))
         peaks.append(peak)
         return peaks
 
@@ -119,13 +125,13 @@ def callpeakbycutoff(chromosome, start, end, signals, cutoff=200, step=10):
     prev = peaks_index[0]
     for i in range(1, len(peaks_index)):
         cur_index = peaks_index[i]
-        if cur_index - prev == 1 and i != len(peaks_index):
+        if cur_index - prev == 1 and i != len(peaks_index)-1:
             prev = cur_index
-        elif cur_index - prev == 1 and i == len(peaks_index):
-            peak = (chromosome, start+cur_start, start+cur_index, signals[cur_start:cur_index])
+        elif cur_index - prev == 1 and i == len(peaks_index)-1:
+            peak = (chromosome, start+cur_start*step, start+cur_index*step, signals[cur_start:cur_index])
             peaks.append(peak)
         else:
-            peak = (chromosome, start+cur_start, start+prev, signals[cur_start:prev])
+            peak = (chromosome, start+cur_start*step, start+prev*step, signals[cur_start:prev])
             peaks.append(peak)
             prev = cur_index
             cur_start = cur_index
@@ -138,3 +144,7 @@ def callpeakbycutoff(chromosome, start, end, signals, cutoff=200, step=10):
 #         203.8992773 ,  202.21577459]))
 #
 # print callpeak(a,b,c,d)[0].signals
+
+# a = np.asarray([0,0,0,300,300,300,0,0,0,400,400,400])
+#
+# print callpeakbycutoff('chr1', 100, 112, a)
