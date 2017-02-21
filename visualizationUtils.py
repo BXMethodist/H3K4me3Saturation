@@ -7,7 +7,7 @@ import pandas as pd
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
 from scipy.spatial.distance import pdist,squareform
 from scipy.cluster.hierarchy import linkage
-from region import region
+from region import region, callpeakbycutoff
 # import rpy2.robjects as robjects
 
 
@@ -25,18 +25,16 @@ def plotSaturation(title, array, original_seed, rep, parameters):
 
     ax.set_color_cycle(['red'])
     ax.plot(np.arange(array.shape[1]), rep, linewidth=0.5)
-    peaks = rep.copy()
-    draw = np.max(rep)/10
-    peaks[peaks < 200] = 0
-    peaks[peaks > 200] = draw
-
-    # ax.set_color_cycle(['grey'])
-    ax.plot(np.arange(array.shape[1]), peaks, linewidth=1)
-    plt.fill_between(np.arange(array.shape[1]), peaks, color='red')
 
     chromosome, start, end = title.split("_")[:-1]
+    peaks = region(chromosome, int(start), int(end), rep).peaks
+    draw = np.max(rep)/10
 
-    refregion = region(chromosome, start, end, signals=rep, peaks=peaks)
+    for p in peaks:
+        ax.plot(np.arange(p.start-int(start), p.end-int(start)), [draw]*(p.end-p.start), linewidth=1)
+        plt.fill_between(np.arange(p.start-int(start), p.end-int(start)), [draw]*(p.end-p.start), color='red')
+
+    #######
 
     if original_seed != []:
         ax.set_color_cycle(['blue'])
@@ -49,7 +47,7 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     fig.savefig("./pictures/"+title, dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
 
-    return refregion
+    return peaks
 
 # def heatmap(path, name):
 #     # df = pd.DataFrame(array, index=index)

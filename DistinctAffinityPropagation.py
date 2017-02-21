@@ -461,7 +461,7 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
     if list_files is None:
         list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")]
 
-    regions = defaultdict(set)
+    regions = []
 
     for file_name in list_files:
         print file_name
@@ -513,7 +513,7 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
                                data_values[cluster.cluster_centers_indices_[i]],
                                cluster.representation_[i], len(cluster.labels_[i]))
                 i += 1
-                regions[(region.chromosome, region.start, region.end)].add(region)
+                regions += region
                 # df = pd.DataFrame(plot_data)chr3_187450000_187470000.csv
                 # df.to_csv("./tempcsv/" + "cluster" + str(i) + ".csv")
                 # heatmap("./tempcsv/" + "cluster" + str(i) + ".csv", pos_surfix + "_cluster" + str(i))
@@ -524,7 +524,7 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
             # print "norm_X is ", cluster.data
             region = plotSaturation(pos_surfix + "_cluster0", data_values, [],
                            cluster.representation_[0], len(cluster.labels_[0]))
-            regions[(region.chromosome, region.start, region.end)].add(region)
+            regions += region
     return regions
 
 
