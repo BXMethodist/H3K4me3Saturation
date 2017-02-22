@@ -21,7 +21,7 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     chromosome, start, end, cluster_number = title.split("_")
     ax.set_xlabel("bp")
     ax.set_ylabel("Signal")
-    ax.set_title(chromosome + " " + start + "~"+end+" "+"variant"+str(int(cluster_number[-1])+1))
+    ax.set_title(chromosome + " " + start + "~"+end+" "+"variant "+str(int(cluster_number[-1])+1))
     xvalues = np.arange(array.shape[1])*10
 
     ax.set_color_cycle(['grey'])
