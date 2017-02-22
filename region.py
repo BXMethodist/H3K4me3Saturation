@@ -27,6 +27,7 @@ class region():
         self.signals = signals
         self.step = step
         self.cutoff = np.max(signals)/10
+        self.convex_cutoff = np.max(signals)/3
 
         peaks_by_cutoff= callpeakbycutoff(self.chromosome, self.start, self.end, self.signals,
                                           cutoff=self.cutoff, step=self.step)
@@ -36,7 +37,7 @@ class region():
 
         for peak in peaks_by_cutoff:
             cur_chr, cur_start, cur_end, cur_signals = peak
-            cur_peaks = callpeak(cur_chr, cur_start, cur_end, cur_signals, self.step)
+            cur_peaks = callpeak(cur_chr, cur_start, cur_end, cur_signals, self.step, self.convex_cutoff)
             self.peaks += cur_peaks
 
 
@@ -55,7 +56,7 @@ class peak():
         print self.chromosome, self.start, self.end, self.height
 
 
-def callpeak(chromosome, start, end, signals, step):
+def callpeak(chromosome, start, end, signals, step, convex_cutoff):
     peaks = []
 
     frontiers = []
@@ -64,7 +65,7 @@ def callpeak(chromosome, start, end, signals, step):
 
     while len(frontiers) > 0:
         cur_chromosome, cur_start, cur_end, cur_signals = frontiers.pop(0)
-        split_index = splitable(cur_chromosome, cur_start, cur_end, cur_signals)
+        split_index = splitable(cur_chromosome, cur_start, cur_end, cur_signals, convex_cutoff)
         if split_index is None:
             peaks.append((cur_chromosome, cur_start, cur_end, cur_signals))
         else:
@@ -81,7 +82,7 @@ def callpeak(chromosome, start, end, signals, step):
         peaks_obj.append(p_obj)
     return peaks_obj
 
-def splitable(chromosome, start, end, signals):
+def splitable(chromosome, start, end, signals, convex_cutoff):
     local_min = np.r_[True, signals[1:] < signals[:-1]] & np.r_[signals[:-1] < signals[1:], True]
     local_max = np.r_[True, signals[1:] > signals[:-1]] & np.r_[signals[:-1] > signals[1:], True]
 
@@ -113,7 +114,7 @@ def splitable(chromosome, start, end, signals):
         min_height = split_region[min]
 
         # print left_peak_height, right_peak_height, min_height
-        if left_peak_height > 2 * min_height and right_peak_height > 2 * min_height:
+        if left_peak_height > 2 * min_height and right_peak_height > 2 * min_height and min_height >= convex_cutoff:
             print "split"
             splitable_indexes.append(left+min)
     if len(splitable_indexes) == 0:
