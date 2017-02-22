@@ -133,5 +133,5 @@ import matplotlib.pyplot as plt
 # plt.xlim((0,6))
 # plt.ylim((0,340))
 # plt.show()
-A = np.asarray([1,2,3,2])
-print np.max(A)
+A = np.asarray([[1,2,3,2]])
+print A.shape
