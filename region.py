@@ -119,7 +119,7 @@ def splitable(chromosome, start, end, signals):
     if len(splitable_indexes) == 0:
         return None
     else:
-        return np.mean(splitable_indexes)
+        return int(np.mean(splitable_indexes))
 
 def callpeakbycutoff(chromosome, start, end, signals, cutoff=200, step=10):
     peaks = []
