@@ -18,27 +18,29 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     ax.spines['right'].set_visible(False)
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
+    chromosome, start, end, cluster_number = title.split("_")
+    ax.set_xlabel("bp")
+    ax.set_ylabel("Signal")
+    ax.set_title(chromosome + " " + start + "~"+end+" "+"variant"+str(int(cluster_number[-1])+1))
+    xvalues = np.arange(array.shape[1])*10
 
     ax.set_color_cycle(['grey'])
     for i in range(parameters):
-        ax.plot(np.arange(array.shape[1]), array[i, :], linewidth=0.2)
+        ax.plot(xvalues, array[i, :], linewidth=0.2, alpha=0.5)
 
     ax.set_color_cycle(['red'])
-    ax.plot(np.arange(array.shape[1]), rep, linewidth=0.5)
+    ax.plot(xvalues, rep, linewidth=0.5)
 
-    chromosome, start, end = title.split("_")[:-1]
     peaks = region(chromosome, int(start), int(end), rep).peaks
-    draw = np.max(rep)/10
 
     for p in peaks:
-        # ax.plot(np.arange((p.start-int(start))/10, (p.end-int(start))/10-1), [draw]*((p.end-p.start)/10-1), linewidth=1)
-        plt.fill_between(np.arange((p.start-int(start))/10, (p.end-int(start))/10-10), [draw]*((p.end-p.start)/10-10), color='red')
+        plt.axvspan(xmin=p.start-int(start), xmax=p.end-int(start), ymin=0, ymax=0.05, facecolor='red', alpha=0.5, edgecolor='red')
 
     #######
 
     if original_seed != []:
         ax.set_color_cycle(['blue'])
-        ax.plot(np.arange(array.shape[1]), original_seed, linewidth=0.5)
+        ax.plot(xvalues, original_seed, linewidth=0.5)
 
 
     # if verbose:

@@ -539,14 +539,14 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
 
 
-# regions = region_cluster(directory='./csv')
-regions = region_cluster()
+regions = region_cluster(directory='./csv')
+# regions = region_cluster()
 
 # print regions
 #
-import pickle
-
-with open('chr3_75refmap_regions' + '.pkl', 'wb') as f:
-    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
-
-    region_cluster(directory="./csv")
+# import pickle
+#
+# with open('chr3_75refmap_regions' + '.pkl', 'wb') as f:
+#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+#
+#     region_cluster(directory="./csv")

@@ -20,13 +20,13 @@ class region():
         step
         """
 
-    def __init__(self, chromosome, start, end, signals, step=10, cutoff=200):
+    def __init__(self, chromosome, start, end, signals, step=10):
         self.chromosome = chromosome
         self.start = start
         self.end = end
         self.signals = signals
         self.step = step
-        self.cutoff = cutoff
+        self.cutoff = np.max(signals)/10
 
         peaks_by_cutoff= callpeakbycutoff(self.chromosome, self.start, self.end, self.signals,
                                           cutoff=self.cutoff, step=self.step)
