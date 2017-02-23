@@ -206,9 +206,6 @@ def signal_reduction(sample, array1, array2):
 
     return signal_enrich
 
-
-
-
 def remove_duplicate(pairs):
     """Remove duplicate pairs and return distinct dissimilar pairs
 

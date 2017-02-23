@@ -4,13 +4,39 @@ import math
 
 
 class region():
-    def __init__(self, chromosome, start, end, variants, variants_members, seeds):
+    """
+    Parameters
+        ----------
+        chromosome: chromosome name
+        start: start position
+        end: end position
+        step: step or bin size use to store the signal
+        variants: the representative of each clusters
+        variants_members: all samples signals, ndarray, each row is a sample
+        seeds: seed signals used for each cluster
+        labels: the index (row number) of samples in each clusters.
+    """
+    def __init__(self, chromosome, start, end, representatives, variants_members, seeds, labels, step=10):
         self.chromosome = chromosome,
         self.start = start
         self.end = end
-        self.variants = variants
+        self.representatives = representatives
         self.variants_members = variants_members
         self.seeds = seeds
+        self.labels = labels
+        self.step = step
+        self.variants = []
+
+        self.create_variants()
+
+    def create_variants(self):
+        for i in range(len(self.representatives)):
+            cur_variant = variant(self.chromosome, self.start, self.end, self.representatives[i],
+                                  self.variants_members[self.labels[i]], self.seeds[i])
+            self.variants.append(cur_variant)
+
+
+
 
         # initiate variants object
         # call units in variants object
@@ -41,7 +67,7 @@ class variant():
         step
         """
 
-    def __init__(self, chromosome, start, end, signals, step=10):
+    def __init__(self, chromosome, start, end, signals, members, seed, step=10):
         self.chromosome = chromosome
         self.start = start
         self.end = end
@@ -49,6 +75,8 @@ class variant():
         self.step = step
         self.cutoff = np.max(signals)*0.1
         self.convex_cutoff = np.max(signals)/3
+        self.members = members
+        self.seed = seed
 
         units_by_cutoff= callunitbycutoff(self.chromosome, self.start, self.end, self.signals,
                                           cutoff=self.cutoff, step=self.step)
@@ -79,7 +107,7 @@ class unit():
             self.height = np.max(self.signals)
         else:
             self.height = None
-        print self.chromosome, self.start, self.end, self.height
+        # print self.chromosome, self.start, self.end, self.height
 
 
 def callunit(chromosome, start, end, signals, step, convex_cutoff):

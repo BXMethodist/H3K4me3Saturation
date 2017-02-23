@@ -61,8 +61,13 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
         #save the cluster information after normalization
         df.to_csv("./cluster_csv/" + pos_surfix + "_clusters.csv", sep="\t")
 
-        peak = region
+        chromosome, start, end = pos_surfix.split("_")
 
+        peak = region(chromosome, int(start), int(end),
+                      representatives=cluster.representation_ ,
+                      seeds=data_values[cluster.cluster_centers_indices_],
+                      variants_members=data_values,
+                      labels=cluster.labels_)
 
 
         # from visualizationUtils import plotSaturation #, heatmap
