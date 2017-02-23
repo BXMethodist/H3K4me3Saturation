@@ -7,7 +7,7 @@ import pandas as pd
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
 from scipy.spatial.distance import pdist,squareform
 from scipy.cluster.hierarchy import linkage
-from region import region, callpeakbycutoff
+from region import variant, callunitbycutoff
 # import rpy2.robjects as robjects
 
 
@@ -31,7 +31,7 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     ax.set_color_cycle(['red'])
     ax.plot(xvalues, rep, linewidth=0.5)
 
-    peaks = region(chromosome, int(start), int(end), rep).peaks
+    peaks = variant(chromosome, int(start), int(end), rep).units
 
     for p in peaks:
         plt.axvspan(xmin=p.start-int(start), xmax=p.end-int(start), ymin=0, ymax=0.05, facecolor='red', alpha=0.5, edgecolor='red')
