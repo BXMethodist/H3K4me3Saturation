@@ -206,34 +206,6 @@ def signal_reduction(sample, array1, array2):
 
     return signal_enrich
 
-def remove_duplicate(pairs):
-    """Remove duplicate pairs and return distinct dissimilar pairs
-
-        Parameters
-        ----------
-        pairs: ndarray, contains pair of sample index.
-
-        Return
-        ----------
-        a list of tuple containing pair of sample index.
-
-        Notes
-        -----
-        This function should only be called by .fit function
-
-        References
-        ----------
-        """
-
-    distinct_set = set()
-
-    for i in range(pairs.shape[0]):
-        x, y = pairs[i]
-        if (x, y) not in distinct_set and (y, x) not in distinct_set:
-            distinct_set.add((x, y))
-    distinct_set = list(distinct_set)
-    return distinct_set
-
 def most_different_pair(X, pairs):
     """Get the most distinct pair after the screening of first affinity metrics
 

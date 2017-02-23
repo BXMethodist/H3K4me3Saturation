@@ -295,6 +295,35 @@ def get_map(refmap, step=10, sep=",", finished_job=()):
     return files_read_for_cluster
 
 
+def remove_duplicate(pairs):
+    """Remove duplicate pairs and return distinct dissimilar pairs
+
+        Parameters
+        ----------
+        pairs: ndarray, contains pair of sample index.
+
+        Return
+        ----------
+        a list of tuple containing pair of sample index.
+
+        Notes
+        -----
+        This function should only be called by .fit function
+
+        References
+        ----------
+        """
+
+    distinct_set = set()
+
+    for i in range(pairs.shape[0]):
+        x, y = pairs[i]
+        if (x, y) not in distinct_set and (y, x) not in distinct_set and x != y:
+            distinct_set.add((x, y))
+    distinct_set = list(distinct_set)
+    return distinct_set
+
+
 if __name__ == "__main__":
     # get_split_chr("chr3", 122562770, 122562820, cutoff=25)
 

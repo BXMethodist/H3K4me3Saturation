@@ -1,6 +1,7 @@
 
 import numpy as np
 import math
+from scipy.stats import pearsonr
 
 
 class region():
@@ -26,8 +27,11 @@ class region():
         self.labels = labels
         self.step = step
         self.variants = []
+        self.units = set()
 
         self.create_variants()
+        self.merge_units_across_variants()
+        self.merge_variants()
 
     def create_variants(self):
         for i in range(len(self.representatives)):
@@ -35,16 +39,73 @@ class region():
                                   self.variants_members[self.labels[i]], self.seeds[i])
             self.variants.append(cur_variant)
 
+            for unit in cur_variant.units:
+                self.units.add((unit.start, unit.end, i))
+
+        return
 
 
-
+    def merge_units_across_variants(self):
         # initiate variants object
         # call units in variants object
         # merge the units between variants
         # merge variants by two creterias 1. have the same locations of units, 2. correlation is bigger than xxx
 
+        group_units_by_overlap = []
+        while len(self.units) > 0:
+            unit = self.units.pop()
+            cur_overlap = self.get_overlap(unit)
+            group_units_by_overlap.append(cur_overlap)
+
+        group_need_to_merge = []
+
+        for group in group_units_by_overlap:
+            print group
+
+            related_variants = set([x[2] for x in group])
+            if len(related_variants) == 1:
+                continue
+            left_border = (min([x[0] for x in group])-self.start)/self.step
+            right_border = (max([x[1] for x in group])-self.start)/self.step
+
+            group_matrix = []
+            for v in related_variants:
+                group_matrix.append(self.representatives[v][left_border:right_border])
+            group_matrix = np.asarray(group_matrix)
+
+            # print pearsonr(group_matrix[0], group_matrix[1])
 
 
+            distances_matrix = np.corrcoef(group_matrix)
+
+            # print distances_matrix
+            close_pairs = np.asarray(np.where(distances_matrix >= 0)).T
+            print close_pairs
+
+
+
+
+
+    def merge_variants(self):
+        pass
+
+    def get_overlap(self, unit):
+        overlap_units = set()
+        overlap_units.add(unit)
+        target_units = [unit]
+
+        while len(target_units) > 0 :
+            cur_unit = target_units.pop(0)
+            need_to_remove = []
+            for u in self.units:
+                if cur_unit[0] <= u[0] <= cur_unit[1] or \
+                    cur_unit[0] <= u[1] <= cur_unit[1]:
+                    overlap_units.add(u)
+                    target_units.append(u)
+                    need_to_remove.append(u)
+            for u in need_to_remove:
+                self.units.remove(u)
+        return overlap_units
 
 
 
@@ -128,7 +189,7 @@ def callunit(chromosome, start, end, signals, step, convex_cutoff):
             frontiers.append(left)
             frontiers.append(right)
 
-    # print peaks
+    units = sorted(units, key=lambda x: x[1])
     units_obj = []
     for p in units:
         chromosome, start, end, signals = p
