@@ -3,9 +3,28 @@ import numpy as np
 import math
 
 
+class region():
+    def __init__(self, chromosome, start, end, variants, variants_members, seeds):
+        self.chromosome = chromosome,
+        self.start = start
+        self.end = end
+        self.variants = variants
+        self.variants_members = variants_members
+        self.seeds = seeds
+
+        # initiate variants object
+        # call units in variants object
+        # merge the units between variants
+        # merge variants by two creterias 1. have the same locations of units, 2. correlation is bigger than xxx
+
+
+
+
+
+
 class variant():
     """
-    Store the inforamtion of a reference peak:
+    Store the inforamtion of a reference variant:
         Parameters
         ----------
         chromosome: chromosome name

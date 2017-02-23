@@ -7,11 +7,11 @@ import pandas as pd
 from mpl_toolkits.axes_grid.inset_locator import inset_axes
 from scipy.spatial.distance import pdist,squareform
 from scipy.cluster.hierarchy import linkage
-from region import variant, callunitbycutoff
-# import rpy2.robjects as robjects
 
 
 def plotSaturation(title, array, original_seed, rep, parameters):
+    print parameters
+
     fig = plt.figure(figsize=(8,2))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
