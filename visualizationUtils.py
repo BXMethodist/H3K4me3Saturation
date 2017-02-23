@@ -9,8 +9,11 @@ from scipy.spatial.distance import pdist,squareform
 from scipy.cluster.hierarchy import linkage
 
 
-def plotSaturation(title, array, original_seed, rep, parameters):
-    print parameters
+def plotSaturation(title, variant):
+    array = variant.members
+    rep = variant.signals
+    original_seed = variant.seed
+    parameters = len(variant.members)
 
     fig = plt.figure(figsize=(8,2))
     ax = fig.add_subplot(111)
@@ -31,7 +34,7 @@ def plotSaturation(title, array, original_seed, rep, parameters):
     ax.set_color_cycle(['red'])
     ax.plot(xvalues, rep, linewidth=0.5)
 
-    peaks = variant(chromosome, int(start), int(end), rep).units
+    peaks = variant.units
 
     for p in peaks:
         plt.axvspan(xmin=p.start-int(start), xmax=p.end-int(start), ymin=0, ymax=0.05, facecolor='red', alpha=0.5, edgecolor='red')

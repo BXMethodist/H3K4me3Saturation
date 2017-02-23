@@ -2,9 +2,10 @@
 import numpy as np
 import math
 from scipy.stats import pearsonr
+from clusterUtils import remove_duplicate
 
 
-class region():
+class Region():
     """
     Parameters
         ----------
@@ -22,26 +23,24 @@ class region():
         self.start = start
         self.end = end
         self.representatives = representatives
-        self.variants_members = variants_members
         self.seeds = seeds
         self.labels = labels
         self.step = step
         self.variants = []
         self.units = set()
 
-        self.create_variants()
+        self.create_variants(variants_members)
         self.merge_units_across_variants()
         self.merge_variants()
 
-    def create_variants(self):
+    def create_variants(self, variants_members):
         for i in range(len(self.representatives)):
-            cur_variant = variant(self.chromosome, self.start, self.end, self.representatives[i],
-                                  self.variants_members[self.labels[i]], self.seeds[i])
+            cur_variant = Variant(self.chromosome, self.start, self.end, self.representatives[i],
+                                  variants_members[self.labels[i]], self.seeds[i])
             self.variants.append(cur_variant)
 
             for unit in cur_variant.units:
                 self.units.add((unit.start, unit.end, i))
-
         return
 
 
@@ -57,11 +56,7 @@ class region():
             cur_overlap = self.get_overlap(unit)
             group_units_by_overlap.append(cur_overlap)
 
-        group_need_to_merge = []
-
         for group in group_units_by_overlap:
-            print group
-
             related_variants = set([x[2] for x in group])
             if len(related_variants) == 1:
                 continue
@@ -71,16 +66,43 @@ class region():
             group_matrix = []
             for v in related_variants:
                 group_matrix.append(self.representatives[v][left_border:right_border])
+
             group_matrix = np.asarray(group_matrix)
-
-            # print pearsonr(group_matrix[0], group_matrix[1])
-
-
             distances_matrix = np.corrcoef(group_matrix)
 
-            # print distances_matrix
-            close_pairs = np.asarray(np.where(distances_matrix >= 0)).T
-            print close_pairs
+            close_pairs = np.asarray(np.where(distances_matrix >= 0.8)).T
+            distinct_close_units_variants = remove_duplicate(close_pairs)
+            if len(distinct_close_units_variants) == 0:
+                continue
+            else:
+                left_start = left_border*self.step + self.start
+                right_end = right_border*self.step + self.start
+
+                while len(distinct_close_units_variants) > 0:
+                    cur_pair = distinct_close_units_variants.pop(0)
+                    affected_var =set([x for x in cur_pair])
+                    need_to_remove = []
+                    for pair in distinct_close_units_variants:
+                        if pair[0] in cur_pair or pair[1] in affected_var:
+                            need_to_remove.append(pair)
+                            for p in pair:
+                                affected_var.add(p)
+                    for pair in need_to_remove:
+                        distinct_close_units_variants.remove(pair)
+                    for v in affected_var:
+                        affected_units = [unit[0:2] for unit in group if unit[2] == v]
+                        cur_variant = self.variants[v]
+                        cur_variant.units = [unit for unit in cur_variant.units
+                                             if [unit.start,unit.end] not in affected_units]
+                        new_unit = Unit(self.chromosome, left_start, right_end,
+                                        cur_variant.signals[left_border:right_border])
+                        cur_variant.units.append(new_unit)
+
+        return
+
+
+
+
 
 
 
@@ -109,7 +131,7 @@ class region():
 
 
 
-class variant():
+class Variant():
     """
     Store the inforamtion of a reference variant:
         Parameters
@@ -156,7 +178,7 @@ class variant():
         # self.peaks = peaks_by_cutoff
 
 
-class unit():
+class Unit():
     def __init__(self, chromosome, start, end, signals, step=10):
         self.chromosome = chromosome
         self.start = start
@@ -193,7 +215,7 @@ def callunit(chromosome, start, end, signals, step, convex_cutoff):
     units_obj = []
     for p in units:
         chromosome, start, end, signals = p
-        u_obj = unit(chromosome, start, end, signals)
+        u_obj = Unit(chromosome, start, end, signals)
         units_obj.append(u_obj)
     return units_obj
 

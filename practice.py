@@ -133,11 +133,6 @@ import matplotlib.pyplot as plt
 # plt.xlim((0,6))
 # plt.ylim((0,340))
 # plt.show()
-a = set([1,2,3])
-while len(a) > 0:
-    if 1 in a or 2 in a:
-        a.remove(1)
-        a.remove(2)
-    else:
-        a.pop()
-    print a
+a = [[1,2,3]]
+
+print [1,2,3] not in a

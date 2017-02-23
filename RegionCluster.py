@@ -1,5 +1,5 @@
 from DistinctAffinityPropagation import DistinctAffinityPropagation
-from region import region
+from region import Region
 import pandas as pd, os, numpy as np, pickle
 from clusterUtils import get_map
 
@@ -63,14 +63,22 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
         chromosome, start, end = pos_surfix.split("_")
 
-        peak = region(chromosome, int(start), int(end),
+        peak = Region(chromosome, int(start), int(end),
                       representatives=cluster.representation_ ,
                       seeds=data_values[cluster.cluster_centers_indices_],
                       variants_members=data_values,
                       labels=cluster.labels_)
 
+        regions.append(peak)
+        from visualizationUtils import plotSaturation #, heatmap
+        if len(peak.variants) > 1:
+            for i in range(len(peak.variants)):
+                variant = peak.variants[i]
+                plotSaturation(pos_surfix + "_cluster" + str(i), variant)
+            pass
+        else:
+            pass
 
-        # from visualizationUtils import plotSaturation #, heatmap
         # if len(cluster.labels_) > 1:
         #     i = 0
         #     for label in cluster.labels_:
