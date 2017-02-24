@@ -37,7 +37,7 @@ def plotSaturation(title, variant):
     peaks = variant.units
 
     for p in peaks:
-        plt.axvspan(xmin=p.start-int(start), xmax=p.end-int(start), ymin=0, ymax=0.05, facecolor='red', alpha=0.5, edgecolor='red')
+        plt.axvspan(xmin=p.start-int(start), xmax=p.end-int(start), ymin=0, ymax=0.05, facecolor='red', alpha=0.5, edgecolor='black')
 
     #######
 
