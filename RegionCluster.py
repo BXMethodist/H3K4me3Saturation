@@ -77,6 +77,9 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
                 plotSaturation(pos_surfix + "_cluster" + str(i), variant)
             pass
         else:
+            # for i in range(len(peak.variants)):
+            #     variant = peak.variants[i]
+            #     plotSaturation(pos_surfix + "_cluster" + str(i), variant)
             pass
 
         # if len(cluster.labels_) > 1:

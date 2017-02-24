@@ -95,6 +95,8 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
             # TO DO: return the entire samples as one cluster
             labels.append(np.arange(n_samples))
             representation = [np.mean(X, axis=0)]
+            seeds = [np.mean(X, axis=0)]
+            cluster_centers_indices = [0]
             return cluster_centers_indices, labels, seeds, representation
 
         distinct_pairs = np.asarray(np.where(affinity_matrix == min_distance)).T
@@ -168,6 +170,8 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
     if len(labels) == 0:
         labels.append(np.arange(n_samples))
         representation = [np.mean(X, axis=0)]
+        seeds = [np.mean(X, axis=0)]
+        cluster_centers_indices = [0]
         return cluster_centers_indices, labels, seeds, representation
 
     representation = [np.mean(X[label], axis=0) for label in labels]

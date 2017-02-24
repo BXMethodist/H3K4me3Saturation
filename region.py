@@ -100,14 +100,6 @@ class Region():
 
         return
 
-
-
-
-
-
-
-
-
     def merge_variants(self):
         pass
 
