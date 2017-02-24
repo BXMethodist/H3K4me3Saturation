@@ -97,11 +97,41 @@ class Region():
                         new_unit = Unit(self.chromosome, left_start, right_end,
                                         cur_variant.signals[left_border:right_border])
                         cur_variant.units.append(new_unit)
+                        cur_variant.units = sorted(cur_variant.units, key=lambda x: x.start)
 
         return
 
     def merge_variants(self):
-        pass
+        need_to_merged_pair = []
+        for i in range(len(self.variants)):
+            cur_variant = self.variants[i]
+            for left_variant in self.variants[i+1:]:
+                if cur_variant.similar(left_variant) and np.corrcoef(cur_variant.signals, left_variant.signals)[0][1]>=0.6:
+                    need_to_merged_pair.append((cur_variant, left_variant))
+        while len(need_to_merged_pair)>0:
+            cur_pair = need_to_merged_pair.pop()
+            cur_group = set(cur_pair)
+            for pair in need_to_merged_pair:
+                if cur_pair[0] in pair or cur_pair[1] in pair:
+                    for p in pair:
+                        cur_group.add(p)
+                    need_to_merged_pair.remove(pair)
+            for variant in cur_group:
+                self.variants.remove(variant)
+            cur_group = list(cur_group)
+            self.variants.append(self.combine_variants(cur_group))
+        return
+
+    def combine_variants(self, group):
+        members = group[0].members
+        seed = group[0].seed
+        for i in range(len(group)):
+            members = np.concatenate((members, group[i].members), axis=0)
+            seed += group[i].seed
+        rep = np.mean(members, axis=0)
+        seed = seed/len(group)
+        return Variant(self.chromosome, self.start, self.end, rep, members, seed, step=10)
+
 
     def get_overlap(self, unit):
         overlap_units = set()
@@ -167,7 +197,18 @@ class Variant():
             cur_units = callunit(cur_chr, cur_start, cur_end, cur_signals, self.step, self.convex_cutoff)
             self.units += cur_units
 
-        # self.peaks = peaks_by_cutoff
+    def similar(self, other):
+        if len(self.units) != len(other.units):
+            return False
+        for i in range(len(self.units)):
+            unit = self.units[i]
+            other_unit = other.units[i]
+            if abs(unit.start - other_unit.start) <= 240 and abs(unit.end - other_unit.end) <= 240:
+                continue
+            else:
+                return False
+        return True
+
 
 
 class Unit():
@@ -245,7 +286,7 @@ def splitable(chromosome, start, end, signals, convex_cutoff):
         # print left_peak_height, right_peak_height, min_height
         if left_unit_height > 2 * min_height and right_unit_height > 2 * min_height and \
                 (left_unit_height >= convex_cutoff and right_unit_height >= convex_cutoff):
-            print "split"
+            # print "split"
             splitable_indexes.append(left+min)
     if len(splitable_indexes) == 0:
         return None
@@ -278,6 +319,7 @@ def callunitbycutoff(chromosome, start, end, signals, cutoff, step=10):
             units.append(peak)
             prev = cur_index
             cur_start = cur_index
+    # print [x[0:3] for x in units]
     return units
 
 def merge_unit(chromosome, start, end, cutoff, units, signals, step=10):

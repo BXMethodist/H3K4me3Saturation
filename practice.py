@@ -133,6 +133,3 @@ import matplotlib.pyplot as plt
 # plt.xlim((0,6))
 # plt.ylim((0,340))
 # plt.show()
-a = [[1,2,3]]
-
-print [1,2,3] not in a

@@ -108,7 +108,7 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
         else:
             first_distinct = most_different_pair(X, distinct_set)
 
-        print first_distinct
+        # print first_distinct
         for i in range(len(first_distinct)):
             affinity_x = affinity_matrix[first_distinct[i], :]
             cluster_x = np.intersect1d(np.where(affinity_x > max_cutoff), np.where(affinity_x <= 1))
