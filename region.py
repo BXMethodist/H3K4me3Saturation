@@ -190,7 +190,7 @@ class Variant():
         merged_units = merge_unit(self.chromosome, self.start, self.end, len(self.signals)*self.step/40.0,
                                   units_by_cutoff, self.signals, self.step)
 
-        merged_units = sorted(merged_units, lambda x: x[1])
+        merged_units = sorted(merged_units, key=lambda x: x[1])
         self.units = []
 
         for unit in merged_units:
