@@ -74,12 +74,13 @@ class Region():
                     units_in_compare_group = [u for u in group if u[2] == j]
                     overlap_region = overlap_length(units_in_cur_group, units_in_compare_group)
 
-                    if overlap_region/total_length(units_in_cur_group) < 0.6 or \
-                        overlap_region/total_length(units_in_compare_group) < 0.6:
+                    if (total_length(units_in_cur_group) != 0 and total_length(units_in_compare_group) != 0) and \
+                            (overlap_region/total_length(units_in_cur_group) < 0.6 or
+                                         overlap_region/total_length(units_in_compare_group) < 0.6):
                         merge_boo = False
-                        print [(g[0]-self.start, g[1]-self.start, g[2]) for g in group]
-                        print overlap_region / total_length(units_in_cur_group)
-                        print overlap_region / total_length(units_in_compare_group)
+                        # print [(g[0]-self.start, g[1]-self.start, g[2]) for g in group]
+                        # print overlap_region / total_length(units_in_cur_group)
+                        # print overlap_region / total_length(units_in_compare_group)
             if merge_boo:
                 left_start = left_border * self.step + self.start
                 right_end = right_border * self.step + self.start
@@ -95,22 +96,33 @@ class Region():
         return
 
     def merge_variants(self):
-        need_to_merged_pair = []
+        need_to_merged_pair = set()
         for i in range(len(self.variants)):
             cur_variant = self.variants[i]
             for left_variant in self.variants[i+1:]:
                 if cur_variant.similar(left_variant) and np.corrcoef(cur_variant.signals, left_variant.signals)[0][1]>=0.6:
-                    need_to_merged_pair.append((cur_variant, left_variant))
+                    need_to_merged_pair.add((cur_variant, left_variant))
+        has_been_removed = set()
+
+        need_to_merged_pair = group_pair(list(need_to_merged_pair))
+
         while len(need_to_merged_pair)>0:
             cur_pair = need_to_merged_pair.pop()
             cur_group = set(cur_pair)
+            need_to_remove_merged_pair=set()
             for pair in need_to_merged_pair:
                 if cur_pair[0] in pair or cur_pair[1] in pair:
                     for p in pair:
                         cur_group.add(p)
-                    need_to_merged_pair.remove(pair)
+                    need_to_remove_merged_pair.add(pair)
+            for pair in need_to_remove_merged_pair:
+                need_to_merged_pair.remove(pair)
             for variant in cur_group:
-                self.variants.remove(variant)
+                if variant in has_been_removed:
+                    continue
+                else:
+                    self.variants.remove(variant)
+                    has_been_removed.add(variant)
             cur_group = list(cur_group)
             self.variants.append(self.combine_variants(cur_group))
         return
@@ -222,11 +234,9 @@ class Unit():
         self.signals = signals
         self.step = step
         self.width = end - start
-        if len(self.signals) != 0:
-            self.height = np.max(self.signals)
-        else:
-            self.height = None
-        # print self.chromosome, self.start, self.end, self.height
+        if self.width <= 0:
+            print self.chromosome, self.start, self.end, "width is 0, why?"
+        self.height = np.max(self.signals)
 
 
 def callunit(chromosome, start, end, signals, step, convex_cutoff):
@@ -315,13 +325,15 @@ def callunitbycutoff(chromosome, start, end, signals, cutoff, step=10):
         if cur_index - prev == 1 and i != len(units_index)-1:
             prev = cur_index
         elif cur_index - prev == 1 and i == len(units_index)-1:
-            peak = (chromosome, start+cur_start*step, start+cur_index*step, signals[cur_start:cur_index])
-            units.append(peak)
+            if cur_start != prev:
+                peak = (chromosome, start+cur_start*step, start+cur_index*step, signals[cur_start:cur_index])
+                units.append(peak)
         else:
-            peak = (chromosome, start+cur_start*step, start+prev*step, signals[cur_start:prev])
-            units.append(peak)
-            prev = cur_index
-            cur_start = cur_index
+            if cur_start != prev:
+                peak = (chromosome, start+cur_start*step, start+prev*step, signals[cur_start:prev])
+                units.append(peak)
+                prev = cur_index
+                cur_start = cur_index
     # print [x[0:3] for x in units]
     return units
 
@@ -361,6 +373,27 @@ def overlap(unit1, unit2):
         return 0*1.0
     else:
         return (max_pos - min_pos)*1.0
+
+def group_pair(pairs):
+    group_number = {}
+    new_groups = set()
+    for i in range(len(pairs)):
+        cur_pair = pairs[i]
+        if cur_pair[0] not in group_number and cur_pair[1] not in group_number:
+            group_number[cur_pair[0]] = i
+            group_number[cur_pair[1]] = i
+        elif cur_pair[0] in group_number:
+            group_number[cur_pair[1]] = group_number[cur_pair[0]]
+        elif cur_pair[1] in group_number:
+            group_number[cur_pair[0]] = group_number[cur_pair[1]]
+    for i in range(len(pairs)):
+        new_pairs = set()
+        for key, value in group_number.items():
+            if value == i:
+                new_pairs.add(key)
+        if len(new_pairs) > 0:
+            new_groups.add(tuple(new_pairs))
+    return new_groups
 
 
 
