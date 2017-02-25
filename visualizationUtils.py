@@ -29,7 +29,7 @@ def plotSaturation(title, variant):
 
     ax.set_color_cycle(['grey'])
     for i in range(parameters):
-        ax.plot(xvalues, array[i, :], linewidth=0.2, alpha=0.5)
+        ax.plot(xvalues, array[i, :], linewidth=0.05, alpha=0.25)
 
     ax.set_color_cycle(['red'])
     ax.plot(xvalues, rep, linewidth=0.5)
@@ -38,7 +38,7 @@ def plotSaturation(title, variant):
 
     for p in peaks:
         plt.axvspan(xmin=p.start-int(start)+5, xmax=p.end-int(start)-5, ymin=0, ymax=0.05,
-                    facecolor='red', alpha=0.5, edgecolor='red')
+                    facecolor='blue', alpha=0.5, edgecolor='black')
 
     #######
 

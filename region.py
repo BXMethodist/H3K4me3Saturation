@@ -57,48 +57,41 @@ class Region():
             group_units_by_overlap.append(cur_overlap)
 
         for group in group_units_by_overlap:
+            # print [(g[0]-self.start, g[1]-self.start, g[2]) for g in group]
             related_variants = set([x[2] for x in group])
             if len(related_variants) == 1:
                 continue
             left_border = (min([x[0] for x in group])-self.start)/self.step
             right_border = (max([x[1] for x in group])-self.start)/self.step
 
-            group_matrix = []
-            for v in related_variants:
-                group_matrix.append(self.representatives[v][left_border:right_border])
-
-            group_matrix = np.asarray(group_matrix)
-            distances_matrix = np.corrcoef(group_matrix)
-
-            close_pairs = np.asarray(np.where(distances_matrix >= 0.8)).T
-            distinct_close_units_variants = remove_duplicate(close_pairs)
-            if len(distinct_close_units_variants) == 0:
+            if (right_border - left_border)*self.step > (self.end-self.start)/4.0:
                 continue
-            else:
-                left_start = left_border*self.step + self.start
-                right_end = right_border*self.step + self.start
 
-                while len(distinct_close_units_variants) > 0:
-                    cur_pair = distinct_close_units_variants.pop(0)
-                    affected_var =set([x for x in cur_pair])
-                    need_to_remove = []
-                    for pair in distinct_close_units_variants:
-                        if pair[0] in cur_pair or pair[1] in affected_var:
-                            need_to_remove.append(pair)
-                            for p in pair:
-                                affected_var.add(p)
-                    for pair in need_to_remove:
-                        distinct_close_units_variants.remove(pair)
-                    for v in affected_var:
-                        affected_units = [unit[0:2] for unit in group if unit[2] == v]
-                        cur_variant = self.variants[v]
-                        cur_variant.units = [unit for unit in cur_variant.units
-                                             if [unit.start,unit.end] not in affected_units]
-                        new_unit = Unit(self.chromosome, left_start, right_end,
-                                        cur_variant.signals[left_border:right_border])
-                        cur_variant.units.append(new_unit)
-                        cur_variant.units = sorted(cur_variant.units, key=lambda x: x.start)
+            merge_boo = True
+            for i in range(len(self.variants)):
+                units_in_cur_group = [u for u in group if u[2] == i]
+                for j in range(i, len(self.variants)):
+                    units_in_compare_group = [u for u in group if u[2] == j]
+                    overlap_region = overlap_length(units_in_cur_group, units_in_compare_group)
 
+                    if overlap_region/total_length(units_in_cur_group) < 0.6 or \
+                        overlap_region/total_length(units_in_compare_group) < 0.6:
+                        merge_boo = False
+                        print [(g[0]-self.start, g[1]-self.start, g[2]) for g in group]
+                        print overlap_region / total_length(units_in_cur_group)
+                        print overlap_region / total_length(units_in_compare_group)
+            if merge_boo:
+                left_start = left_border * self.step + self.start
+                right_end = right_border * self.step + self.start
+                for v in range(len(self.variants)):
+                    affected_units = [unit[0:2] for unit in group if unit[2] == v]
+                    cur_variant = self.variants[v]
+                    cur_variant.units = [unit for unit in cur_variant.units
+                                         if (unit.start, unit.end) not in affected_units]
+                    new_unit = Unit(self.chromosome, left_start, right_end,
+                                    cur_variant.signals[left_border:right_border])
+                    cur_variant.units.append(new_unit)
+                    cur_variant.units = sorted(cur_variant.units, key=lambda x: x.start)
         return
 
     def merge_variants(self):
@@ -136,19 +129,28 @@ class Region():
     def get_overlap(self, unit):
         overlap_units = set()
         overlap_units.add(unit)
-        target_units = [unit]
+        need_to_remove = []
+        left_border = unit[0]
+        right_border = unit[1]
+        for u in self.units:
+            if left_border < u[0] < right_border or \
+                left_border < u[1] < right_border or \
+                u[0] <  left_border < u[1] or \
+                u[0] < right_border < u[1]:
+                overlap_units.add(u)
+                need_to_remove.append(u)
+                left_border = min(u[0], left_border)
+                right_border = max(u[0], right_border)
 
-        while len(target_units) > 0 :
-            cur_unit = target_units.pop(0)
-            need_to_remove = []
-            for u in self.units:
-                if cur_unit[0] <= u[0] <= cur_unit[1] or \
-                    cur_unit[0] <= u[1] <= cur_unit[1]:
-                    overlap_units.add(u)
-                    target_units.append(u)
+        for u in self.units:
+            if left_border < u[0] < right_border or \
+                left_border < u[1] < right_border:
+                overlap_units.add(u)
+                if u not in need_to_remove:
                     need_to_remove.append(u)
-            for u in need_to_remove:
-                self.units.remove(u)
+
+        for u in need_to_remove:
+            self.units.remove(u)
         return overlap_units
 
 
@@ -338,6 +340,27 @@ def merge_unit(chromosome, start, end, cutoff, units, signals, step=10):
     result_units.append(merged_unit)
     return result_units
 
+def overlap_length(units1, units2):
+    sum = 0
+    for unit1 in units1:
+        for unit2 in units2:
+            sum += overlap(unit1, unit2)
+    return sum*1.0
+
+def total_length(units):
+    sum = 0
+
+    for unit in units:
+        sum += unit[1] - unit[0]
+    return sum*1.0
+
+def overlap(unit1, unit2):
+    max_pos = min(unit1[1], unit2[1])
+    min_pos = max(unit1[0], unit2[0])
+    if min_pos >= max_pos:
+        return 0*1.0
+    else:
+        return (max_pos - min_pos)*1.0
 
 
 
