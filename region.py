@@ -280,8 +280,6 @@ def splitable(chromosome, start, end, signals, convex_cutoff):
 
     split_local_mins_index = np.where(split_local_mins)[0]
 
-    splitable_indexes = []
-
     for min in split_local_mins_index:
         left_part = signals[:left+min]
         right_part = signals[left+min:]
@@ -294,11 +292,8 @@ def splitable(chromosome, start, end, signals, convex_cutoff):
         if left_unit_height > 2 * min_height and right_unit_height > 2 * min_height and \
                 (left_unit_height >= convex_cutoff and right_unit_height >= convex_cutoff):
             # print "split"
-            splitable_indexes.append(left+min)
-    if len(splitable_indexes) == 0:
-        return None
-    else:
-        return int(np.mean(splitable_indexes))
+            return left+min
+    return None
 
 def callunitbycutoff(chromosome, start, end, signals, cutoff, step=10):
     units = []
