@@ -110,13 +110,13 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
 # if __name__ == "__main__":
     # open a reference map
-# map_path ="./75_refmap_combined.csv"
-# finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
-# files_read_for_clusters = get_map(map_path, finished_job=finished_job)
+map_path ="./75_refmap_combined.csv"
+finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
+files_read_for_clusters = get_map(map_path, finished_job=finished_job)
 
 
 
-regions = region_cluster(directory='./csv')
+# regions = region_cluster(directory='./csv')
 # regions = region_cluster()
 
 # print regions

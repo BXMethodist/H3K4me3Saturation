@@ -283,7 +283,7 @@ def get_map(refmap, step=10, sep=",", finished_job=()):
 
     chr_name = "chr3"
 
-    for line in region_map[chr_name][0:1000]:
+    for line in region_map[chr_name]:
         start, end = line
 
         output_name = chr_name + "_" + str(start) + "_" + str(end) + ".csv"
@@ -332,4 +332,4 @@ if __name__ == "__main__":
     cutoffs = [75, 100]
     for cutoff in cutoffs:
         path = str(cutoff) + surffix
-        peak_combiner(path, 1000)
+        peak_combiner(path, 100)
