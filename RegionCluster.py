@@ -113,11 +113,11 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 # map_path ="./75_refmap_combined.csv"
 # finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
 # files_read_for_clusters = get_map(map_path, finished_job=finished_job)
-
-
-
+#
+import matplotlib.pyplot as plt
+print plt.gcf().canvas.get_supported_filetypes()
 regions = region_cluster(directory='./csv')
-
+#
 data = regions[0].variants[0].members[3, :]
 
 from visualizationUtils import plot_predict
@@ -128,7 +128,7 @@ allocs = optimize_allocs(data, regions[0].representatives)
 plot_predict(data, regions[0].representatives, allocs)
 
 # regions = region_cluster()
-
+#
 # print regions
 #
 # import pickle

@@ -11,6 +11,7 @@ from rpy2 import robjects
 from cycler import cycler
 
 def plotSaturation(title, variant):
+    width = variant.end-variant.start
     array = variant.members
     rep = variant.signals
     original_seed = variant.seed
@@ -30,7 +31,7 @@ def plotSaturation(title, variant):
 
     ax.set_prop_cycle(color=['grey'])
     for i in range(parameters):
-        ax.plot(xvalues, array[i, :], linewidth=0.05, alpha=0.8)
+        ax.plot(xvalues, array[i, :], linewidth=0.1, alpha=0.5)
 
     ax.set_prop_cycle(color=['red'])
     ax.plot(xvalues, rep, linewidth=0.5, label='representative')
@@ -38,8 +39,8 @@ def plotSaturation(title, variant):
     peaks = variant.units
 
     for p in peaks:
-        plt.axvspan(xmin=p.start-int(start)+5, xmax=p.end-int(start)-5, ymin=0, ymax=0.05,
-                    facecolor='blue', alpha=0.5, edgecolor='black')
+        plt.axvspan(xmin=p.start-int(start)+width/100.0, xmax=p.end-int(start)-width/100.0, ymin=0, ymax=0.05,
+                    facecolor='blue', alpha=0.8, edgecolor='black')
 
     #######
 
@@ -60,7 +61,7 @@ def plotSaturation(title, variant):
     for label in legend.get_lines():
         label.set_linewidth(0.75)  # the legend line width
 
-    fig.savefig("./pictures/"+title, dpi=600, facecolor='w', edgecolor='w',
+    fig.savefig("./pictures/"+title+'.png', dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
     plt.close('all')
     return peaks
@@ -146,6 +147,6 @@ def plot_predict(data, representatives, allocs):
     for label in legend.get_lines():
         label.set_linewidth(0.75)  # the legend line width
 
-    fig.savefig("./test.png", dpi=600, facecolor='w', edgecolor='w',
+    fig.savefig("./pictures/test.png", dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
 

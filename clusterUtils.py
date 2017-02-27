@@ -281,17 +281,16 @@ def get_map(refmap, step=10, sep=",", finished_job=()):
             end = int(line[1]) * step
             region_map[chr_name].append((start, end))
 
-    chr_name = "chr3"
+    for chr_name in region_map.keys():
+        for line in region_map[chr_name]:
+            start, end = line
 
-    for line in region_map[chr_name]:
-        start, end = line
+            output_name = chr_name + "_" + str(start) + "_" + str(end) + ".csv"
 
-        output_name = chr_name + "_" + str(start) + "_" + str(end) + ".csv"
-
-        if output_name not in finished_job:
-            file_name = get_split_chr(chr_name, start, end)
-            if file_name is not None:
-                files_read_for_cluster.append(file_name)
+            if output_name not in finished_job:
+                file_name = get_split_chr(chr_name, start, end)
+                if file_name is not None:
+                    files_read_for_cluster.append(file_name)
     return files_read_for_cluster
 
 
