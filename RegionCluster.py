@@ -34,7 +34,7 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
         if data_values.shape[0] == 1:
             continue
 
-        cluster.fit(data_values, 0.8, 0.4)
+        cluster.fit(data_values, 0.8, 0.3)
 
         data_values = cluster.data
 
@@ -71,7 +71,7 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
         regions.append(peak)
         from visualizationUtils import plotSaturation #, heatmap
-        if len(peak.variants) > 1:
+        if len(peak.variants) > 1 and peak.plotable:
             for i in range(len(peak.variants)):
                 variant = peak.variants[i]
                 plotSaturation(pos_surfix + "_cluster" + str(i), variant)
@@ -110,13 +110,23 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
 # if __name__ == "__main__":
     # open a reference map
-map_path ="./75_refmap_combined.csv"
-finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
-files_read_for_clusters = get_map(map_path, finished_job=finished_job)
+# map_path ="./75_refmap_combined.csv"
+# finished_job = os.listdir("/home/tmhbxx3/archive/WigChrSplits/code/csv/")
+# files_read_for_clusters = get_map(map_path, finished_job=finished_job)
 
 
 
-# regions = region_cluster(directory='./csv')
+regions = region_cluster(directory='./csv')
+
+data = regions[0].variants[0].members[3, :]
+
+from visualizationUtils import plot_predict
+from predict import optimize_allocs
+
+allocs = optimize_allocs(data, regions[0].representatives)
+
+plot_predict(data, regions[0].representatives, allocs)
+
 # regions = region_cluster()
 
 # print regions

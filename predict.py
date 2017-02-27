@@ -9,11 +9,13 @@ def optimize_allocs(data, clusters):
     :param clusters: clusters from refmap
     :return: allocs, a list of quotes of clusters
     """
+    clusters = np.asarray(clusters)
 
     allocs = np.asarray([1.0/clusters.shape[0]]*clusters.shape[0])
 
     allocs = spo.minimize(distance, allocs, args=(data, clusters), method='SLSQP').x
 
+    allocs = allocs/np.sum(allocs)
     return allocs
 
 

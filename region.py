@@ -32,10 +32,18 @@ class Region():
         self.create_variants(variants_members)
         self.merge_units_across_variants()
         self.merge_variants()
+        for variant in self.variants:
+            variant.split_units()
 
-        self.representatives = [variant.signals for variant in self.variants]
-        self.seeds = [variant.seed for variant in self.variants]
+        self.representatives = np.asarray([variant.signals for variant in self.variants])
+        self.seeds = np.asarray([variant.seed for variant in self.variants])
         self.labels = [variant.labels for variant in self.variants]
+
+        # for variant in self.variants:
+        #     print [(unit.start, unit.end) for unit in variant.units]
+
+        # Does it worth to be plot and check
+        self.plot = self.plotable()
 
     def create_variants(self, variants_members):
         for i in range(len(self.representatives)):
@@ -54,6 +62,7 @@ class Region():
             cur_overlap = self.get_overlap(unit)
             group_units_by_overlap.append(cur_overlap)
 
+        print group_units_by_overlap
         for group in group_units_by_overlap:
             # print [(g[0]-self.start, g[1]-self.start, g[2]) for g in group]
             related_variants = set([x[2] for x in group])
@@ -62,13 +71,13 @@ class Region():
             left_border = (min([x[0] for x in group])-self.start)/self.step
             right_border = (max([x[1] for x in group])-self.start)/self.step
 
-            if (right_border - left_border)*self.step > (self.end-self.start)/4.0:
-                continue
+            # if (right_border - left_border)*self.step > (self.end-self.start)/3.0:
+            #     continue
 
             merge_boo = True
             for i in range(len(self.variants)):
                 units_in_cur_group = [u for u in group if u[2] == i]
-                if not all([u[3] for u in units_in_cur_group]):
+                if any([u[3] for u in units_in_cur_group]):
                     merge_boo = False
                     break
                 for j in range(i, len(self.variants)):
@@ -78,13 +87,17 @@ class Region():
                     if (total_length(units_in_cur_group) != 0 and total_length(units_in_compare_group) != 0) and \
                             (overlap_region/total_length(units_in_cur_group) < 0.6 or
                                          overlap_region/total_length(units_in_compare_group) < 0.6):
+                        print overlap_region/total_length(units_in_cur_group), \
+                            overlap_region / total_length(units_in_compare_group)
                         merge_boo = False
 
             if merge_boo:
                 left_start = left_border * self.step + self.start
                 right_end = right_border * self.step + self.start
+                print group, "merge in progress"
                 for v in range(len(self.variants)):
                     affected_units = [unit[0:2] for unit in group if unit[2] == v]
+                    # print affected_units, "affected"
                     cur_variant = self.variants[v]
                     cur_variant.units = [unit for unit in cur_variant.units
                                          if (unit.start, unit.end) not in affected_units]
@@ -114,6 +127,7 @@ class Region():
                     self.variants.remove(variant)
                     has_been_removed.add(variant)
             cur_pair = list(cur_pair)
+            print cur_pair
             self.variants.append(self.combine_variants(cur_pair))
         return
 
@@ -133,30 +147,34 @@ class Region():
     def get_overlap(self, unit):
         overlap_units = set()
         overlap_units.add(unit)
-        need_to_remove = []
-        left_border = unit[0]
-        right_border = unit[1]
-        for u in self.units:
-            if left_border < u[0] < right_border or \
-                left_border < u[1] < right_border or \
-                u[0] <  left_border < u[1] or \
-                u[0] < right_border < u[1]:
-                overlap_units.add(u)
-                need_to_remove.append(u)
-                left_border = min(u[0], left_border)
-                right_border = max(u[0], right_border)
+        need_to_remove = set()
 
-        for u in self.units:
-            if left_border < u[0] < right_border or \
-                left_border < u[1] < right_border:
-                overlap_units.add(u)
-                if u not in need_to_remove:
-                    need_to_remove.append(u)
-
+        frontiers = [unit]
+        while len(frontiers) > 0:
+            cur_unit = frontiers.pop(0)
+            left_border = cur_unit[0]
+            right_border = cur_unit[1]
+            for u in self.units:
+                if left_border < u[0] < right_border or \
+                    left_border < u[1] < right_border or \
+                    u[0] <  left_border < u[1] or \
+                    u[0] < right_border < u[1]:
+                    if u not in overlap_units:
+                        overlap_units.add(u)
+                        frontiers.append(u)
+                        need_to_remove.add(u)
         for u in need_to_remove:
             self.units.remove(u)
         return overlap_units
 
+    def plotable(self):
+        if len(self.variants) < 2:
+            return False
+        if self.end - self.start < 2000:
+            return False
+        if all(len(variant.units)==1 for variant in self.variants):
+            return False
+        return True
 
 
 class Variant():
@@ -190,20 +208,17 @@ class Variant():
         self.seed = seed
         self.labels = labels
 
-        units_by_cutoff= callunitbycutoff(self.chromosome, self.start, self.end, self.signals,
+        units= callunitbycutoff(self.chromosome, self.start, self.end, self.signals,
                                           cutoff=self.cutoff, step=self.step)
-        # print [(peak[0], peak[1], peak[2]) for peak in peaks_by_cutoff]
-        # print peaks_by_cutoff
-        merged_units = merge_unit(self.chromosome, self.start, self.end, len(self.signals)*self.step/40.0,
-                                  units_by_cutoff, self.signals, self.step)
+        merged_units = merge_unit(self.chromosome, self.start, self.end, len(self.signals) * self.step / 40.0,
+                                  units, self.signals, self.step)
 
         merged_units = sorted(merged_units, key=lambda x: x[1])
         self.units = []
-
         for unit in merged_units:
             cur_chr, cur_start, cur_end, cur_signals = unit
-            cur_units = callunit(cur_chr, cur_start, cur_end, cur_signals, self.step, self.convex_cutoff)
-            self.units += cur_units
+            self.units.append(Unit(cur_chr, cur_start, cur_end, cur_signals))
+
 
     def similar(self, other):
         if len(self.units) != len(other.units):
@@ -217,6 +232,29 @@ class Variant():
                 return False
         return True
 
+    def split_units(self):
+        units = []
+        frontiers = [(unit.chromosome, unit.start, unit.end, unit.signals, False) for unit in self.units]
+
+        while len(frontiers) > 0:
+            cur_chromosome, cur_start, cur_end, cur_signals, splitted = frontiers.pop(0)
+            split_index = splitable(cur_chromosome, cur_start, cur_end, cur_signals, self.convex_cutoff)
+            if split_index is None:
+                units.append((cur_chromosome, cur_start, cur_end, cur_signals, splitted))
+            else:
+                left = (cur_chromosome, cur_start, cur_start + split_index * self.step, cur_signals[:split_index], True)
+                right = (cur_chromosome, cur_start + split_index * self.step, cur_end, cur_signals[split_index:], True)
+                frontiers.append(left)
+                frontiers.append(right)
+
+        units = sorted(units, key=lambda x: x[1])
+        units_obj = []
+        for p in units:
+            chromosome, start, end, signals, splitted = p
+            u_obj = Unit(chromosome, start, end, signals, splitted=splitted)
+            units_obj.append(u_obj)
+        self.units = units_obj
+        return
 
 
 class Unit():
@@ -280,6 +318,9 @@ def splitable(chromosome, start, end, signals, convex_cutoff):
 
     split_local_mins_index = np.where(split_local_mins)[0]
 
+    split_indexes = None
+    minimum_height = float('inf')
+
     for min in split_local_mins_index:
         left_part = signals[:left+min]
         right_part = signals[left+min:]
@@ -291,9 +332,18 @@ def splitable(chromosome, start, end, signals, convex_cutoff):
         # print left_peak_height, right_peak_height, min_height
         if left_unit_height > 2 * min_height and right_unit_height > 2 * min_height and \
                 (left_unit_height >= convex_cutoff and right_unit_height >= convex_cutoff):
-            # print "split"
-            return left+min
-    return None
+            print "split"
+            if split_indexes is None:
+                split_indexes = left+min
+                minimum_height = min_height
+            elif min_height < minimum_height:
+                split_indexes = left + min
+                minimum_height = min_height
+            # print split_indexes
+    if split_indexes is None:
+        return None
+    else:
+        return split_indexes
 
 def callunitbycutoff(chromosome, start, end, signals, cutoff, step=10):
     units = []
