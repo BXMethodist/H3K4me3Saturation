@@ -30,6 +30,7 @@ def get_split_chr(chr_name, start, end, vector_size=10000, step=10, merge=10, cu
     :param path: where the splitted wig files are stored
     :return: the output filename (without directory)
     """
+    print chr_name, start, end
     if not path.endswith("/"):
         path += "/"
 
@@ -48,8 +49,13 @@ def get_split_chr(chr_name, start, end, vector_size=10000, step=10, merge=10, cu
 
     folder_names = []
 
-    while start_name != end_name:
+    while start_name < end_name:
         folder_name = output_path + str(start_name) + "_" + str(start_name + unit_size) + "_" + str(step) + "/"
+        if not os.path.exists(folder_name):
+            allfolders = os.listdir(path)
+            for folder in allfolders:
+                if folder.find(chr_name + "_" + str(start_name) + "_") != -1:
+                    folder_name = path + folder + '/'
         start_name += unit_size
         folder_names.append(folder_name)
         print folder_name
@@ -276,7 +282,7 @@ def get_map(refmap, step=10, sep=",", finished_job=()):
             chr_name = line.rstrip()[1:]
         else:
             line = line.rstrip().split(sep)
-            print line
+            # print line
             start = int(line[0]) * step
             end = int(line[1]) * step
             region_map[chr_name].append((start, end))
