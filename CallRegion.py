@@ -60,3 +60,6 @@ def CallVariants(wig, refmap, group, callvariant, process):
 
     df = pd.DataFrame(results, columns=['variant name', 'value'], index='variant')
     return df
+
+def CallUnits():
+    pass

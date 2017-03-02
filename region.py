@@ -37,6 +37,8 @@ class Region():
         for i in range(len(self.variants)):
             variant = self.variants[i]
             split_indexes[i] = variant.split_units()
+            print split_indexes, i, "first split indexes"
+
 
         split_indexes = self.merge_split_index(split_indexes)
 
@@ -114,11 +116,45 @@ class Region():
                     cur_variant.units = [unit for unit in cur_variant.units
                                          if (unit.start, unit.end) not in affected_units]
 
-
                     new_unit = Unit(self.chromosome, left_start, right_end,
                                     cur_variant.signals[left_border:right_border])
                     cur_variant.units.append(new_unit)
                     cur_variant.units = sorted(cur_variant.units, key=lambda x: x.start)
+
+            for i in range(len(self.variants)):
+                cur_variant = self.variants[i]
+                for j in range(len(cur_variant.units)):
+                    cur_unit = cur_variant.units[j]
+                    max_overlap = 0
+                    max_index = None
+                    for k in range(i+1, len(self.variants)):
+                        target_variant = self.variants[k]
+                        for m in range(len(target_variant.units)):
+                            target_unit = target_variant.units[m]
+                            overlap_region_length = overlap((cur_unit.start, cur_unit.end),
+                                                            (target_unit.start, target_unit.end))
+                            overlap_percentage = min(overlap_region_length/(target_unit.end-target_unit.start),
+                                                     overlap_region_length/(cur_unit.end-cur_unit.start))
+                            print overlap_percentage, i, j , k, m
+                            if overlap_percentage > max_overlap:
+                                max_overlap = overlap_percentage
+                                max_index = (k, m)
+                    # print max_overlap, " max overlap"
+                    if 1.0 > max_overlap > 0.8:
+                        k, m = max_index
+                        target_unit = self.variants[k].units[m]
+                        merge_start = min(cur_unit.start, target_unit.start)
+                        merge_end = max(cur_unit.end, target_unit.end)
+                        cur_unit.start = merge_start
+                        cur_unit.end = merge_end
+                        target_unit.start = merge_start
+                        target_unit.end = merge_end
+                        cur_unit.signals = self.variants[j].signals[
+                            int((merge_start - self.variants[j].start)/self.variants[j].step):
+                            int((merge_end - self.variants[j].start) / self.variants[j].step)]
+                        target_unit.signals = self.variants[k].signals[
+                                           int((merge_start - self.variants[k].start) / self.variants[k].step):
+                                           int((merge_end - self.variants[k].start) / self.variants[k].step)]
         return
 
     def merge_variants(self):
@@ -198,12 +234,12 @@ class Region():
                 for j in range(len(splited_indexes.keys())):
                     target_indexes = splited_indexes[j]
                     for target_index in target_indexes:
-                        if abs(target_index - index) < 20:
+                        if abs(target_index - index) < 15:
                             related.add((target_index, j))
                 if len(related) == 0:
-                    new_split_indexes[i].add(index)
+                    new_split_indexes[i].add(int(index))
                 else:
-                    mean_index = np.mean([x[0] for x in related])
+                    mean_index = int(np.mean([x[0] for x in related]))
                     related_variants = [x[1] for x in related]
                     for v in related_variants:
                         new_split_indexes[v].add(mean_index)
@@ -243,7 +279,7 @@ class Variant():
 
         units= callunitbycutoff(self.chromosome, self.start, self.end, self.signals,
                                           cutoff=self.cutoff, step=self.step)
-        merged_units = merge_unit(self.chromosome, self.start, self.end, len(self.signals) * self.step / 40.0,
+        merged_units = merge_unit(self.chromosome, self.start, self.end, len(self.signals) * self.step / 20.0,
                                   units, self.signals, self.step)
 
         merged_units = sorted(merged_units, key=lambda x: x[1])
@@ -258,7 +294,7 @@ class Variant():
         for i in range(len(self.units)):
             unit = self.units[i]
             other_unit = other.units[i]
-            if abs(unit.start - other_unit.start) <= 240 and abs(unit.end - other_unit.end) <= 240:
+            if abs(unit.start - other_unit.start) <= 200 and abs(unit.end - other_unit.end) <= 200:
                 continue
             else:
                 return False
@@ -278,7 +314,7 @@ class Variant():
                 right = (cur_chromosome, cur_start + split_index * self.step, cur_end, cur_signals[split_index:], True)
                 frontiers.append(left)
                 frontiers.append(right)
-                split_indexes.append(split_index)
+                split_indexes.append((cur_start - self.start)/self.step+split_index)
 
         split_indexes = sorted(split_indexes)
         return split_indexes
@@ -286,19 +322,33 @@ class Variant():
     def split_on_common_index(self, splitted_indexes):
         new_units = []
         split = False
+        splitted_indexes = sorted(splitted_indexes)
+
+        unit_split_map = {}
+
         for unit in self.units:
+            related_index = set()
             for index in splitted_indexes:
                 if unit.start < self.start+index*self.step < unit.end:
-                    left = Unit(self.chromosome, unit.start, unit.start+index*self.step, self.signals[:index])
-                    right = Unit(self.chromosome, unit.start+index*self.step, unit.end, self.signals[index:])
+                    related_index.add(index)
+            unit_split_map[unit] = related_index
+
+        for key, value in unit_split_map.items():
+            if len(value) == 0:
+                new_units.append(key)
+            else:
+                cur_start = key.start
+                value = sorted(list(value))
+                for index in value:
+                    left = Unit(self.chromosome, cur_start, self.start + index * self.step,
+                                self.signals[int((cur_start-key.start)/self.step):index])
                     new_units.append(left)
-                    new_units.append(right)
-                    split = True
-                    break
-            if not split:
-                new_units.append(unit)
+                    cur_start = self.start + index * self.step
+                right = Unit(self.chromosome, cur_start, key.end,
+                             self.signals[value[-1]:int((key.end-self.start)/self.step)])
+                new_units.append(right)
+
         self.units = new_units
-        # print [(unit.start, unit.end) for unit in self.units]
         return
 
 
@@ -314,31 +364,6 @@ class Unit():
         if self.width <= 0:
             print self.chromosome, self.start, self.end, "width is 0, why?"
         self.height = np.max(self.signals)
-
-
-def callunit(chromosome, start, end, signals, step, convex_cutoff):
-    units = []
-    frontiers = []
-    frontiers.append((chromosome, start, end, signals, False))
-
-    while len(frontiers) > 0:
-        cur_chromosome, cur_start, cur_end, cur_signals, splitted = frontiers.pop(0)
-        split_index = splitable(cur_chromosome, cur_start, cur_end, cur_signals, convex_cutoff)
-        if split_index is None:
-            units.append((cur_chromosome, cur_start, cur_end, cur_signals, splitted))
-        else:
-            left = (cur_chromosome, cur_start, cur_start+split_index*step, cur_signals[:split_index], True)
-            right = (cur_chromosome, cur_start+split_index*step, cur_end, cur_signals[split_index:], True)
-            frontiers.append(left)
-            frontiers.append(right)
-
-    units = sorted(units, key=lambda x: x[1])
-    units_obj = []
-    for p in units:
-        chromosome, start, end, signals, splitted = p
-        u_obj = Unit(chromosome, start, end, signals, splitted=splitted)
-        units_obj.append(u_obj)
-    return units_obj
 
 def splitable(chromosome, start, end, signals, convex_cutoff):
     local_min = np.r_[True, signals[1:] < signals[:-1]] & np.r_[signals[:-1] < signals[1:], True]
@@ -372,21 +397,21 @@ def splitable(chromosome, start, end, signals, convex_cutoff):
         right_unit_height = np.max(right_part)
         min_height = split_region[min]
 
+        # print left + min, min_height
         # print left_peak_height, right_peak_height, min_height
         if left_unit_height > 2 * min_height and right_unit_height > 2 * min_height and \
                 (left_unit_height >= convex_cutoff and right_unit_height >= convex_cutoff):
-            print "split"
             if split_indexes is None:
                 split_indexes = left+min
                 minimum_height = min_height
             elif min_height < minimum_height:
                 split_indexes = left + min
                 minimum_height = min_height
-            # print split_indexes
+            print "split", split_indexes
     if split_indexes is None:
         return None
     else:
-        return split_indexes
+        return int(split_indexes)
 
 def callunitbycutoff(chromosome, start, end, signals, cutoff, step=10):
     units = []
@@ -409,11 +434,15 @@ def callunitbycutoff(chromosome, start, end, signals, cutoff, step=10):
         elif cur_index - prev == 1 and i == len(units_index)-1:
             if cur_start != prev:
                 peak = (chromosome, start+cur_start*step, start+cur_index*step, signals[cur_start:cur_index])
-                units.append(peak)
+                if (cur_index-cur_start)/(end-start) > 0.1 or \
+                        np.max(signals[cur_start:cur_index]) > np.max(signals)*0.15:
+                    units.append(peak)
         else:
             if cur_start != prev:
                 peak = (chromosome, start+cur_start*step, start+prev*step, signals[cur_start:prev])
-                units.append(peak)
+                if (cur_index - cur_start) / (end - start) > 0.1 or \
+                                np.max(signals[cur_start:cur_index]) > np.max(signals) * 0.15:
+                    units.append(peak)
                 prev = cur_index
                 cur_start = cur_index
     # print [x[0:3] for x in units]

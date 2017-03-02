@@ -333,8 +333,10 @@ if __name__ == "__main__":
     # get_split_chr("chr3", 122562770, 122562820, cutoff=25)
 
     # prefix = "/home/tmhbxx3/archive/refmap_saturation/code/"
-    surffix = "_refmap.csv"
-    cutoffs = [75, 100]
-    for cutoff in cutoffs:
-        path = str(cutoff) + surffix
-        peak_combiner(path, 100)
+    # surffix = "_refmap.csv"
+    # cutoffs = [75, 100]
+    # for cutoff in cutoffs:
+    #     path = str(cutoff) + surffix
+    #     peak_combiner(path, 100)
+
+    get_split_chr('chr3', 3167850, 3169860)
