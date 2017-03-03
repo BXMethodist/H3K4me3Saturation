@@ -5,7 +5,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from clusterUtils import *
 
 
-def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, convergence_iter=15, max_iter=200,
+def affinity_propagation(X, S, max_cutoff, min_cutoff, number_sample_used,
+                         preference=None, convergence_iter=15, max_iter=200,
                          damping=0.5, copy=True, verbose=False,
                          return_n_iter=False):
     """Perform Affinity Propagation Clustering of data
@@ -24,6 +25,8 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
     max_cutoff: the min cut_off to group sample together by affinity metrics
 
     min_cutoff: the max cut_off to find the most distinct pair by affinity metrics
+
+    number_sample_used: total sample used to build the reference map
 
     preference : array-like, shape (n_samples,) or float, optional
         Preferences for each point - points with larger values of
@@ -91,7 +94,7 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, preference=None, converge
 
         min_distance = affinity_matrix.flat[distinct_index]
 
-        if min_distance > min_cutoff or np.isnan(min_distance) or S.shape[0] < 60:
+        if min_distance > min_cutoff or np.isnan(min_distance) or S.shape[0] < number_sample_used/5:
             # TO DO: return the entire samples as one cluster
             labels.append(np.arange(n_samples))
             representation = [np.mean(X, axis=0)]
@@ -371,7 +374,7 @@ class DistinctAffinityPropagation():
     ----------
     """
 
-    def __init__(self, damping=.5, max_iter=200, convergence_iter=15,
+    def __init__(self, number_sample_used, damping=.5, max_iter=200, convergence_iter=15,
                  copy=True, preference=None, affinity=np.corrcoef,
                  verbose=False):
 
@@ -382,6 +385,7 @@ class DistinctAffinityPropagation():
         self.verbose = verbose
         self.preference = preference
         self.affinity = affinity
+        self.number_sample_used = number_sample_used
 
     def fit(self, X, max_cutoff, min_cutoff, mean_target=200, smooth_period=20, cutoff=None):
         """ Create affinity matrix from negative euclidean distances, then
@@ -407,8 +411,6 @@ class DistinctAffinityPropagation():
         left_index = np.where(max_values > cutoff)[0]
         X = X[left_index, :]
 
-
-
         if mean_target:
             X = mean_normalization(X, target_signal=mean_target)
         if smooth_period:
@@ -422,7 +424,7 @@ class DistinctAffinityPropagation():
 
         self.cluster_centers_indices_, self.labels_, self.seeds_, self.representation_ = \
             affinity_propagation(X,
-                self.affinity_matrix_, max_cutoff, min_cutoff,
+                self.affinity_matrix_, max_cutoff, min_cutoff, self.number_sample_used,
                 self.preference, max_iter=self.max_iter, convergence_iter=self.convergence_iter,
                 damping=self.damping, copy=self.copy, verbose=self.verbose, return_n_iter=True)
 

@@ -4,7 +4,11 @@ import pandas as pd, os, numpy as np, pickle
 from clusterUtils import get_map
 
 
-def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/", affinity=np.corrcoef):
+def region_cluster(number_sample_used,
+                   cutoff=75,
+                   list_files=None,
+                   directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/",
+                   affinity=np.corrcoef):
     if not os.path.isdir("./pictures"):
         os.system("mkdir pictures")
     if not os.path.isdir("./tempcsv"):
@@ -22,7 +26,7 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 
     for file_name in list_files:
         print file_name
-        cluster = DistinctAffinityPropagation(affinity)
+        cluster = DistinctAffinityPropagation(number_sample_used, affinity=affinity)
         df = pd.read_csv(directory+file_name, sep="\t")
 
         pos_surfix = file_name[file_name.rfind("/") + 1:-4]
@@ -34,7 +38,7 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
         if data_values.shape[0] == 1:
             continue
 
-        cluster.fit(data_values, 0.8, 0.3, cutoff=75)
+        cluster.fit(data_values, 0.8, 0.3, cutoff=cutoff)
 
         data_values = cluster.data
 
@@ -119,7 +123,7 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(directory='./csv')
+regions = region_cluster(300, directory='./csv')
 
 
 #

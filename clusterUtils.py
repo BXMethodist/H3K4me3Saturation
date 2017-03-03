@@ -229,7 +229,7 @@ def peak_combiner(peak_ref_map, combine_cut_off, step=10):
                 start = x
                 end = y
                 max_peak = y - x
-            elif x - end <= combine_cut_off and x - end <= max_peak:
+            elif x - end <= combine_cut_off: # and x - end <= max_peak:
                 end = y
                 if cur_peak_width > max_peak:
                     max_peak = cur_peak_width
@@ -334,9 +334,21 @@ if __name__ == "__main__":
 
     # prefix = "/home/tmhbxx3/archive/refmap_saturation/code/"
     # surffix = "_refmap.csv"
-    # cutoffs = [75, 100]
+    # cutoffs = [75]
     # for cutoff in cutoffs:
     #     path = str(cutoff) + surffix
-    #     peak_combiner(path, 100)
+    #     peak_combiner(path, 3000)
 
-    get_split_chr('chr3', 3167850, 3169860)
+    # get_split_chr('chr3', 3167850, 3169860)
+    # widths = []
+    f = open("75_refmap_combined.csv", 'r')
+    info = [line.strip().split(",") for line in f.readlines() if not line.startswith(">")]
+    widths = [(int(y) - int(x))*10 for x, y in info]
+
+    print np.percentile(widths, 50)
+    # import matplotlib.pyplot as plt
+    # plt.xlim((0, 10000))
+    # plt.ylim((0, 200))
+    # plt.hist(widths, bins='auto')
+    # plt.show()
+
