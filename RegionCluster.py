@@ -32,8 +32,18 @@ def region_cluster(number_sample_used,
         pos_surfix = file_name[file_name.rfind("/") + 1:-4]
 
         data = df.as_matrix()
-        # sample_names = data[:, 0]
         data_values = data[:, 1:].astype(np.float64)
+        sample_names = data[:, 0]
+
+        max_values = np.max(data_values, axis=1)
+        first_ten_percentile = np.percentile(max_values, 2)
+        if cutoff is not None:
+            cutoff = min(cutoff, first_ten_percentile)
+        else:
+            cutoff = first_ten_percentile
+        left_index = np.where(max_values > cutoff)[0]
+        data_values = data_values[left_index, :]
+        sample_names = sample_names[left_index]
 
         if data_values.shape[0] == 1:
             continue
@@ -66,12 +76,13 @@ def region_cluster(number_sample_used,
         df.to_csv("./cluster_csv/" + pos_surfix + "_clusters.csv", sep="\t")
 
         chromosome, start, end = pos_surfix.split("_")
-
+        # print sample_names
         peak = Region(chromosome, int(start), int(end),
                       representatives=cluster.representation_ ,
                       seeds=data_values[cluster.cluster_centers_indices_],
                       variants_members=data_values,
-                      labels=cluster.labels_)
+                      labels=cluster.labels_,
+                      sample_names=sample_names)
 
         regions.append(peak)
         from visualizationUtils import plotSaturation #, heatmap
@@ -79,7 +90,7 @@ def region_cluster(number_sample_used,
         if len(peak.variants) > 1 and peak.plot:
             for i in range(len(peak.variants)):
                 variant = peak.variants[i]
-                plotSaturation(pos_surfix + "_cluster" + str(i), variant)
+                plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members)
             pass
         else:
             # for i in range(len(peak.variants)):
@@ -124,6 +135,7 @@ def region_cluster(number_sample_used,
 
 
 regions = region_cluster(300, directory='./csv')
+
 
 
 #

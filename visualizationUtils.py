@@ -10,7 +10,7 @@ from scipy.cluster.hierarchy import linkage
 # from rpy2 import robjects
 from cycler import cycler
 
-def plotSaturation(title, variant):
+def plotSaturation(title, variant, sample_names, data_values):
     width = variant.end-variant.start
     array = variant.members
     rep = variant.signals
@@ -29,42 +29,69 @@ def plotSaturation(title, variant):
     ax.set_title(chromosome + " " + start + "~"+end+" "+"variant "+str(int(cluster_number[-1])+1), fontsize=10)
     xvalues = np.arange(array.shape[1])*10
 
-    ax.set_prop_cycle(color=['grey'])
-    for i in range(parameters):
-        ax.plot(xvalues, array[i, :], linewidth=0.1, alpha=0.5)
+    # ax.set_prop_cycle(color=['grey'])
+    # for i in range(parameters):
+    #     ax.plot(xvalues, array[i, :], linewidth=0.1, alpha=0.5)
 
     ax.set_prop_cycle(color=['red'])
-    ax.plot(xvalues, rep, linewidth=0.5, label='representative')
+    # ax.plot(xvalues, rep, linewidth=0.5, label='representative', alpha=0.5)
+    ax.fill_between(xvalues, 0, rep, alpha=0.5, color='red')
 
     peaks = variant.units
 
     for p in peaks:
         plt.axvspan(xmin=p.start-int(start)+width/100.0, xmax=p.end-int(start)-width/100.0, ymin=0, ymax=0.05,
-                    facecolor='blue', alpha=0.8, edgecolor='black')
+                    facecolor='blue', alpha=0.5, edgecolor='black')
 
     #######
 
-    if original_seed != []:
-        ax.set_prop_cycle(color=['blue'])
-        ax.plot(xvalues, original_seed, linewidth=0.5, label='seed')
+    # if original_seed != []:
+    #     ax.set_prop_cycle(color=['blue'])
+    #     ax.plot(xvalues, original_seed, linewidth=1, label='seed')
 
-    legend = ax.legend(loc='upper right', prop={'size': 2})
+    # legend = ax.legend(loc='upper right', prop={'size': 2})
 
     # # The frame is matplotlib.patches.Rectangle instance surrounding the legend.
     # frame = legend.get_frame()
     # frame.set_facecolor('0.90')
 
     # Set the fontsize
-    for label in legend.get_texts():
-        label.set_fontsize(5)
-
-    for label in legend.get_lines():
-        label.set_linewidth(0.75)  # the legend line width
+    # for label in legend.get_texts():
+    #     label.set_fontsize(5)
+    #
+    # for label in legend.get_lines():
+    #     label.set_linewidth(0.75)  # the legend line width
 
     fig.savefig("./pictures/"+title+'.png', dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
     plt.close('all')
+
+    best_sample_index = variant.best_representative_sample()
+    for i in range(len(best_sample_index)):
+        index = best_sample_index[i]
+        sample_name = sample_names[index]
+        output_name = title + " " + sample_name
+        cur_data = data_values[index]
+        plotBestSample(sample_name, output_name, cur_data, xvalues)
     return peaks
+
+def plotBestSample(title, output_name, signals, xvalues):
+    fig = plt.figure(figsize=(8, 2))
+    ax = fig.add_subplot(111)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    ax.set_xlabel("bp")
+    ax.set_ylabel("Signal")
+    ax.set_title(title, fontsize=10)
+
+    ax.set_prop_cycle(color=['blue'])
+    ax.fill_between(xvalues, 0, signals, alpha=1, color='blue')
+
+    fig.savefig("./pictures/" + output_name + '.png', dpi=600, facecolor='w', edgecolor='w',
+                orientation='portrait', bbox_inches='tight')
+    plt.close('all')
 
 # def heatmap(path, name):
 #     # df = pd.DataFrame(array, index=index)
@@ -149,4 +176,3 @@ def plot_predict(data, representatives, allocs):
 
     fig.savefig("./pictures/test.png", dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
-

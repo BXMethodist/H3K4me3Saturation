@@ -193,6 +193,7 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, number_sample_used,
 
     ### use representation to recluster
     reclusters = labels
+
     # for i in range(representation.shape[0]):
     #     new_seed = representation[i, :]
     #     similarity = cosine_similarity(X, new_seed).T[0]
@@ -400,19 +401,8 @@ class DistinctAffinityPropagation():
         """
         X = np.asarray(X)
         # print X
-
-        # TO DO: remove outliers
-        max_values = np.max(X, axis=1)
-        first_ten_percentile = np.percentile(max_values, 5)
-        if cutoff is not None:
-            cutoff = min(cutoff, first_ten_percentile)
-        else:
-            cutoff = first_ten_percentile
-        left_index = np.where(max_values > cutoff)[0]
-        X = X[left_index, :]
-
-        if mean_target:
-            X = mean_normalization(X, target_signal=mean_target)
+        # if mean_target:
+        #     X = mean_normalization(X, target_signal=mean_target)
         if smooth_period:
             X = smooth_normalization(X, smooth=smooth_period)
 

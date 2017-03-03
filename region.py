@@ -18,16 +18,20 @@ class Region():
         seeds: seed signals used for each cluster
         labels: the index (row number) of samples in each clusters.
     """
-    def __init__(self, chromosome, start, end, representatives, variants_members, seeds, labels, step=10):
+    def __init__(self, chromosome, start, end, representatives,
+                 variants_members, seeds, labels, sample_names,
+                 step=10):
         self.chromosome = chromosome,
         self.start = start
         self.end = end
         self.representatives = representatives
         self.seeds = seeds
         self.labels = labels
+        self.sample_names = sample_names
         self.step = step
         self.variants = []
         self.units = set()
+        self.variants_members = variants_members
 
         self.create_variants(variants_members)
         self.merge_units_across_variants()
@@ -350,6 +354,12 @@ class Variant():
 
         self.units = new_units
         return
+
+    def best_representative_sample(self):
+        correlations = [np.corrcoef(self.signals, member)[0][1] for member in self.members]
+        corr_ranks = [(correlations[i], i) for i in range(len(correlations)) ]
+        corr_ranks = sorted(corr_ranks, key=lambda x:x[0], reverse=True)
+        return [self.labels[rank[1]] for rank in corr_ranks[0:3]]
 
 
 class Unit():
