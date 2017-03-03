@@ -34,7 +34,7 @@ def region_cluster(list_files=None, directory="/home/tmhbxx3/archive/WigChrSplit
         if data_values.shape[0] == 1:
             continue
 
-        cluster.fit(data_values, 0.8, 0.3)
+        cluster.fit(data_values, 0.8, 0.3, cutoff=75)
 
         data_values = cluster.data
 

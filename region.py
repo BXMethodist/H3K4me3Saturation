@@ -135,7 +135,7 @@ class Region():
                                                             (target_unit.start, target_unit.end))
                             overlap_percentage = min(overlap_region_length/(target_unit.end-target_unit.start),
                                                      overlap_region_length/(cur_unit.end-cur_unit.start))
-                            print overlap_percentage, i, j , k, m
+                            # print overlap_percentage, i, j, k, m
                             if overlap_percentage > max_overlap:
                                 max_overlap = overlap_percentage
                                 max_index = (k, m)

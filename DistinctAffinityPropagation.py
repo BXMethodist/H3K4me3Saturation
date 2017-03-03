@@ -383,7 +383,7 @@ class DistinctAffinityPropagation():
         self.preference = preference
         self.affinity = affinity
 
-    def fit(self, X, max_cutoff, min_cutoff, mean_target=200, smooth_period=20):
+    def fit(self, X, max_cutoff, min_cutoff, mean_target=200, smooth_period=20, cutoff=None):
         """ Create affinity matrix from negative euclidean distances, then
         apply affinity propagation clustering.
 
@@ -394,12 +394,21 @@ class DistinctAffinityPropagation():
             Data matrix or, if affinity is ``precomputed``, matrix of
             similarities / affinities.
         """
-
-
-
-        # TO DO
         X = np.asarray(X)
         # print X
+
+        # TO DO: remove outliers
+        max_values = np.max(X, axis=1)
+        first_ten_percentile = np.percentile(max_values, 5)
+        if cutoff is not None:
+            cutoff = min(cutoff, first_ten_percentile)
+        else:
+            cutoff = first_ten_percentile
+        left_index = np.where(max_values > cutoff)[0]
+        X = X[left_index, :]
+
+
+
         if mean_target:
             X = mean_normalization(X, target_signal=mean_target)
         if smooth_period:
