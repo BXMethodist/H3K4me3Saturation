@@ -153,9 +153,9 @@ class Region():
                         cur_unit.end = merge_end
                         target_unit.start = merge_start
                         target_unit.end = merge_end
-                        cur_unit.signals = self.variants[j].signals[
-                            int((merge_start - self.variants[j].start)/self.variants[j].step):
-                            int((merge_end - self.variants[j].start) / self.variants[j].step)]
+                        cur_unit.signals = self.variants[i].signals[
+                            int((merge_start - self.variants[i].start)/self.variants[i].step):
+                            int((merge_end - self.variants[i].start) / self.variants[i].step)]
                         target_unit.signals = self.variants[k].signals[
                                            int((merge_start - self.variants[k].start) / self.variants[k].step):
                                            int((merge_end - self.variants[k].start) / self.variants[k].step)]
@@ -221,7 +221,7 @@ class Region():
     def plotable(self):
         if len(self.variants) < 2:
             return False
-        if self.end - self.start < 2000:
+        if self.end - self.start < 5000:
             return False
         if all(len(variant.units)==1 for variant in self.variants):
             return False
@@ -425,8 +425,9 @@ def splitable(chromosome, start, end, signals, convex_cutoff):
 
 def callunitbycutoff(chromosome, start, end, signals, cutoff, step=10):
     units = []
-
+    # print signals
     units_index = np.where(signals >= cutoff)[0]
+
     if len(units_index) == 0:
         return units
     elif len(units_index) == 1:
@@ -439,27 +440,29 @@ def callunitbycutoff(chromosome, start, end, signals, cutoff, step=10):
     prev = units_index[0]
     for i in range(1, len(units_index)):
         cur_index = units_index[i]
+
         if cur_index - prev == 1 and i != len(units_index)-1:
             prev = cur_index
         elif cur_index - prev == 1 and i == len(units_index)-1:
             if cur_start != prev:
                 peak = (chromosome, start+cur_start*step, start+cur_index*step, signals[cur_start:cur_index])
-                if (cur_index-cur_start)/(end-start) > 0.1 or \
+                if (cur_index-cur_start)*step/(end-start) > 0.1 or \
                         np.max(signals[cur_start:cur_index]) > np.max(signals)*0.15:
                     units.append(peak)
         else:
             if cur_start != prev:
                 peak = (chromosome, start+cur_start*step, start+prev*step, signals[cur_start:prev])
-                if (cur_index - cur_start) / (end - start) > 0.1 or \
+                if (cur_index - cur_start)*step / (end - start) > 0.1 or \
                                 np.max(signals[cur_start:cur_index]) > np.max(signals) * 0.15:
                     units.append(peak)
                 prev = cur_index
-                cur_start = cur_index
+            cur_start = cur_index
     # print [x[0:3] for x in units]
     return units
 
 def merge_unit(chromosome, start, end, cutoff, units, signals, step=10):
     result_units = []
+    print units
     merged_unit = units[0]
     for i in range(1, len(units)):
         cur_unit = units[i]

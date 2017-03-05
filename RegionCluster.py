@@ -24,7 +24,7 @@ def region_cluster(number_sample_used,
 
     regions = []
 
-    for file_name in list_files:
+    for file_name in list_files[0:10000]:
         print file_name
         cluster = DistinctAffinityPropagation(number_sample_used, affinity=affinity)
         df = pd.read_csv(directory+file_name, sep="\t")
