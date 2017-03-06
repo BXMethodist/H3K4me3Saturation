@@ -1,4 +1,6 @@
 
+
+# This class is used to create reference map, not the final version of referencemap for annotation.
 import numpy as np
 import math
 from scipy.stats import pearsonr

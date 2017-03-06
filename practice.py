@@ -1,12 +1,17 @@
 import numpy as np
-from scipy.stats import pearsonr
+# from scipy.stats import pearsonr
+# import pandas as pd
+# from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-import pandas as pd
-from time import time
-import os
+# from time import time
+# import os
 
 
+a = ("chr1_222_222")
+
+print str(a)
+b,c,d = a.split("_")
+print b, type(b)
 
 # path = "/home/tmhbxx3/archive/test/"
 #
@@ -84,8 +89,8 @@ import os
 #     islandNumber += 1
 # print islandNumber/2
 
-import pandas as pd, numpy as np
-import matplotlib.pyplot as plt
+# import pandas as pd, numpy as np
+# import matplotlib.pyplot as plt
 
 # plt.xlim((0,340))
 #

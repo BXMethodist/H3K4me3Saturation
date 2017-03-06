@@ -2,13 +2,14 @@ from DistinctAffinityPropagation import DistinctAffinityPropagation
 from region import Region
 import pandas as pd, os, numpy as np, pickle
 from clusterUtils import get_map
-
+from visualizationUtils import plotSaturation #, heatmap
 
 def region_cluster(number_sample_used,
                    cutoff=75,
                    list_files=None,
                    directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/",
-                   affinity=np.corrcoef):
+                   affinity=np.corrcoef,
+                   verbose=True):
     if not os.path.isdir("./pictures"):
         os.system("mkdir pictures")
     if not os.path.isdir("./tempcsv"):
@@ -24,7 +25,7 @@ def region_cluster(number_sample_used,
 
     regions = []
 
-    for file_name in list_files[0:10000]:
+    for file_name in list_files:
         print file_name
         cluster = DistinctAffinityPropagation(number_sample_used, affinity=affinity)
         df = pd.read_csv(directory+file_name, sep="\t")
@@ -34,6 +35,9 @@ def region_cluster(number_sample_used,
         data = df.as_matrix()
         data_values = data[:, 1:].astype(np.float64)
         sample_names = data[:, 0]
+
+        if len(sample_names) == 0:
+            continue
 
         max_values = np.max(data_values, axis=1)
         first_ten_percentile = np.percentile(max_values, 2)
@@ -85,18 +89,18 @@ def region_cluster(number_sample_used,
                       sample_names=sample_names)
 
         regions.append(peak)
-        from visualizationUtils import plotSaturation #, heatmap
 
-        if len(peak.variants) > 1 and peak.plot:
-            for i in range(len(peak.variants)):
-                variant = peak.variants[i]
-                plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members)
-            pass
-        else:
-            # for i in range(len(peak.variants)):
-            #     variant = peak.variants[i]
-            #     plotSaturation(pos_surfix + "_cluster" + str(i), variant)
-            pass
+        if verbose:
+            if len(peak.variants) > 1 and peak.plot:
+                for i in range(len(peak.variants)):
+                    variant = peak.variants[i]
+                    plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members)
+                pass
+            else:
+                for i in range(len(peak.variants)):
+                    variant = peak.variants[i]
+                    plotSaturation(pos_surfix + "_cluster" + str(i), variant)
+                pass
 
         # if len(cluster.labels_) > 1:
         #     i = 0
@@ -134,7 +138,7 @@ def region_cluster(number_sample_used,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv')
+regions = region_cluster(300, directory='./csv', verbose=False)
 
 
 
@@ -152,9 +156,10 @@ regions = region_cluster(300, directory='./csv')
 #
 # print regions
 #
-# import pickle
-#
-# with open('chr3_75refmap_regions' + '.pkl', 'wb') as f:
-#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
-#
-#     region_cluster(directory="./csv")
+import pickle
+
+with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
+    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+
+f.close()
+    # region_cluster(directory="./csv")
