@@ -7,9 +7,11 @@ class ReferenceRegion():
         :param region: region class from construction of reference map
         """
         self.chromosome = str(region.chromosome)
+        self.chromosome = self.chromosome[self.chromosome.find("'")+1:self.chromosome.rfind("'")]
         self.start = region.start
         self.end = region.end
         self.id = '.'.join([self.chromosome[3:], str(self.start), str(self.end)])
+
         self.setVariants(region.variants)
 
     def setVariants(self, variants):
@@ -23,11 +25,13 @@ class ReferenceVariant():
     def __init__(self, variant, parent, i):
         self.parent = parent
         self.chromosome = str(variant.chromosome)
+        self.chromosome = self.chromosome[self.chromosome.find("'") + 1:self.chromosome.rfind("'")]
         self.start = variant.start
         self.end = variant.end
         self.representative = variant.signals
-        self.setUnits(variant.units)
         self.id = '.'.join([self.chromosome[3:], str(self.start), str(self.end), str(i+1)])
+
+        self.setUnits(variant.units)
 
     def setUnits(self, units):
         self.units = []
@@ -39,6 +43,7 @@ class ReferenceUnit():
     def __init__(self, unit, parent, j):
         self.parent = parent
         self.chromosome = str(unit.chromosome)
+        self.chromosome = self.chromosome[self.chromosome.find("'") + 1:self.chromosome.rfind("'")]
         self.start = unit.start
         self.end = unit.end
         self.id = parent.id + '.' + str(self.start) + '.' + str(self.end) + '.' + str(j+1)
@@ -68,8 +73,8 @@ def Annotation(path, output):
         row.append(region_id)
         region_annotations.append(row)
 
-        for i in range(len(region.variants)):
-            cur_variant = region.variants[i]
+        for i in range(len(referenceRegion.variants)):
+            cur_variant = referenceRegion.variants[i]
             row = [cur_variant.chromosome, str(cur_variant.start), str(cur_variant.end)]
             cur_variant_id = 'variant_id:'+cur_variant.id+';'
             row.append(cur_variant_id)
@@ -78,7 +83,7 @@ def Annotation(path, output):
 
             for j in range(len(cur_variant.units)):
                 cur_unit = cur_variant.units[j]
-                row = [cur_unit.chromosome[3:], str(cur_unit.start), str(cur_unit.end)]
+                row = [cur_unit.chromosome, str(cur_unit.start), str(cur_unit.end)]
                 cur_unit_id = 'unit_id:'+cur_unit.id+';'
                 row.append(cur_unit_id)
                 units_annotations.append(row)
@@ -96,4 +101,3 @@ def Annotation(path, output):
     f.close()
     return region_annotations, variant_annotations, units_annotations
 
-print Annotation('./75refmap_combined_3kb_regions.pkl', "75_combined_3kb")
