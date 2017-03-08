@@ -103,5 +103,7 @@ def Annotation(path, output):
     with open(output + '.pkl', 'wb') as f:
         pickle.dump(new_regions, f, pickle.HIGHEST_PROTOCOL)
     f.close()
+
+    print "total ", count, 'region need to be plot'
     return region_annotations, variant_annotations, units_annotations
 
