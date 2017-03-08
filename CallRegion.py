@@ -1,11 +1,14 @@
 # This is the main module to initiate the region calling
 
-from predict import optimize_allocs
 from Wig import Wig
 import pickle, numpy as np, pandas as pd
+from collections import defaultdict
+from multiprocessing import Process, Queue
+from predict import optimize_allocs
+from RefRegion import ReferenceRegion, ReferenceVariant, ReferenceUnit
 
 
-def CallRegion(wigs, refmap, genome_size_path, callvariant=True, process=8):
+def CallRegion(wigs, refmap, genome_size_path, process=8):
     """
     :param wig: a dictionary contains wig file paths. key is group name, value is the list of wig file paths in the group
     :param refmap: the path for the reference map
@@ -13,15 +16,24 @@ def CallRegion(wigs, refmap, genome_size_path, callvariant=True, process=8):
     :return:
     """
 
-    dfs = []
+    # Load refmap
+    with open(refmap, 'rb') as f:
+        region_map = pickle.load(f)
+    f.close()
+
+    dfs_region = []
+    dfs_variant =[]
     for key, value in wigs.items():
-        for path in value:
-            cur_wig = Wig(path, genome_size_path)
-            df = CallVariants(cur_wig, refmap, key, callvariant, process)
-            dfs.append(df)
+        for cur_wig in value:
+            region, variant = CallVariants(cur_wig, region_map, process)
+            df_region = pd.DataFrame(region)
+            df_variant = pd.DataFrame(variant)
+            dfs_region.append(df_region)
+            dfs_variant.append(df_variant)
+            df_region.to_csv(key+'_region.csv', header=False, index=False)
+            df_variant.to_csv(key + '_variant.csv', header=False, index=False)
 
-
-def CallVariants(wig, refmap, group, callvariant, process):
+def CallVariants(wig, refmap, process):
     """
     :param wig: the Wig object
     :param refmap: referencemap path, a dictionary group by chromosome
@@ -30,36 +42,88 @@ def CallVariants(wig, refmap, group, callvariant, process):
     :param process: number of process
     :return: dataframe
     """
-    with open(refmap, 'rb') as f:
-        reference_map = pickle.load(f)
-
     results = []
-    genome_signals = wig.genome
-    if callvariant:
-        for region in reference_map:
-            chromosome, start, end = region.chromosome, region.start, region.end
-            target = genome_signals[chromosome].get_signals(start, end)
-            allocs = optimize_allocs(target, region.representatives)
-            total_target_signals = np.sum(target)
-            allocs = np.asarray(allocs)/np.sum(allocs)
-            cur_result = []
-            for i in range(len(region.representatives)):
-                name = "_".join([chromosome, str(start), str(end), 'variant '+str(i)])
-                cur_result.append([name, total_target_signals*allocs[i]])
-            results += cur_result
-    else:
-        for region in reference_map:
-            chromosome, start, end = region.chromosome, region.start, region.end
-            target = genome_signals[chromosome].get_signals(start, end)
-            total_target_signals = np.sum(target)
-            cur_result = []
-            for i in range(len(region.representatives)):
-                name = "_".join([chromosome, str(start), str(end), 'variant '+str(i)])
-                cur_result.append([name, total_target_signals])
-            results += cur_result
+    chromosomes = wig.genome.keys()
+    chunk_size = len(chromosomes)/process
+    reminder = len(chromosomes)%process
 
-    df = pd.DataFrame(results, columns=['variant name', 'value'], index='variant')
-    return df
+    regionmap = defaultdict(list)
+    for region in refmap:
+        regionmap[region.chromosome].append(region)
 
-def CallUnits():
-    pass
+    chunks = []
+    cur_index = 0
+    for i in range(process):
+        if reminder > 0:
+            chunks.append(chromosomes[cur_index + i * chunk_size:cur_index + (i + 1) * chunk_size + 1])
+            cur_index += 1
+            reminder -= 1
+        else:
+            chunks.append(chromosomes[cur_index + i * chunk_size: cur_index + (i + 1) * chunk_size])
+
+    queue = Queue()
+    processes = []
+
+    region_results = []
+    variant_results = []
+
+    for i in range(process):
+        cur_chrs = chunks[i]
+        cur_refmap = {}
+        cur_wig = {}
+        for cur_chr in cur_chrs:
+            cur_refmap[cur_chr] = regionmap[cur_chr]
+            cur_wig[cur_chr] = wig.genome[cur_chr]
+            p = Process(target=CallVariantsProcess, args=(cur_wig, cur_refmap, queue))
+            processes.append(p)
+            p.start()
+
+    for i in range(process):
+        cur_region_result, cur_variant_result = queue.get()
+        region_results += cur_region_result
+        variant_results += cur_variant_result
+
+    for p in processes:
+        p.join()
+
+    return region_results, variant_results
+
+def CallVariantsProcess(wigchrome, refmap, queue):
+    cur_region_results = []
+    cur_variant_results = []
+    for key in refmap.keys():
+        cur_chrmap = refmap[key]
+        cur_wigchrome = wigchrome[key]
+        for region in cur_chrmap:
+            cur_variant_representatives = []
+            cur_ids = []
+            for variant in region.variants:
+                cur_ids.append(variant.id)
+                cur_variant_representatives.append(variant.representative)
+            cur_data = cur_wigchrome.get_signals(region.start, region.end)
+            cur_allocs = optimize_allocs(cur_data, cur_variant_representatives)
+
+            cur_total_signals = np.sum(cur_data)
+            predict_signals = 0
+
+            for i in range(len(region.variants)):
+                cur_var_signal = cur_total_signals*cur_allocs[i]
+                cur_variant_results.append((cur_ids[i], cur_var_signal))
+                predict_signals += cur_var_signal
+            error = abs(cur_total_signals-predict_signals)/cur_total_signals
+
+            cur_region_results.append((region.id, cur_total_signals, predict_signals, error))
+    queue.put((cur_region_results, cur_variant_results))
+    return
+
+
+with open('./superwig.pkl', 'rb') as f:
+    superwig = pickle.load(f)
+f.close()
+
+wigs = {'super':[superwig]}
+
+path = './75_combined_3kb.pkl'
+genomesize = '/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt'
+
+CallRegion(wigs, path, genomesize)

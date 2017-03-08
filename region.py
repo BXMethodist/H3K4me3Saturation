@@ -223,7 +223,7 @@ class Region():
     def plotable(self):
         if len(self.variants) < 2:
             return False
-        if self.end - self.start < 5000:
+        if self.end - self.start < 2000:
             return False
         if all(len(variant.units)==1 for variant in self.variants):
             return False

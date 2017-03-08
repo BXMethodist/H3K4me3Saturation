@@ -6,12 +6,28 @@ import pandas as pd
 # from time import time
 # import os
 
+process = 8
+chunks = []
+chromosomes = [i for i in range(23)]
+# print chromosomes
 
-a = ("chr1_222_222")
+chunk_size = len(chromosomes) / process
+reminder = len(chromosomes) % process
 
-print str(a)
-b,c,d = a.split("_")
-print b, type(b)
+# print reminder
+
+cur_index = 0
+
+for i in range(process):
+    if reminder > 0:
+        chunks.append(chromosomes[cur_index + i * chunk_size:cur_index+(i + 1) * chunk_size + 1])
+        cur_index += 1
+        reminder -= 1
+    else:
+        chunks.append(chromosomes[cur_index + i * chunk_size: cur_index + (i + 1) * chunk_size])
+
+
+print chunks
 
 # path = "/home/tmhbxx3/archive/test/"
 #

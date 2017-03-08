@@ -10,6 +10,7 @@ class ReferenceRegion():
         self.chromosome = self.chromosome[self.chromosome.find("'")+1:self.chromosome.rfind("'")]
         self.start = region.start
         self.end = region.end
+        self.plot = region.plotable()
         self.id = '.'.join([self.chromosome[3:], str(self.start), str(self.end)])
 
         self.setVariants(region.variants)
@@ -64,8 +65,11 @@ def Annotation(path, output):
     region_annotations = []
     variant_annotations = []
     units_annotations = []
+    count = 0
     for region in regions:
         referenceRegion = ReferenceRegion(region)
+        if referenceRegion.plot:
+            count += 1
         new_regions.append(referenceRegion)
 
         row = [referenceRegion.chromosome, str(referenceRegion.start), str(referenceRegion.end)]

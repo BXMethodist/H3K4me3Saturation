@@ -138,7 +138,7 @@ def region_cluster(number_sample_used,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=False)
+# regions = region_cluster(300, directory='./csv', verbose=False)
 
 
 
@@ -156,10 +156,10 @@ regions = region_cluster(300, directory='./csv', verbose=False)
 #
 # print regions
 #
-import pickle
-
-with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
-    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
-
-f.close()
+# import pickle
+#
+# with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
+#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+#
+# f.close()
     # region_cluster(directory="./csv")
