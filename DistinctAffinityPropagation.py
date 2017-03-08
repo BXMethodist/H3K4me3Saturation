@@ -198,6 +198,7 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, number_sample_used,
     #     new_seed = representation[i, :]
     #     similarity = cosine_similarity(X, new_seed).T[0]
     #     reclusters[i] = np.where(similarity > max_cutoff)[0]
+    representation = mean_normalization(representation)
 
     return cluster_centers_indices, reclusters, seeds, representation
 

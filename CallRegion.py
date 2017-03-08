@@ -122,7 +122,7 @@ def CallVariantsProcess(wigchrome, refmap, queue):
     return
 
 
-Annotation('./75refmap_combined_3kb_regions.pkl','75_combined_3kb')
+# Annotation('./75refmap_combined_3kb_regions.pkl','75_combined_3kb')
 
 with open('./superwig.pkl', 'rb') as f:
     superwig = pickle.load(f)

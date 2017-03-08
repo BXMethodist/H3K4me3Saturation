@@ -4,30 +4,42 @@ import numpy as np
 # from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 # from time import time
-# import os
-
-process = 8
-chunks = []
-chromosomes = [i for i in range(23)]
-# print chromosomes
-
-chunk_size = len(chromosomes) / process
-reminder = len(chromosomes) % process
-
-# print reminder
-
-cur_index = 0
-
-for i in range(process):
-    if reminder > 0:
-        chunks.append(chromosomes[cur_index + i * chunk_size:cur_index+(i + 1) * chunk_size + 1])
-        cur_index += 1
-        reminder -= 1
-    else:
-        chunks.append(chromosomes[cur_index + i * chunk_size: cur_index + (i + 1) * chunk_size])
+import os
 
 
-print chunks
+x1 = np.arange(9.0).reshape((3, 3))
+x2 = np.arange(3.0).reshape((3, 1))
+np.multiply(x1, x2)
+print x1
+print x2
+
+print np.multiply(x1, x2)
+
+
+
+#
+# process = 8
+# chunks = []
+# chromosomes = [i for i in range(23)]
+# # print chromosomes
+#
+# chunk_size = len(chromosomes) / process
+# reminder = len(chromosomes) % process
+#
+# # print reminder
+#
+# cur_index = 0
+#
+# for i in range(process):
+#     if reminder > 0:
+#         chunks.append(chromosomes[cur_index + i * chunk_size:cur_index+(i + 1) * chunk_size + 1])
+#         cur_index += 1
+#         reminder -= 1
+#     else:
+#         chunks.append(chromosomes[cur_index + i * chunk_size: cur_index + (i + 1) * chunk_size])
+#
+#
+# print chunks
 
 # path = "/home/tmhbxx3/archive/test/"
 #

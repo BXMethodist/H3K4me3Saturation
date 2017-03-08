@@ -149,7 +149,7 @@ def quantile_normalization(array, axis=0):
         return result
 
 
-def mean_normalization(array, axis=1, target_signal=200):
+def mean_normalization(array, axis=1, target_signal=100):
     """
     :param array:  numpy array
     :param axis: normalize axis
@@ -329,7 +329,7 @@ def remove_duplicate(pairs):
     return distinct_set
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # get_split_chr("chr3", 122562770, 122562820, cutoff=25)
 
     # prefix = "/home/tmhbxx3/archive/refmap_saturation/code/"
@@ -341,11 +341,11 @@ if __name__ == "__main__":
 
     # get_split_chr('chr3', 3167850, 3169860)
     # widths = []
-    f = open("75_refmap_combined.csv", 'r')
-    info = [line.strip().split(",") for line in f.readlines() if not line.startswith(">")]
-    widths = [(int(y) - int(x))*10 for x, y in info]
-
-    print np.percentile(widths, 50)
+    # f = open("75_refmap_combined.csv", 'r')
+    # info = [line.strip().split(",") for line in f.readlines() if not line.startswith(">")]
+    # widths = [(int(y) - int(x))*10 for x, y in info]
+    #
+    # print np.percentile(widths, 50)
     # import matplotlib.pyplot as plt
     # plt.xlim((0, 10000))
     # plt.ylim((0, 200))
