@@ -115,7 +115,7 @@ def affinity_propagation(X, S, max_cutoff, min_cutoff, number_sample_used,
         for i in range(len(first_distinct)):
             affinity_x = affinity_matrix[first_distinct[i], :]
             cluster_x = np.intersect1d(np.where(affinity_x > max_cutoff), np.where(affinity_x <= 1))
-            if len(cluster_x) >= 5 and len(cluster_x) >= S.shape[0]/50:
+            if len(cluster_x) >= 5 and len(cluster_x) >= number_sample_used/50:
                 labels.append(cluster_x)
                 cluster_centers_indices.append(first_distinct[i])
                 seeds.append(X[first_distinct[i]])

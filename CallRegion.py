@@ -111,7 +111,7 @@ def CallVariantsProcess(wigchrome, refmap, queue):
                     cur_variant_results.append((cur_ids[i], cur_var_signal))
                     predict_signals += cur_var_signal
                 error = abs(cur_total_signals-predict_signals)/cur_total_signals
-
+                print (region.id, cur_total_signals, predict_signals, error)
                 cur_region_results.append((region.id, cur_total_signals, predict_signals, error))
             else:
                 cur_total_signals = np.sum(cur_data)
@@ -127,10 +127,10 @@ def CallVariantsProcess(wigchrome, refmap, queue):
 with open('./superwig.pkl', 'rb') as f:
     superwig = pickle.load(f)
 f.close()
-
+print "loading complete"
 wigs = {'super':[superwig]}
 
 path = './75_combined_3kb.pkl'
 genomesize = '/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt'
 
-CallRegion(wigs, path, genomesize)
+CallRegion(wigs, path, genomesize, process=8)
