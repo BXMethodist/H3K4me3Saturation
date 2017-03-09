@@ -14,7 +14,7 @@ class Wig:
 
         wig_file_name = wig_file.split("/")[-1]
 
-        self.file_name = wig_file_name[:wig_file_name.find(".wig")]
+        self.file_name = wig_file_name[:-4]
 
     def initiate(self, wig_file):
         wig = open(wig_file, "r")

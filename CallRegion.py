@@ -8,11 +8,12 @@ from predict import optimize_allocs
 from RefRegion import ReferenceRegion, ReferenceVariant, ReferenceUnit, Annotation
 
 
-def CallRegion(wigs, refmap, genome_size_path, process=8):
+def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
     """
     :param wig: a dictionary contains wig file paths. key is group name, value is the list of wig file paths in the group
     :param refmap: the path for the reference map
     :param callvariant: whether to call variants expression level
+    :param alias: a map contains group - samples alias for output table
     :return:
     """
 
@@ -21,17 +22,65 @@ def CallRegion(wigs, refmap, genome_size_path, process=8):
         region_map = pickle.load(f)
     f.close()
 
-    dfs_region = []
-    dfs_variant =[]
+    # for key, value in wigs.items():
+    #     new_wig_objs = []
+    #     for wig in value:
+    #         cur_wig = Wig(wig, genome_size_path)
+    #         new_wig_objs.append(cur_wig)
+    #     wigs[key] = new_wig_objs
+
+    rownames_region = [region.id for region in region_map]
+    rownames_variant = [variant.id for region in region_map for variant in region.variants]
+
+    dfs_region_error = pd.DataFrame(index=rownames_region)
+    dfs_variant =pd.DataFrame(index=rownames_variant)
+    dfs_region = pd.DataFrame(index=rownames_region)
+
+    groupnames = defaultdict(list)
+
     for key, value in wigs.items():
-        for cur_wig in value:
-            region, variant = CallVariants(cur_wig, region_map, process)
-            df_region = pd.DataFrame(region)
-            df_variant = pd.DataFrame(variant)
-            dfs_region.append(df_region)
-            dfs_variant.append(df_variant)
-            df_region.to_csv(key+'_region.csv', header=False, index=False)
-            df_variant.to_csv(key + '_variant.csv', header=False, index=False)
+        for i in range(len(value)):
+            cur_wig = value[i]
+            colname = key+'_'+cur_wig.file_name if alias is None else alias[key][i]
+            groupnames[key].append(colname)
+            region, region_error, variant = CallVariants(cur_wig, region_map, process)
+
+            df_region_error = pd.DataFrame(region_error,
+                                     columns=['region_id', colname+'_target', colname+"_predict", colname+"_error"])
+            df_region_error = df_region_error.set_index(['region_id'])
+
+            df_region = pd.DataFrame(region, columns=['region_id', colname])
+            df_region = df_region.set_index(['region_id'])
+
+            df_variant = pd.DataFrame(variant,
+                                      columns=['variant_id', colname])
+            df_variant = df_variant.set_index(['variant_id'])
+
+            dfs_region_error = dfs_region_error.join(df_region_error)
+            dfs_variant = dfs_variant.join(df_variant)
+            dfs_region = dfs_region.join(df_region)
+
+    for key in groupnames.keys():
+        dfs_variant[key] = dfs_variant[[groupnames[key]]].mean(axis=1)
+        dfs_region[key] = dfs_region[[groupnames[key]]].mean(axis=1)
+
+    min_variant = dfs_variant[[key for key in groupnames.keys()]].min()
+    min_region = dfs_region[[key for key in groupnames.keys()]].min()
+
+    for key in groupnames.keys():
+        dfs_variant[key] = dfs_variant[key] + min_variant
+        dfs_region[key] = dfs_region[key] + min_region
+
+    for i in range(len(groupnames.keys())):
+        key1 = groupnames.keys()[i]
+        for j in range(i, len(groupnames.keys())):
+            key2 = groupnames.keys()[j]
+            dfs_variant[key1+"_vs_"+key2+"_log2FC"] = np.log2(dfs_variant[key1]/dfs_variant[key2])
+            dfs_region[key1 + "_vs_" + key2 + "_log2FC"] = np.log2(dfs_region[key1] / dfs_region[key2])
+
+    dfs_region_error.to_csv(output+'_region_error.csv')
+    dfs_variant.to_csv(output + '_variant.csv')
+    dfs_region.to_csv(output + '_region.csv')
 
 def CallVariants(wig, refmap, process):
     """
@@ -63,10 +112,11 @@ def CallVariants(wig, refmap, process):
     queue = Queue()
     processes = []
 
-    region_results = []
+    region_error_results = []
     variant_results = []
+    region_results = []
 
-    print chunks
+    # print chunks
 
     for i in range(process):
         cur_chrs = chunks[i]
@@ -80,18 +130,20 @@ def CallVariants(wig, refmap, process):
         p.start()
 
     for i in range(process):
-        cur_region_result, cur_variant_result = queue.get()
-        region_results += cur_region_result
+        cur_region, cur_region_result_error, cur_variant_result = queue.get()
+        region_results += cur_region
+        region_error_results += cur_region_result_error
         variant_results += cur_variant_result
 
     for p in processes:
         p.join()
 
-    return region_results, variant_results
+    return region_results, region_error_results, variant_results
 
 def CallVariantsProcess(wigchrome, refmap, queue):
     # print os.getpid()
     cur_region_results = []
+    cur_region_results_error = []
     cur_variant_results = []
     for key in refmap.keys():
         cur_chrmap = refmap[key]
@@ -99,8 +151,7 @@ def CallVariantsProcess(wigchrome, refmap, queue):
         # n = 0
         for region in cur_chrmap:
             cur_data = cur_wigchrome.get_signals(region.start, region.end)
-
-            print "fetch data complete for ", region.id
+            # print "fetch data complete for ", region.id
             # print n
             # n +=1
             if region.plot:
@@ -119,14 +170,17 @@ def CallVariantsProcess(wigchrome, refmap, queue):
                     cur_variant_results.append((cur_ids[i], cur_var_signal))
                     predict_signals += cur_var_signal
                 error = abs(cur_total_signals-predict_signals)/cur_total_signals
-                print (region.id, cur_total_signals, predict_signals, error)
-                cur_region_results.append((region.id, cur_total_signals, predict_signals, error))
+                # print (region.id, cur_total_signals, predict_signals, error)
+                cur_region_results_error.append((region.id, cur_total_signals, predict_signals, error))
+                cur_region_results.append((region.id, cur_total_signals))
             else:
                 cur_total_signals = np.sum(cur_data)
                 predict_signals = cur_total_signals
                 error = abs(cur_total_signals - predict_signals) / cur_total_signals
-                cur_region_results.append((region.id, cur_total_signals, predict_signals, error))
-    queue.put((cur_region_results, cur_variant_results))
+                cur_region_results_error.append((region.id, cur_total_signals, predict_signals, error))
+                cur_region_results.append((region.id, cur_total_signals))
+
+    queue.put((cur_region_results, cur_region_results_error, cur_variant_results))
     return
 
 
@@ -136,10 +190,10 @@ with open('./superwig.pkl', 'rb') as f:
     superwig = pickle.load(f)
 f.close()
 print "loading complete"
-wigs = {'super':[superwig]}
+wigs = {'super1':[superwig], 'super2':[superwig]}
 # print superwig.genome['chr4'].get_signals(9980, 10280)
 
 path = './75_combined_3kb.pkl'
 genomesize = '/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt'
 #
-CallRegion(wigs, path, genomesize, process=1)
+CallRegion(wigs, path, genomesize, 'super', process=8)
