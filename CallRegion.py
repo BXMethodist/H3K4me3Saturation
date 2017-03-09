@@ -1,7 +1,7 @@
 # This is the main module to initiate the region calling
 
 from Wig import Wig
-import pickle, numpy as np, pandas as pd
+import pickle, numpy as np, pandas as pd, os
 from collections import defaultdict
 from multiprocessing import Process, Queue
 from predict import optimize_allocs
@@ -66,6 +66,8 @@ def CallVariants(wig, refmap, process):
     region_results = []
     variant_results = []
 
+    print chunks
+
     for i in range(process):
         cur_chrs = chunks[i]
         cur_refmap = {}
@@ -73,9 +75,9 @@ def CallVariants(wig, refmap, process):
         for cur_chr in cur_chrs:
             cur_refmap[cur_chr] = regionmap[cur_chr]
             cur_wig[cur_chr] = wig.genome[cur_chr]
-            p = Process(target=CallVariantsProcess, args=(cur_wig, cur_refmap, queue))
-            processes.append(p)
-            p.start()
+        p = Process(target=CallVariantsProcess, args=(cur_wig, cur_refmap, queue))
+        processes.append(p)
+        p.start()
 
     for i in range(process):
         cur_region_result, cur_variant_result = queue.get()
@@ -88,38 +90,42 @@ def CallVariants(wig, refmap, process):
     return region_results, variant_results
 
 def CallVariantsProcess(wigchrome, refmap, queue):
+    print os.getpid()
     cur_region_results = []
     cur_variant_results = []
     for key in refmap.keys():
         cur_chrmap = refmap[key]
         cur_wigchrome = wigchrome[key]
+        n = 0
         for region in cur_chrmap:
             cur_data = cur_wigchrome.get_signals(region.start, region.end)
 
-            print "fetch data complete for ", region.id
-            if region.plot:
-                cur_variant_representatives = []
-                cur_ids = []
-                for variant in region.variants:
-                    cur_ids.append(variant.id)
-                    cur_variant_representatives.append(variant.representative)
-                cur_allocs = optimize_allocs(cur_data, cur_variant_representatives)
-
-                cur_total_signals = np.sum(cur_data)
-                predict_signals = 0
-
-                for i in range(len(region.variants)):
-                    cur_var_signal = cur_total_signals*cur_allocs[i]
-                    cur_variant_results.append((cur_ids[i], cur_var_signal))
-                    predict_signals += cur_var_signal
-                error = abs(cur_total_signals-predict_signals)/cur_total_signals
-                print (region.id, cur_total_signals, predict_signals, error)
-                cur_region_results.append((region.id, cur_total_signals, predict_signals, error))
-            else:
-                cur_total_signals = np.sum(cur_data)
-                predict_signals = cur_total_signals
-                error = abs(cur_total_signals - predict_signals) / cur_total_signals
-                cur_region_results.append((region.id, cur_total_signals, predict_signals, error))
+            # print "fetch data complete for ", region.id
+            # print n
+            n +=1
+            # if region.plot:
+            #     cur_variant_representatives = []
+            #     cur_ids = []
+            #     for variant in region.variants:
+            #         cur_ids.append(variant.id)
+            #         cur_variant_representatives.append(variant.representative)
+            #     cur_allocs = optimize_allocs(cur_data, cur_variant_representatives)
+            #
+            #     cur_total_signals = np.sum(cur_data)
+            #     predict_signals = 0
+            #
+            #     for i in range(len(region.variants)):
+            #         cur_var_signal = cur_total_signals*cur_allocs[i]
+            #         cur_variant_results.append((cur_ids[i], cur_var_signal))
+            #         predict_signals += cur_var_signal
+            #     error = abs(cur_total_signals-predict_signals)/cur_total_signals
+            #     print (region.id, cur_total_signals, predict_signals, error)
+            #     cur_region_results.append((region.id, cur_total_signals, predict_signals, error))
+            # else:
+            #     cur_total_signals = np.sum(cur_data)
+            #     predict_signals = cur_total_signals
+            #     error = abs(cur_total_signals - predict_signals) / cur_total_signals
+            #     cur_region_results.append((region.id, cur_total_signals, predict_signals, error))
     queue.put((cur_region_results, cur_variant_results))
     return
 
@@ -131,8 +137,9 @@ with open('./superwig.pkl', 'rb') as f:
 f.close()
 print "loading complete"
 wigs = {'super':[superwig]}
+# print superwig.genome['chr4'].get_signals(9980, 10280)
 
 path = './75_combined_3kb.pkl'
 genomesize = '/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt'
-
+#
 CallRegion(wigs, path, genomesize, process=1)
