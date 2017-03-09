@@ -138,19 +138,19 @@ def region_cluster(number_sample_used,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-# regions = region_cluster(300, directory='./csv', verbose=False)
+regions = region_cluster(300, directory='./csv', verbose=False)
 
 
 
 #
-# data = regions[0].variants[0].members[3, :]
-#
-# from visualizationUtils import plot_predict
-# from predict import optimize_allocs
-#
-# allocs = optimize_allocs(data, regions[0].representatives)
-#
-# plot_predict(data, regions[0].representatives, allocs)
+data = regions[0].variants[0].members[3, :]
+
+from visualizationUtils import plot_predict
+from predict import optimize_allocs
+
+allocs = optimize_allocs(data, regions[0].representatives)
+
+plot_predict(data, regions[0].representatives, allocs)
 
 # regions = region_cluster()
 #
@@ -163,3 +163,4 @@ def region_cluster(number_sample_used,
 #
 # f.close()
     # region_cluster(directory="./csv")
+

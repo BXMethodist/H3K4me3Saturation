@@ -1,3 +1,4 @@
+
 import numpy as np
 import matplotlib
 # Force matplotlib to not use any Xwindows backend.
@@ -166,13 +167,16 @@ def plot_predict(data, representatives, allocs):
     ax.set_prop_cycle(color=['blue'])
     ax.plot(xvalues, data, linewidth=1, label='sample')
 
-    legend = ax.legend(loc='upper right', prop={'size': 2})
+    legend = ax.legend(loc='best', prop={'size': 4})
+    legend.draggable()
     # Set the fontsize
     for label in legend.get_texts():
-        label.set_fontsize(5)
+        label.set_fontsize(10)
 
     for label in legend.get_lines():
-        label.set_linewidth(0.75)  # the legend line width
+        label.set_linewidth(1.5)  # the legend line width
 
     fig.savefig("./pictures/test.png", dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
+
+    plt.show()
