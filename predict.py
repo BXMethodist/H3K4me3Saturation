@@ -21,10 +21,13 @@ def optimize_allocs(data, clusters):
 
     bounds = tuple([(0.0, borders[i]) for i in range(len(borders))])
 
+    options = {'disp': False, 'maxiter': 1000}
+
     allocs = np.asarray([1.0/clusters.shape[0]]*clusters.shape[0])
 
     allocs = spo.minimize(distance, allocs, args=(data, clusters),
-                          method='SLSQP', constraints=constraints, bounds=bounds).x
+                          method='SLSQP', constraints=constraints, bounds=bounds,
+                          options=options).x
 
     allocs = allocs/np.sum(allocs)
     return allocs
