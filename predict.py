@@ -13,9 +13,18 @@ def optimize_allocs(data, clusters):
 
     constraints = {'type': 'ineq', 'fun': lambda x: x - 0}
 
+    total_signals = np.sum(data)
+
+    variants_signals = np.sum(clusters, axis=1)
+
+    borders = total_signals/variants_signals+1.0
+
+    bounds = tuple([(0.0, borders[i]) for i in range(len(borders))])
+
     allocs = np.asarray([1.0/clusters.shape[0]]*clusters.shape[0])
 
-    allocs = spo.minimize(distance, allocs, args=(data, clusters), method='SLSQP', constraints=constraints).x
+    allocs = spo.minimize(distance, allocs, args=(data, clusters),
+                          method='SLSQP', constraints=constraints, bounds=bounds).x
 
     allocs = allocs/np.sum(allocs)
     return allocs

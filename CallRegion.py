@@ -95,6 +95,8 @@ def CallVariantsProcess(wigchrome, refmap, queue):
         cur_wigchrome = wigchrome[key]
         for region in cur_chrmap:
             cur_data = cur_wigchrome.get_signals(region.start, region.end)
+
+            print "fetch data complete for ", region.id
             if region.plot:
                 cur_variant_representatives = []
                 cur_ids = []
@@ -133,4 +135,4 @@ wigs = {'super':[superwig]}
 path = './75_combined_3kb.pkl'
 genomesize = '/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt'
 
-CallRegion(wigs, path, genomesize, process=8)
+CallRegion(wigs, path, genomesize, process=1)
