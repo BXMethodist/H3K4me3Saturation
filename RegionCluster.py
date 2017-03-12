@@ -1,3 +1,5 @@
+# This module contains the function to create the clusters and draw the pictures
+
 from DistinctAffinityPropagation import DistinctAffinityPropagation
 from region import Region
 import pandas as pd, os, numpy as np, pickle

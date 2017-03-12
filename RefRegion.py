@@ -1,3 +1,5 @@
+# This module takes the reference map objects from RegionCluster and transform it to a light weighted map for CallRegion.
+
 import pickle
 import pandas as pd
 from collections import defaultdict

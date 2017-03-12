@@ -61,11 +61,11 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
             dfs_region = dfs_region.join(df_region)
 
     for key in groupnames.keys():
-        dfs_variant[key] = dfs_variant[[groupnames[key]]].mean(axis=1)
-        dfs_region[key] = dfs_region[[groupnames[key]]].mean(axis=1)
+        dfs_variant[key] = dfs_variant[groupnames[key]].mean(axis=1)
+        dfs_region[key] = dfs_region[groupnames[key]].mean(axis=1)
 
-    min_variant = dfs_variant[[key for key in groupnames.keys()]].min()
-    min_region = dfs_region[[key for key in groupnames.keys()]].min()
+    min_variant = min(dfs_variant[[key for key in groupnames.keys()]].min())
+    min_region = min(dfs_region[[key for key in groupnames.keys()]].min())
 
     for key in groupnames.keys():
         dfs_variant[key] = dfs_variant[key] + min_variant
@@ -73,7 +73,7 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
 
     for i in range(len(groupnames.keys())):
         key1 = groupnames.keys()[i]
-        for j in range(i, len(groupnames.keys())):
+        for j in range(i+1, len(groupnames.keys())):
             key2 = groupnames.keys()[j]
             dfs_variant[key1+"_vs_"+key2+"_log2FC"] = np.log2(dfs_variant[key1]/dfs_variant[key2])
             dfs_region[key1 + "_vs_" + key2 + "_log2FC"] = np.log2(dfs_region[key1] / dfs_region[key2])
@@ -154,31 +154,25 @@ def CallVariantsProcess(wigchrome, refmap, queue):
             # print "fetch data complete for ", region.id
             # print n
             # n +=1
-            if region.plot:
-                cur_variant_representatives = []
-                cur_ids = []
-                for variant in region.variants:
-                    cur_ids.append(variant.id)
-                    cur_variant_representatives.append(variant.representative)
-                cur_allocs = optimize_allocs(cur_data, cur_variant_representatives)
 
-                cur_total_signals = np.sum(cur_data)
-                predict_signals = 0
+            cur_variant_representatives = []
+            cur_ids = []
+            for variant in region.variants:
+                cur_ids.append(variant.id)
+                cur_variant_representatives.append(variant.representative)
+            cur_allocs = optimize_allocs(cur_data, cur_variant_representatives)
 
-                for i in range(len(region.variants)):
-                    cur_var_signal = cur_total_signals*cur_allocs[i]
-                    cur_variant_results.append((cur_ids[i], cur_var_signal))
-                    predict_signals += cur_var_signal
-                error = abs(cur_total_signals-predict_signals)/cur_total_signals
-                # print (region.id, cur_total_signals, predict_signals, error)
-                cur_region_results_error.append((region.id, cur_total_signals, predict_signals, error))
-                cur_region_results.append((region.id, cur_total_signals))
-            else:
-                cur_total_signals = np.sum(cur_data)
-                predict_signals = cur_total_signals
-                error = abs(cur_total_signals - predict_signals) / cur_total_signals
-                cur_region_results_error.append((region.id, cur_total_signals, predict_signals, error))
-                cur_region_results.append((region.id, cur_total_signals))
+            cur_total_signals = np.sum(cur_data)
+            predict_signals = 0
+
+            for i in range(len(region.variants)):
+                cur_var_signal = cur_total_signals*cur_allocs[i]
+                cur_variant_results.append((cur_ids[i], cur_var_signal))
+                predict_signals += cur_var_signal
+            error = abs(cur_total_signals-predict_signals)/cur_total_signals
+            # print (region.id, cur_total_signals, predict_signals, error)
+            cur_region_results_error.append((region.id, cur_total_signals, predict_signals, error))
+            cur_region_results.append((region.id, cur_total_signals))
 
     queue.put((cur_region_results, cur_region_results_error, cur_variant_results))
     return
