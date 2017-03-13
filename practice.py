@@ -40,15 +40,12 @@
 #
 #
 # runFastqdump(list)
+import pandas as pd
+df = pd.read_csv('75_combined_3kbhg38_RefSeq_allgene30003000with_cluster.tsv', index_col=0, sep='\t')
 
-import pandas as pd, numpy as np
+df_result = df[df['TSS'].notnull()]
 
-df = pd.read_csv("75_combined_3kbhg38_RefSeq_allgene3000with_cluster.tsv", sep='\t', index_col=0)
-
-#print type(df.loc['1.10002360.10004320', 'inter_gene'])
-
-print df.count(axis=0)
-
-ax =df.plot()
-
-ax.yaxis.set_tick_params(labelsize=20, weight='bold')
+f = open('clustersgenes.tsv', "w")
+for gene in df_result[df_result['number of clusters'] >2]['gene_name2'].unique():
+    f.write(gene+'\n')
+f.close()
