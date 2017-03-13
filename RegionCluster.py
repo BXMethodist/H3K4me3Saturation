@@ -101,7 +101,7 @@ def region_cluster(number_sample_used,
             else:
                 for i in range(len(peak.variants)):
                     variant = peak.variants[i]
-                    plotSaturation(pos_surfix + "_cluster" + str(i), variant)
+                    plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members)
                 pass
 
         # if len(cluster.labels_) > 1:
@@ -140,19 +140,19 @@ def region_cluster(number_sample_used,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=False)
+regions = region_cluster(300, directory='./csv', verbose=True)
 
 
 
 #
-data = regions[0].variants[0].members[3, :]
-
-from visualizationUtils import plot_predict
-from predict import optimize_allocs
-
-allocs = optimize_allocs(data, regions[0].representatives)
-
-plot_predict(data, regions[0].representatives, allocs)
+# data = regions[0].variants[0].members[3, :]
+#
+# from visualizationUtils import plot_predict
+# from predict import optimize_allocs
+#
+# allocs = optimize_allocs(data, regions[0].representatives)
+#
+# plot_predict(data, regions[0].representatives, allocs)
 
 # regions = region_cluster()
 #

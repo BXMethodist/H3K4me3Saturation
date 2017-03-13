@@ -1,9 +1,6 @@
 #!/bin/bash
 #PBS -r n
-#PBS -N tophat
 #PBS -q mediummem
-#PBS -o output.out
-#PBS -e error.err
 #PBS -m e
 #PBS -M bxia@houstonmethodist.org
 #PBS -l walltime=96:00:00

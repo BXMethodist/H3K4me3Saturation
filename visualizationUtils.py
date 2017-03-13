@@ -24,10 +24,16 @@ def plotSaturation(title, variant, sample_names, data_values):
     ax.spines['right'].set_visible(False)
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
+
+    title_font = {'fontname': 'Arial', 'size': '15', 'color': 'black', 'weight': 'bold',
+                  'verticalalignment': 'bottom'}  # Bottom vertical alignment for more space
+    axis_font = {'fontname': 'Arial', 'size': '15', 'weight': 'bold'}
+
     chromosome, start, end, cluster_number = title.split("_")
-    ax.set_xlabel("bp")
-    ax.set_ylabel("Signal")
-    ax.set_title(chromosome + " " + start + "~"+end+" "+"variant "+str(int(cluster_number[-1])+1), fontsize=10)
+    ax.set_xlabel("bp", **axis_font)
+    ax.set_ylabel("Signal", **axis_font)
+    ax.set_title(chromosome + " " + start + "~"+end+" "+"variant "+str(int(cluster_number[-1])+1), **title_font)
+
     xvalues = np.arange(array.shape[1])*10
 
     # ax.set_prop_cycle(color=['grey'])
@@ -63,6 +69,8 @@ def plotSaturation(title, variant, sample_names, data_values):
     # for label in legend.get_lines():
     #     label.set_linewidth(0.75)  # the legend line width
 
+    fig.set_tight_layout(True)
+
     fig.savefig("./pictures/"+title+'.png', dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
     plt.close('all')
@@ -83,12 +91,19 @@ def plotBestSample(title, output_name, signals, xvalues):
     ax.spines['right'].set_visible(False)
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
-    ax.set_xlabel("bp")
-    ax.set_ylabel("Signal")
-    ax.set_title(title, fontsize=10)
+
+    title_font = {'fontname': 'Arial', 'size': '15', 'color': 'black', 'weight': 'bold',
+                  'verticalalignment': 'bottom'}  # Bottom vertical alignment for more space
+    axis_font = {'fontname': 'Arial', 'size': '15', 'weight': 'bold'}
+
+    ax.set_xlabel("bp", **axis_font)
+    ax.set_ylabel("Signal", **axis_font)
+    ax.set_title(title, **title_font)
 
     ax.set_prop_cycle(color=['blue'])
     ax.fill_between(xvalues, 0, signals, alpha=1, color='blue')
+
+    fig.set_tight_layout(True)
 
     fig.savefig("./pictures/" + output_name + '.png', dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
