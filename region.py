@@ -251,6 +251,36 @@ class Region():
                         new_split_indexes[v].add(mean_index)
         return new_split_indexes
 
+    def type_transition(self):
+        """
+        This function is used to create map between each variant and store the transfer type between them.
+        Available type includes: Broadness to Narrow (BN), Convex to Concave (CC), Shift (SH), Pattern (PT),
+        and Shape or Other (SO).
+        :return: a map, key is the (i, j), i, j are index of variant in self.variants. value are type, which is a string.
+        """
+
+        transition = {}
+        if len(self.variants) == 1:
+            return transition
+
+        for i in range(len(self.variants)):
+            for j in range(i, len(self.variants)):
+                type = self.get_types(self.variants[i], self.variants[j])
+                transition[(i, j)] = type
+                transition[(j, i)] = type
+        return transition
+
+    def get_types(self, variant1, variant2):
+        if isShift(variant1, variant2):
+            return 'SH'
+        if isBroadNarrow(variant1, variant2):
+            return 'BN'
+        if isConvexConcave(variant1, variant2):
+            return 'CC'
+        if isPattern(variant1, variant2):
+            return 'PT'
+        return 'SO'
+
 
 class Variant():
     """
@@ -487,7 +517,6 @@ def overlap_length(units1, units2):
 
 def total_length(units):
     sum = 0
-
     for unit in units:
         sum += unit[1] - unit[0]
     return sum*1.0
@@ -521,5 +550,136 @@ def group_pair(pairs):
             new_groups.add(tuple(new_pairs))
     return new_groups
 
+def isShift(variant1, variant2):
+    """
+    :param variant1: Class Variant obj
+    :param variant2: Class Variant obj
+    :return: boolean, whether these two 's relation are shift
+    """
+    if len(variant1.units) != len(variant2.units):
+        return False
 
+    distances = []
+    for i in range(len(variant1.units)):
+        cur_unit1 = variant1.units[i]
+        cur_unit2 = variant2.units[i]
+        if (cur_unit1.start - cur_unit2.start) * (cur_unit1.end * cur_unit2.end) <= 0:
+            return False
+        else:
+            distances.append(cur_unit1.start - cur_unit2.start)
+            distances.append(cur_unit1.end * cur_unit2.end)
 
+    if np.std(distances) / np.mean(distances) > 0.1:
+        return False
+    else:
+        return True
+
+def isBroadNarrow(variant1, variant2):
+    """
+    logic, units length of v1 > 2* v2 and the bigger one need to be at least 0.6 of the length of the variant.
+    the distance of the two variant submit need to be close enough.
+    :param variant1: Class Variant obj
+    :param variant2: Class Variant obj
+    :return: boolean, whether these two's relation are Broad to Narrow
+    """
+    v1_sum = units_total_length(variant1.units)
+    v2_sum = units_total_length(variant2.units)
+    total_width = abs(variant1.end - variant1.start)
+    if any([v1_sum/total_width>0.6, v2_sum/total_width>0.6]) and (v1_sum > 2* v2_sum or 2*v1_sum>v2_sum):
+        pass
+    else:
+        return False
+    v1_index = np.argmax(variant1.signals)
+    v2_index = np.argmax(variant2.signals)
+
+    if abs(v1_index-v2_index)*variant1.step > 0.1:
+        return False
+    return True
+
+def units_total_length(units):
+    """
+    :param units: variant unit object
+    :return: int, total units length
+    """
+    sum = 0
+    for unit in units:
+        sum += abs(unit.end - unit.start)
+    return sum
+
+def isConvexConcave(variant1, variant2):
+    """
+    To check whether their relationship is convex to concave
+    :param variant1: Variant Obj
+    :param variant2: Variant Obj
+    :return: Boolean
+    """
+    concave1 = isConcave(variant1)
+    concave2 = isConcave(variant2)
+
+    if (concave1[0] and concave2[0]):
+        return False
+    elif (not concave1[0] and not concave2[0]):
+        return False
+
+    if (concave1[0]):
+        left, right = concave1[1], concave1[2]
+        mid = concave2[1]
+    elif (concave2[0]):
+        left, right = concave2[1], concave2[2]
+        mid = concave1[1]
+
+    left_submit = np.argmax(left.signals*left.step + left.start)
+    right_submit = np.argmax(right.signals*right.step + right.start)
+    mid_submit = np.argmax(mid.signals*mid.step + mid.start)
+
+    # distance = right_submit - left_submit
+
+    if mid_submit - left_submit > 200 and right_submit - mid_submit > 200:
+        return True
+    else:
+        return False
+
+def isPattern(variant1, variant2):
+    """
+    diffirent number of nunits is a indicator for pattern change, or units have different locations
+    :param variant1: Class Variant Obj
+    :param variant2: Class Variant Obj
+    :return: Boolean
+    """
+    if len(variant1.units) != len(variant2.units):
+        return True
+
+    if len(variant1.units) == 1:
+        return False
+    return True
+
+def isConcave(variant):
+    """
+    :param variant: Class Variant obj
+    :return: True or False
+    """
+    if len(variant.units) <= 1:
+        return False, variant.units[0], None
+    max_height_index = np.argmax(variant.signals) * variant.step
+
+    max_unit_index = None
+
+    for i in range(len(variant.units)):
+        unit = variant.units[i]
+        if unit.start <= max_height_index <= unit.end:
+            max_unit_index = i
+
+    # This should not happen, so it is just a block to check previous implementation
+    if max_unit_index is None:
+        return False, None, None
+    # Because they are splitted into two units, so their start end on the border should be same.
+    max_unit = variant.units[max_unit_index]
+    if max_unit_index - 1 >= 0:
+        left_unit = variant.units[max_unit_index-1]
+        if left_unit.height > variant.convex_cutoff and left_unit.end == max_unit.start:
+            return True, left_unit, max_unit
+    if max_unit_index + 1 < len(variant.units):
+        right_unit = variant.units[max_unit_index+1]
+        if right_unit.height > variant.convex_cutoff and right_unit.start == max_unit.end:
+            return True, max_unit, right_unit
+    return False, max_unit, None

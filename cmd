@@ -1,98 +1,31 @@
-https://www.encodeproject.org/files/ENCFF876LYB/@@download/ENCFF876LYB.fastq.gz	https://www.encodeproject.org/files/ENCFF005CCH/@@download/ENCFF005CCH.fastq.gz
-https://www.encodeproject.org/files/ENCFF087KQG/@@download/ENCFF087KQG.fastq.gz	https://www.encodeproject.org/files/ENCFF010AGB/@@download/ENCFF010AGB.fastq.gz
-https://www.encodeproject.org/files/ENCFF475WXS/@@download/ENCFF475WXS.fastq.gz	https://www.encodeproject.org/files/ENCFF042YGY/@@download/ENCFF042YGY.fastq.gz
-https://www.encodeproject.org/files/ENCFF283SSQ/@@download/ENCFF283SSQ.fastq.gz	https://www.encodeproject.org/files/ENCFF048VZV/@@download/ENCFF048VZV.fastq.gz
-https://www.encodeproject.org/files/ENCFF615LEB/@@download/ENCFF615LEB.fastq.gz	https://www.encodeproject.org/files/ENCFF072EIX/@@download/ENCFF072EIX.fastq.gz
-https://www.encodeproject.org/files/ENCFF629JOP/@@download/ENCFF629JOP.fastq.gz	https://www.encodeproject.org/files/ENCFF080FPQ/@@download/ENCFF080FPQ.fastq.gz
-https://www.encodeproject.org/files/ENCFF794IID/@@download/ENCFF794IID.fastq.gz	https://www.encodeproject.org/files/ENCFF102BFB/@@download/ENCFF102BFB.fastq.gz
-https://www.encodeproject.org/files/ENCFF546EIX/@@download/ENCFF546EIX.fastq.gz	https://www.encodeproject.org/files/ENCFF116RUN/@@download/ENCFF116RUN.fastq.gz
-https://www.encodeproject.org/files/ENCFF712UMI/@@download/ENCFF712UMI.fastq.gz	https://www.encodeproject.org/files/ENCFF121NZR/@@download/ENCFF121NZR.fastq.gz
-https://www.encodeproject.org/files/ENCFF146JNK/@@download/ENCFF146JNK.fastq.gz	https://www.encodeproject.org/files/ENCFF126GOB/@@download/ENCFF126GOB.fastq.gz
-https://www.encodeproject.org/files/ENCFF682DEF/@@download/ENCFF682DEF.fastq.gz	https://www.encodeproject.org/files/ENCFF127LHW/@@download/ENCFF127LHW.fastq.gz
-https://www.encodeproject.org/files/ENCFF126GOB/@@download/ENCFF126GOB.fastq.gz	https://www.encodeproject.org/files/ENCFF146JNK/@@download/ENCFF146JNK.fastq.gz
-https://www.encodeproject.org/files/ENCFF373TST/@@download/ENCFF373TST.fastq.gz	https://www.encodeproject.org/files/ENCFF166BVX/@@download/ENCFF166BVX.fastq.gz
-https://www.encodeproject.org/files/ENCFF659FPR/@@download/ENCFF659FPR.fastq.gz	https://www.encodeproject.org/files/ENCFF183OZI/@@download/ENCFF183OZI.fastq.gz
-https://www.encodeproject.org/files/ENCFF888OQB/@@download/ENCFF888OQB.fastq.gz	https://www.encodeproject.org/files/ENCFF203UWC/@@download/ENCFF203UWC.fastq.gz
-https://www.encodeproject.org/files/ENCFF411REJ/@@download/ENCFF411REJ.fastq.gz	https://www.encodeproject.org/files/ENCFF204TNH/@@download/ENCFF204TNH.fastq.gz
-https://www.encodeproject.org/files/ENCFF460JSA/@@download/ENCFF460JSA.fastq.gz	https://www.encodeproject.org/files/ENCFF219EFK/@@download/ENCFF219EFK.fastq.gz
-https://www.encodeproject.org/files/ENCFF489HIX/@@download/ENCFF489HIX.fastq.gz	https://www.encodeproject.org/files/ENCFF221KGD/@@download/ENCFF221KGD.fastq.gz
-https://www.encodeproject.org/files/ENCFF352FFB/@@download/ENCFF352FFB.fastq.gz	https://www.encodeproject.org/files/ENCFF240ZWX/@@download/ENCFF240ZWX.fastq.gz
-https://www.encodeproject.org/files/ENCFF375CUH/@@download/ENCFF375CUH.fastq.gz	https://www.encodeproject.org/files/ENCFF243MZN/@@download/ENCFF243MZN.fastq.gz
-https://www.encodeproject.org/files/ENCFF206YPV/@@download/ENCFF206YPV.fastq.gz	https://www.encodeproject.org/files/ENCFF256BQT/@@download/ENCFF256BQT.fastq.gz
-https://www.encodeproject.org/files/ENCFF300OUH/@@download/ENCFF300OUH.fastq.gz	https://www.encodeproject.org/files/ENCFF259YKX/@@download/ENCFF259YKX.fastq.gz
-https://www.encodeproject.org/files/ENCFF273UTA/@@download/ENCFF273UTA.fastq.gz	https://www.encodeproject.org/files/ENCFF267XUN/@@download/ENCFF267XUN.fastq.gz
-https://www.encodeproject.org/files/ENCFF878ZLP/@@download/ENCFF878ZLP.fastq.gz	https://www.encodeproject.org/files/ENCFF269SMY/@@download/ENCFF269SMY.fastq.gz
-https://www.encodeproject.org/files/ENCFF522PVI/@@download/ENCFF522PVI.fastq.gz	https://www.encodeproject.org/files/ENCFF272GOE/@@download/ENCFF272GOE.fastq.gz
-https://www.encodeproject.org/files/ENCFF267XUN/@@download/ENCFF267XUN.fastq.gz	https://www.encodeproject.org/files/ENCFF273UTA/@@download/ENCFF273UTA.fastq.gz
-https://www.encodeproject.org/files/ENCFF527WMD/@@download/ENCFF527WMD.fastq.gz	https://www.encodeproject.org/files/ENCFF274YMK/@@download/ENCFF274YMK.fastq.gz
-https://www.encodeproject.org/files/ENCFF413GTS/@@download/ENCFF413GTS.fastq.gz	https://www.encodeproject.org/files/ENCFF279GKI/@@download/ENCFF279GKI.fastq.gz
-https://www.encodeproject.org/files/ENCFF859CLK/@@download/ENCFF859CLK.fastq.gz	https://www.encodeproject.org/files/ENCFF293MPG/@@download/ENCFF293MPG.fastq.gz
-https://www.encodeproject.org/files/ENCFF545RKN/@@download/ENCFF545RKN.fastq.gz	https://www.encodeproject.org/files/ENCFF295XWS/@@download/ENCFF295XWS.fastq.gz
-https://www.encodeproject.org/files/ENCFF869EIB/@@download/ENCFF869EIB.fastq.gz	https://www.encodeproject.org/files/ENCFF300LJR/@@download/ENCFF300LJR.fastq.gz
-https://www.encodeproject.org/files/ENCFF259YKX/@@download/ENCFF259YKX.fastq.gz	https://www.encodeproject.org/files/ENCFF300OUH/@@download/ENCFF300OUH.fastq.gz
-https://www.encodeproject.org/files/ENCFF837SVG/@@download/ENCFF837SVG.fastq.gz	https://www.encodeproject.org/files/ENCFF327EQZ/@@download/ENCFF327EQZ.fastq.gz
-https://www.encodeproject.org/files/ENCFF452ROQ/@@download/ENCFF452ROQ.fastq.gz	https://www.encodeproject.org/files/ENCFF335TOI/@@download/ENCFF335TOI.fastq.gz
-https://www.encodeproject.org/files/ENCFF890HQY/@@download/ENCFF890HQY.fastq.gz	https://www.encodeproject.org/files/ENCFF337OHH/@@download/ENCFF337OHH.fastq.gz
-https://www.encodeproject.org/files/ENCFF240ZWX/@@download/ENCFF240ZWX.fastq.gz	https://www.encodeproject.org/files/ENCFF352FFB/@@download/ENCFF352FFB.fastq.gz
-https://www.encodeproject.org/files/ENCFF740VDF/@@download/ENCFF740VDF.fastq.gz	https://www.encodeproject.org/files/ENCFF352NDL/@@download/ENCFF352NDL.fastq.gz
-https://www.encodeproject.org/files/ENCFF758JBV/@@download/ENCFF758JBV.fastq.gz	https://www.encodeproject.org/files/ENCFF356KJM/@@download/ENCFF356KJM.fastq.gz
-https://www.encodeproject.org/files/ENCFF166BVX/@@download/ENCFF166BVX.fastq.gz	https://www.encodeproject.org/files/ENCFF373TST/@@download/ENCFF373TST.fastq.gz
-https://www.encodeproject.org/files/ENCFF243MZN/@@download/ENCFF243MZN.fastq.gz	https://www.encodeproject.org/files/ENCFF375CUH/@@download/ENCFF375CUH.fastq.gz
-https://www.encodeproject.org/files/ENCFF751DMM/@@download/ENCFF751DMM.fastq.gz	https://www.encodeproject.org/files/ENCFF377VCZ/@@download/ENCFF377VCZ.fastq.gz
-https://www.encodeproject.org/files/ENCFF533XEQ/@@download/ENCFF533XEQ.fastq.gz	https://www.encodeproject.org/files/ENCFF393TCX/@@download/ENCFF393TCX.fastq.gz
-https://www.encodeproject.org/files/ENCFF853HFC/@@download/ENCFF853HFC.fastq.gz	https://www.encodeproject.org/files/ENCFF398JCG/@@download/ENCFF398JCG.fastq.gz
-https://www.encodeproject.org/files/ENCFF204TNH/@@download/ENCFF204TNH.fastq.gz	https://www.encodeproject.org/files/ENCFF411REJ/@@download/ENCFF411REJ.fastq.gz
-https://www.encodeproject.org/files/ENCFF279GKI/@@download/ENCFF279GKI.fastq.gz	https://www.encodeproject.org/files/ENCFF413GTS/@@download/ENCFF413GTS.fastq.gz
-https://www.encodeproject.org/files/ENCFF792HPJ/@@download/ENCFF792HPJ.fastq.gz	https://www.encodeproject.org/files/ENCFF431FVH/@@download/ENCFF431FVH.fastq.gz
-https://www.encodeproject.org/files/ENCFF458ASE/@@download/ENCFF458ASE.fastq.gz	https://www.encodeproject.org/files/ENCFF443LZC/@@download/ENCFF443LZC.fastq.gz
-https://www.encodeproject.org/files/ENCFF756KJS/@@download/ENCFF756KJS.fastq.gz	https://www.encodeproject.org/files/ENCFF450WPF/@@download/ENCFF450WPF.fastq.gz
-https://www.encodeproject.org/files/ENCFF443LZC/@@download/ENCFF443LZC.fastq.gz	https://www.encodeproject.org/files/ENCFF458ASE/@@download/ENCFF458ASE.fastq.gz
-https://www.encodeproject.org/files/ENCFF641CIT/@@download/ENCFF641CIT.fastq.gz	https://www.encodeproject.org/files/ENCFF470CVX/@@download/ENCFF470CVX.fastq.gz
-https://www.encodeproject.org/files/ENCFF163PYU/@@download/ENCFF163PYU.fastq.gz	https://www.encodeproject.org/files/ENCFF486LTO/@@download/ENCFF486LTO.fastq.gz
-https://www.encodeproject.org/files/ENCFF295XWS/@@download/ENCFF295XWS.fastq.gz	https://www.encodeproject.org/files/ENCFF545RKN/@@download/ENCFF545RKN.fastq.gz
-https://www.encodeproject.org/files/ENCFF116RUN/@@download/ENCFF116RUN.fastq.gz	https://www.encodeproject.org/files/ENCFF546EIX/@@download/ENCFF546EIX.fastq.gz
-https://www.encodeproject.org/files/ENCFF698BKU/@@download/ENCFF698BKU.fastq.gz	https://www.encodeproject.org/files/ENCFF557IJC/@@download/ENCFF557IJC.fastq.gz
-https://www.encodeproject.org/files/ENCFF228EQX/@@download/ENCFF228EQX.fastq.gz	https://www.encodeproject.org/files/ENCFF562GUH/@@download/ENCFF562GUH.fastq.gz
-https://www.encodeproject.org/files/ENCFF725UIG/@@download/ENCFF725UIG.fastq.gz	https://www.encodeproject.org/files/ENCFF579RDE/@@download/ENCFF579RDE.fastq.gz
-https://www.encodeproject.org/files/ENCFF625FBR/@@download/ENCFF625FBR.fastq.gz	https://www.encodeproject.org/files/ENCFF591CAT/@@download/ENCFF591CAT.fastq.gz
-https://www.encodeproject.org/files/ENCFF082OUX/@@download/ENCFF082OUX.fastq.gz	https://www.encodeproject.org/files/ENCFF591URX/@@download/ENCFF591URX.fastq.gz
-https://www.encodeproject.org/files/ENCFF679GQT/@@download/ENCFF679GQT.fastq.gz	https://www.encodeproject.org/files/ENCFF610BDH/@@download/ENCFF610BDH.fastq.gz
-https://www.encodeproject.org/files/ENCFF805ITK/@@download/ENCFF805ITK.fastq.gz	https://www.encodeproject.org/files/ENCFF614PIK/@@download/ENCFF614PIK.fastq.gz
-https://www.encodeproject.org/files/ENCFF072EIX/@@download/ENCFF072EIX.fastq.gz	https://www.encodeproject.org/files/ENCFF615LEB/@@download/ENCFF615LEB.fastq.gz
-https://www.encodeproject.org/files/ENCFF930ROB/@@download/ENCFF930ROB.fastq.gz	https://www.encodeproject.org/files/ENCFF625BKT/@@download/ENCFF625BKT.fastq.gz
-https://www.encodeproject.org/files/ENCFF591CAT/@@download/ENCFF591CAT.fastq.gz	https://www.encodeproject.org/files/ENCFF625FBR/@@download/ENCFF625FBR.fastq.gz
-https://www.encodeproject.org/files/ENCFF080FPQ/@@download/ENCFF080FPQ.fastq.gz	https://www.encodeproject.org/files/ENCFF629JOP/@@download/ENCFF629JOP.fastq.gz
-https://www.encodeproject.org/files/ENCFF470CVX/@@download/ENCFF470CVX.fastq.gz	https://www.encodeproject.org/files/ENCFF641CIT/@@download/ENCFF641CIT.fastq.gz
-https://www.encodeproject.org/files/ENCFF183OZI/@@download/ENCFF183OZI.fastq.gz	https://www.encodeproject.org/files/ENCFF659FPR/@@download/ENCFF659FPR.fastq.gz
-https://www.encodeproject.org/files/ENCFF716YLE/@@download/ENCFF716YLE.fastq.gz	https://www.encodeproject.org/files/ENCFF665BBC/@@download/ENCFF665BBC.fastq.gz
-https://www.encodeproject.org/files/ENCFF768AIX/@@download/ENCFF768AIX.fastq.gz	https://www.encodeproject.org/files/ENCFF694EZB/@@download/ENCFF694EZB.fastq.gz
-https://www.encodeproject.org/files/ENCFF557IJC/@@download/ENCFF557IJC.fastq.gz	https://www.encodeproject.org/files/ENCFF698BKU/@@download/ENCFF698BKU.fastq.gz
-https://www.encodeproject.org/files/ENCFF835QIF/@@download/ENCFF835QIF.fastq.gz	https://www.encodeproject.org/files/ENCFF711KEQ/@@download/ENCFF711KEQ.fastq.gz
-https://www.encodeproject.org/files/ENCFF121NZR/@@download/ENCFF121NZR.fastq.gz	https://www.encodeproject.org/files/ENCFF712UMI/@@download/ENCFF712UMI.fastq.gz
-https://www.encodeproject.org/files/ENCFF780VKF/@@download/ENCFF780VKF.fastq.gz	https://www.encodeproject.org/files/ENCFF716RUC/@@download/ENCFF716RUC.fastq.gz
-https://www.encodeproject.org/files/ENCFF579RDE/@@download/ENCFF579RDE.fastq.gz	https://www.encodeproject.org/files/ENCFF725UIG/@@download/ENCFF725UIG.fastq.gz
-https://www.encodeproject.org/files/ENCFF601FJT/@@download/ENCFF601FJT.fastq.gz	https://www.encodeproject.org/files/ENCFF729MHV/@@download/ENCFF729MHV.fastq.gz
-https://www.encodeproject.org/files/ENCFF352NDL/@@download/ENCFF352NDL.fastq.gz	https://www.encodeproject.org/files/ENCFF740VDF/@@download/ENCFF740VDF.fastq.gz
-https://www.encodeproject.org/files/ENCFF729VCJ/@@download/ENCFF729VCJ.fastq.gz	https://www.encodeproject.org/files/ENCFF750HCS/@@download/ENCFF750HCS.fastq.gz
-https://www.encodeproject.org/files/ENCFF377FRL/@@download/ENCFF377FRL.fastq.gz	https://www.encodeproject.org/files/ENCFF751CCF/@@download/ENCFF751CCF.fastq.gz
-https://www.encodeproject.org/files/ENCFF377VCZ/@@download/ENCFF377VCZ.fastq.gz	https://www.encodeproject.org/files/ENCFF751DMM/@@download/ENCFF751DMM.fastq.gz
-https://www.encodeproject.org/files/ENCFF450WPF/@@download/ENCFF450WPF.fastq.gz	https://www.encodeproject.org/files/ENCFF756KJS/@@download/ENCFF756KJS.fastq.gz
-https://www.encodeproject.org/files/ENCFF356KJM/@@download/ENCFF356KJM.fastq.gz	https://www.encodeproject.org/files/ENCFF758JBV/@@download/ENCFF758JBV.fastq.gz
-https://www.encodeproject.org/files/ENCFF808PAO/@@download/ENCFF808PAO.fastq.gz	https://www.encodeproject.org/files/ENCFF765UYP/@@download/ENCFF765UYP.fastq.gz
-https://www.encodeproject.org/files/ENCFF694EZB/@@download/ENCFF694EZB.fastq.gz	https://www.encodeproject.org/files/ENCFF768AIX/@@download/ENCFF768AIX.fastq.gz
-https://www.encodeproject.org/files/ENCFF431FVH/@@download/ENCFF431FVH.fastq.gz	https://www.encodeproject.org/files/ENCFF792HPJ/@@download/ENCFF792HPJ.fastq.gz
-https://www.encodeproject.org/files/ENCFF102BFB/@@download/ENCFF102BFB.fastq.gz	https://www.encodeproject.org/files/ENCFF794IID/@@download/ENCFF794IID.fastq.gz
-https://www.encodeproject.org/files/ENCFF584YEG/@@download/ENCFF584YEG.fastq.gz	https://www.encodeproject.org/files/ENCFF802LTL/@@download/ENCFF802LTL.fastq.gz
-https://www.encodeproject.org/files/ENCFF614PIK/@@download/ENCFF614PIK.fastq.gz	https://www.encodeproject.org/files/ENCFF805ITK/@@download/ENCFF805ITK.fastq.gz
-https://www.encodeproject.org/files/ENCFF765UYP/@@download/ENCFF765UYP.fastq.gz	https://www.encodeproject.org/files/ENCFF808PAO/@@download/ENCFF808PAO.fastq.gz
-https://www.encodeproject.org/files/ENCFF048ZOQ/@@download/ENCFF048ZOQ.fastq.gz	https://www.encodeproject.org/files/ENCFF827YXC/@@download/ENCFF827YXC.fastq.gz
-https://www.encodeproject.org/files/ENCFF639RMG/@@download/ENCFF639RMG.fastq.gz	https://www.encodeproject.org/files/ENCFF830CTU/@@download/ENCFF830CTU.fastq.gz
-https://www.encodeproject.org/files/ENCFF327EQZ/@@download/ENCFF327EQZ.fastq.gz	https://www.encodeproject.org/files/ENCFF837SVG/@@download/ENCFF837SVG.fastq.gz
-https://www.encodeproject.org/files/ENCFF398JCG/@@download/ENCFF398JCG.fastq.gz	https://www.encodeproject.org/files/ENCFF853HFC/@@download/ENCFF853HFC.fastq.gz
-https://www.encodeproject.org/files/ENCFF293MPG/@@download/ENCFF293MPG.fastq.gz	https://www.encodeproject.org/files/ENCFF859CLK/@@download/ENCFF859CLK.fastq.gz
-https://www.encodeproject.org/files/ENCFF057DOL/@@download/ENCFF057DOL.fastq.gz	https://www.encodeproject.org/files/ENCFF863XGE/@@download/ENCFF863XGE.fastq.gz
-https://www.encodeproject.org/files/ENCFF105BSH/@@download/ENCFF105BSH.fastq.gz	https://www.encodeproject.org/files/ENCFF865TXE/@@download/ENCFF865TXE.fastq.gz
-https://www.encodeproject.org/files/ENCFF300LJR/@@download/ENCFF300LJR.fastq.gz	https://www.encodeproject.org/files/ENCFF869EIB/@@download/ENCFF869EIB.fastq.gz
-https://www.encodeproject.org/files/ENCFF269SMY/@@download/ENCFF269SMY.fastq.gz	https://www.encodeproject.org/files/ENCFF878ZLP/@@download/ENCFF878ZLP.fastq.gz
-https://www.encodeproject.org/files/ENCFF625BKT/@@download/ENCFF625BKT.fastq.gz	https://www.encodeproject.org/files/ENCFF930ROB/@@download/ENCFF930ROB.fastq.gz
-https://www.encodeproject.org/files/ENCFF274RNW/@@download/ENCFF274RNW.fastq.gz	https://www.encodeproject.org/files/ENCFF996AET/@@download/ENCFF996AET.fastq.gz
+SRR3032848
+SRR3032847
+SRR3032842
+SRR3032781
+SRR3032841
+SRR3032797
+SRR3032834
+SRR3032790
+SRR3032711
+SRR3032826
+SRR3032726
+SRR3032825
+SRR3032727
+SRR3032710
+SRR3032712
+SRR3032759
+SRR3032789
+SRR3032798
+SRR3032743
+SRR3032760
+SRR3032744
+SRR3032741
+SRR3032757
+SRR3032773
+SRR2155278
+SRR2155253
+SRR1639739
+SRR1960156
+SRR3144845
+SRR2155250
+SRR2242685
