@@ -97,5 +97,4 @@
 #
 # runFastqdump(list, path, bowtie_path)
 
-for i in range(9, -1, -1):
-    print i
+print sorted([1,2], reverse=True)

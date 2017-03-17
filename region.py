@@ -638,6 +638,8 @@ def isConvexConcave(variant1, variant2):
     concave1 = isConcave(variant1)
     concave2 = isConcave(variant2)
 
+    print concave1, concave2
+
     if (concave1[0] and concave2[0]):
         return False
     elif (not concave1[0] and not concave2[0]):
@@ -650,9 +652,11 @@ def isConvexConcave(variant1, variant2):
         left, right = concave2[1], concave2[2]
         mid = concave1[1]
 
-    left_submit = np.argmax(left.signals*left.step + left.start)
-    right_submit = np.argmax(right.signals*right.step + right.start)
-    mid_submit = np.argmax(mid.signals*mid.step + mid.start)
+    left_submit = np.argmax(left.signals)*left.step + left.start
+    right_submit = np.argmax(right.signals)*right.step + right.start
+    mid_submit = np.argmax(mid.signals)*mid.step + mid.start
+
+    # print left_submit, right_submit, mid_submit
 
     # distance = right_submit - left_submit
 
@@ -682,26 +686,19 @@ def isConcave(variant):
     """
     if len(variant.units) <= 1:
         return False, variant.units[0], None
-    max_height_index = np.argmax(variant.signals) * variant.step
 
-    max_unit_index = None
+    unit_indexes = [x for x in range(len(variant.units))]
 
-    for i in range(len(variant.units)):
-        unit = variant.units[i]
-        if unit.start <= max_height_index <= unit.end:
-            max_unit_index = i
+    unit_indexes = sorted(unit_indexes, key=lambda x: variant.units[x].height, reverse=True)
+    unit_indexes = unit_indexes[0:2]
+    unit_indexes = sorted(unit_indexes)
 
-    # This should not happen, so it is just a block to check previous implementation
-    if max_unit_index is None:
-        return False, None, None
-    # Because they are splitted into two units, so their start end on the border should be same.
-    max_unit = variant.units[max_unit_index]
-    if max_unit_index - 1 >= 0:
-        left_unit = variant.units[max_unit_index-1]
-        if left_unit.height > variant.convex_cutoff and left_unit.end == max_unit.start:
-            return True, left_unit, max_unit
-    if max_unit_index + 1 < len(variant.units):
-        right_unit = variant.units[max_unit_index+1]
-        if right_unit.height > variant.convex_cutoff and right_unit.start == max_unit.end:
-            return True, max_unit, right_unit
-    return False, max_unit, None
+    left, right = variant.units[unit_indexes[0]], variant.units[unit_indexes[1]]
+
+    if left.height > variant.convex_cutoff and \
+                    right.height > variant.convex_cutoff and \
+                                    (right.start - left.end)*1.0/(variant.end - variant.start) < 0.2:
+        return True, left, right
+    else:
+        max_unit = left if left.height > right.height else right
+        return False, max_unit, None
