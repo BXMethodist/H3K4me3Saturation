@@ -43,12 +43,12 @@ class Region():
         for i in range(len(self.variants)):
             variant = self.variants[i]
             split_indexes[i] = variant.split_units()
-            print split_indexes, i, "first split indexes"
+            # print split_indexes, i, "first split indexes"
 
 
         split_indexes = self.merge_split_index(split_indexes)
 
-        print split_indexes
+        # print split_indexes
 
         for i in range(len(self.variants)):
             split_index = split_indexes[i]
@@ -64,6 +64,9 @@ class Region():
 
         # Does it worth to be plot and check
         self.plot = self.plotable()
+        self.transitions = self.type_transition()
+        print self.transitions
+        print self.chromosome, self.start, self.end
 
     def create_variants(self, variants_members):
         for i in range(len(self.representatives)):
@@ -82,7 +85,7 @@ class Region():
             cur_overlap = self.get_overlap(unit)
             group_units_by_overlap.append(cur_overlap)
 
-        print group_units_by_overlap
+        #   group_units_by_overlap
         for group in group_units_by_overlap:
             # print [(g[0]-self.start, g[1]-self.start, g[2]) for g in group]
             related_variants = set([x[2] for x in group])
@@ -107,14 +110,14 @@ class Region():
                     if (total_length(units_in_cur_group) != 0 and total_length(units_in_compare_group) != 0) and \
                             (overlap_region/total_length(units_in_cur_group) < 0.6 or
                                          overlap_region/total_length(units_in_compare_group) < 0.6):
-                        print overlap_region/total_length(units_in_cur_group), \
-                            overlap_region / total_length(units_in_compare_group)
+                        # print overlap_region/total_length(units_in_cur_group), \
+                        #     overlap_region / total_length(units_in_compare_group)
                         merge_boo = False
 
             if merge_boo:
                 left_start = left_border * self.step + self.start
                 right_end = right_border * self.step + self.start
-                print group, "merge in progress"
+                # print group, "merge in progress"
                 for v in range(len(self.variants)):
                     affected_units = [unit[0:2] for unit in group if unit[2] == v]
                     # print affected_units, "affected"
@@ -181,7 +184,7 @@ class Region():
                     self.variants.remove(variant)
                     has_been_removed.add(variant)
             cur_pair = list(cur_pair)
-            print cur_pair
+            # print cur_pair
             self.variants.append(self.combine_variants(cur_pair))
         return
 
@@ -264,7 +267,9 @@ class Region():
             return transition
 
         for i in range(len(self.variants)):
-            for j in range(i, len(self.variants)):
+            for j in range(i+1, len(self.variants)):
+                self.variants[i].units = sorted(self.variants[i].units, key=lambda x:x.start)
+                self.variants[j].units = sorted(self.variants[j].units, key=lambda x: x.start)
                 type = self.get_types(self.variants[i], self.variants[j])
                 transition[(i, j)] = type
                 transition[(j, i)] = type
@@ -308,7 +313,7 @@ class Variant():
         self.signals = signals
         self.step = step
         self.cutoff = np.max(signals)*0.1
-        self.convex_cutoff = np.max(signals)/3
+        self.convex_cutoff = np.max(signals)/3.0
         self.members = members
         self.seed = seed
         self.labels = labels
@@ -449,7 +454,7 @@ def splitable(chromosome, start, end, signals, convex_cutoff):
             elif min_height < minimum_height:
                 split_indexes = left + min
                 minimum_height = min_height
-            print "split", split_indexes
+            # print "split", split_indexes
     if split_indexes is None:
         return None
     else:
@@ -494,7 +499,7 @@ def callunitbycutoff(chromosome, start, end, signals, cutoff, step=10):
 
 def merge_unit(chromosome, start, end, cutoff, units, signals, step=10):
     result_units = []
-    print units
+    # print units
     merged_unit = units[0]
     for i in range(1, len(units)):
         cur_unit = units[i]
@@ -582,27 +587,44 @@ def isBroadNarrow(variant1, variant2):
     :param variant2: Class Variant obj
     :return: boolean, whether these two's relation are Broad to Narrow
     """
-    v1_sum = units_total_length(variant1.units)
-    v2_sum = units_total_length(variant2.units)
     total_width = abs(variant1.end - variant1.start)
-    if any([v1_sum/total_width>0.6, v2_sum/total_width>0.6]) and (v1_sum > 2* v2_sum or 2*v1_sum>v2_sum):
-        pass
-    else:
-        return False
-    v1_index = np.argmax(variant1.signals)
-    v2_index = np.argmax(variant2.signals)
 
-    if abs(v1_index-v2_index)*variant1.step > 0.1:
-        return False
-    return True
+    for i in range(min(len(variant1.units), len(variant2.units))):
+        unit1 = variant1.units[i]
+        unit2 = variant2.units[i]
 
-def units_total_length(units):
+        if abs(unit1.start - unit2.start)*1.0/total_width < 0.1:
+            v1_sum = units_total_length(variant1.units, [j for j in range(len(variant1.units)) if j >= i])
+            v2_sum = units_total_length(variant2.units, [k for k in range(len(variant2.units)) if k >= i])
+
+            # print v1_sum, v2_sum
+            # print total_width
+            # print any([v1_sum / total_width > 0.6, v2_sum / total_width > 0.6])
+            # print v1_sum > 2 * v2_sum or 2 * v1_sum > v2_sum
+
+            if any([v1_sum*1.0 / total_width > 0.6, v2_sum*1.0 / total_width > 0.6]) and (
+                    v1_sum > 2 * v2_sum or 2 * v1_sum < v2_sum):
+                return True
+    for m in range(min(len(variant1.units), len(variant2.units))):
+        i = (m+1)*-1
+        unit1 = variant1.units[i]
+        unit2 = variant2.units[i]
+        if abs(unit1.end - unit2.end)*1.0 / total_width < 0.1:
+            v1_sum = units_total_length(variant1.units, [j for j in range(len(variant1.units)-m-1, -1, -1)])
+            v2_sum = units_total_length(variant2.units, [k for k in range(len(variant2.units)-m-1, -1, -1)])
+            if any([v1_sum / total_width > 0.6, v2_sum / total_width > 0.6]) and (
+                            v1_sum > 2 * v2_sum or 2 * v1_sum < v2_sum):
+                return True
+    return False
+
+def units_total_length(units, indexes):
     """
     :param units: variant unit object
     :return: int, total units length
     """
     sum = 0
-    for unit in units:
+    for i in indexes:
+        unit = units[i]
         sum += abs(unit.end - unit.start)
     return sum
 

@@ -97,8 +97,5 @@
 #
 # runFastqdump(list, path, bowtie_path)
 
-import numpy as np
-
-print np.std([85,80,90])
-
-print np.mean([85,80,90])
+for i in range(9, -1, -1):
+    print i
