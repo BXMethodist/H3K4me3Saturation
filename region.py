@@ -561,20 +561,38 @@ def isShift(variant1, variant2):
     :param variant2: Class Variant obj
     :return: boolean, whether these two 's relation are shift
     """
-    if len(variant1.units) != len(variant2.units):
-        return False
+    # if len(variant1.units) != len(variant2.units):
+    #     return False
 
     distances = []
-    for i in range(len(variant1.units)):
+    for i in range(min(len(variant1.units), len(variant2.units))):
         cur_unit1 = variant1.units[i]
         cur_unit2 = variant2.units[i]
-        if (cur_unit1.start - cur_unit2.start) * (cur_unit1.end * cur_unit2.end) <= 0:
-            return False
-        else:
-            distances.append(cur_unit1.start - cur_unit2.start)
-            distances.append(cur_unit1.end * cur_unit2.end)
+        distances.append(cur_unit1.start - cur_unit2.start)
+        distances.append(cur_unit1.end - cur_unit2.end)
 
-    if np.std(distances) / np.mean(distances) > 0.1:
+    for j in range(min(len(variant1.units), len(variant2.units)), max(len(variant1.units), len(variant2.units))):
+        if len(variant1.units) > len(variant2.units):
+            additional = variant1.units[j].end - variant1.units[j].start
+        else:
+            additional = variant2.units[j].end - variant2.units[j].start
+        if distances[-1] >= 0:
+            distances[-1] += additional
+        else:
+            distances[-1] -= additional
+
+    width1 = [x for x in range(len(variant1.units))]
+    width2 = [y for y in range(len(variant2.units))]
+
+    width1 = sorted(width1, key=lambda x : variant1.units[x].end - variant1.units[x].start, reverse=True)
+    width2 = sorted(width2, key=lambda y: variant2.units[y].end - variant2.units[y].start, reverse=True)
+
+    max_width = max(variant1.units[width1[0]].end - variant1.units[width1[0]].start,
+                    variant2.units[width2[0]].end - variant2.units[width2[0]].start)
+
+    print np.std(distances), np.mean(distances), max_width
+
+    if np.std(distances) / np.mean(distances) > 0.15 or np.mean(distances) < max_width/2.0:
         return False
     else:
         return True
@@ -638,7 +656,7 @@ def isConvexConcave(variant1, variant2):
     concave1 = isConcave(variant1)
     concave2 = isConcave(variant2)
 
-    print concave1, concave2
+    # print concave1, concave2
 
     if (concave1[0] and concave2[0]):
         return False
