@@ -158,11 +158,11 @@ regions = region_cluster(300, directory='./csv', verbose=False)
 #
 # print regions
 #
-# import pickle
-#
-# with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
-#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
-#
-# f.close()
+import pickle
+
+with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
+    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+
+f.close()
     # region_cluster(directory="./csv")
 

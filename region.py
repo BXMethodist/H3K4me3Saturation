@@ -483,13 +483,13 @@ def callunitbycutoff(chromosome, start, end, signals, cutoff, step=10):
         elif cur_index - prev == 1 and i == len(units_index)-1:
             if cur_start != prev:
                 peak = (chromosome, start+cur_start*step, start+cur_index*step, signals[cur_start:cur_index])
-                if (cur_index-cur_start)*step/(end-start) > 0.1 or \
+                if (cur_index-cur_start)*step > 0.1 * (end-start) or \
                         np.max(signals[cur_start:cur_index]) > np.max(signals)*0.15:
                     units.append(peak)
         else:
             if cur_start != prev:
                 peak = (chromosome, start+cur_start*step, start+prev*step, signals[cur_start:prev])
-                if (cur_index - cur_start)*step / (end - start) > 0.1 or \
+                if (cur_index - cur_start)*step > 0.1 * (end - start) or \
                                 np.max(signals[cur_start:cur_index]) > np.max(signals) * 0.15:
                     units.append(peak)
                 prev = cur_index
@@ -592,7 +592,7 @@ def isShift(variant1, variant2):
 
     print np.std(distances), np.mean(distances), max_width
 
-    if np.std(distances) / np.mean(distances) > 0.15 or np.mean(distances) < max_width/2.0:
+    if np.std(distances) > 0.15 * np.mean(distances) or np.mean(distances) * 2.0 < max_width:
         return False
     else:
         return True
@@ -611,7 +611,7 @@ def isBroadNarrow(variant1, variant2):
         unit1 = variant1.units[i]
         unit2 = variant2.units[i]
 
-        if abs(unit1.start - unit2.start)*1.0/total_width < 0.1:
+        if abs(unit1.start - unit2.start) < 0.1 * total_width:
             v1_sum = units_total_length(variant1.units, [j for j in range(len(variant1.units)) if j >= i])
             v2_sum = units_total_length(variant2.units, [k for k in range(len(variant2.units)) if k >= i])
 
@@ -620,17 +620,17 @@ def isBroadNarrow(variant1, variant2):
             # print any([v1_sum / total_width > 0.6, v2_sum / total_width > 0.6])
             # print v1_sum > 2 * v2_sum or 2 * v1_sum > v2_sum
 
-            if any([v1_sum*1.0 / total_width > 0.6, v2_sum*1.0 / total_width > 0.6]) and (
+            if any([v1_sum > 0.6 * total_width, v2_sum > 0.6 * total_width]) and (
                     v1_sum > 2 * v2_sum or 2 * v1_sum < v2_sum):
                 return True
     for m in range(min(len(variant1.units), len(variant2.units))):
         i = (m+1)*-1
         unit1 = variant1.units[i]
         unit2 = variant2.units[i]
-        if abs(unit1.end - unit2.end)*1.0 / total_width < 0.1:
+        if abs(unit1.end - unit2.end) < 0.1 * total_width:
             v1_sum = units_total_length(variant1.units, [j for j in range(len(variant1.units)-m-1, -1, -1)])
             v2_sum = units_total_length(variant2.units, [k for k in range(len(variant2.units)-m-1, -1, -1)])
-            if any([v1_sum / total_width > 0.6, v2_sum / total_width > 0.6]) and (
+            if any([v1_sum > 0.6 * total_width, v2_sum > 0.6 * total_width]) and (
                             v1_sum > 2 * v2_sum or 2 * v1_sum < v2_sum):
                 return True
     return False
@@ -715,7 +715,7 @@ def isConcave(variant):
 
     if left.height > variant.convex_cutoff and \
                     right.height > variant.convex_cutoff and \
-                                    (right.start - left.end)*1.0/(variant.end - variant.start) < 0.2:
+                                    (right.start - left.end) < min(right.end-right.start, left.end-left.start):
         return True, left, right
     else:
         max_unit = left if left.height > right.height else right
