@@ -65,8 +65,8 @@ class Region():
         # Does it worth to be plot and check
         self.plot = self.plotable()
         self.transitions = self.type_transition()
-        print self.transitions
-        print self.chromosome, self.start, self.end
+        # print self.transitions
+        # print self.chromosome, self.start, self.end
 
     def create_variants(self, variants_members):
         for i in range(len(self.representatives)):
@@ -590,7 +590,7 @@ def isShift(variant1, variant2):
     max_width = max(variant1.units[width1[0]].end - variant1.units[width1[0]].start,
                     variant2.units[width2[0]].end - variant2.units[width2[0]].start)
 
-    print np.std(distances), np.mean(distances), max_width
+    # print np.std(distances), np.mean(distances), max_width
 
     if np.std(distances) > 0.15 * np.mean(distances) or np.mean(distances) * 2.0 < max_width:
         return False

@@ -27,8 +27,15 @@ def region_cluster(number_sample_used,
 
     regions = []
 
+    n = 0
     for file_name in list_files:
         print file_name
+        # if file_name == "chr3_197900280_197900820.csv":
+        #     print n
+        #     break
+        # else:
+        #     n += 1
+        #     continue
         cluster = DistinctAffinityPropagation(number_sample_used, affinity=affinity)
         df = pd.read_csv(directory+file_name, sep="\t")
 
