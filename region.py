@@ -108,8 +108,8 @@ class Region():
                     overlap_region = overlap_length(units_in_cur_group, units_in_compare_group)
 
                     if (total_length(units_in_cur_group) != 0 and total_length(units_in_compare_group) != 0) and \
-                            (overlap_region/total_length(units_in_cur_group) < 0.6 or
-                                         overlap_region/total_length(units_in_compare_group) < 0.6):
+                            (overlap_region) < 0.6 * total_length(units_in_cur_group or
+                                         overlap_region < 0.6 * total_length(units_in_compare_group)):
                         # print overlap_region/total_length(units_in_cur_group), \
                         #     overlap_region / total_length(units_in_compare_group)
                         merge_boo = False

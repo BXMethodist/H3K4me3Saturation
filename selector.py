@@ -187,7 +187,8 @@ def combine_feature_cluster(feature, cluster):
     """
     :param feature: tsv with region feature
     :param cluster:  tsv with region cluster
-    :return:
+    :return: combine gene feature (TSS, genebody...) information with cluster, category(number of clusters, BN, PT..)
+    information, by using variant id as index
     """
     feature_df = pd.read_csv(feature, sep='\t', index_col=0)
     cluster_df = pd.read_csv(cluster, sep='\t', index_col=0)
@@ -202,7 +203,7 @@ def StackedBarPlot(featuremap, groupby):
     """
     :param featuremap: dataframe
     :param groupby: feature groupby
-    :return: percentage stacked bar plot
+    :return: a dataframe used for draw the percentage stacked bar plot
     """
     outputname = featuremap[:-4]+groupby+'stackedbarplot.tsv'
 

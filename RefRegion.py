@@ -20,6 +20,14 @@ class ReferenceRegion():
 
         self.setVariants(region.variants)
 
+        self.transitions = {}
+        for key, value in region.transitions.iteritems():
+            id1, id2 = key
+            id1 = self.variants[id1].id
+            id2 = self.variants[id2].id
+            self.transitions[(id1, id2)] = value
+        self.categories = list(set(self.transitions.values()))
+
     def setVariants(self, variants):
         self.variants = []
         for i in range(len(variants)):
@@ -81,10 +89,31 @@ def Annotation(path, output):
         if referenceRegion.plot:
             count += 1
         counts[len(referenceRegion.variants)]+=1
+        BN = False
+        PT = False
+        SO = False
+        SH = False
+        CC= False
+        if 'BN' in referenceRegion.categories:
+            BN = True
+        if 'PT' in referenceRegion.categories:
+            PT = True
+        if 'SO' in referenceRegion.categories:
+            SO = True
+        if 'SH' in referenceRegion.categories:
+            SH = True
+        if 'CC' in referenceRegion.categories:
+            CC = True
+
         cur_stat = [referenceRegion.id,
                     referenceRegion.end-referenceRegion.start,
                     len(referenceRegion.variants),
-                    referenceRegion.member_size]
+                    referenceRegion.member_size,
+                    BN,
+                    CC,
+                    SH,
+                    PT,
+                    SO]
         stats.append(cur_stat)
 
         new_regions.append(referenceRegion)
@@ -112,7 +141,8 @@ def Annotation(path, output):
     region_df = pd.DataFrame(region_annotations)
     variant_df = pd.DataFrame(variant_annotations)
     units_df = pd.DataFrame(units_annotations)
-    stats_df = pd.DataFrame(stats, columns=['region_id', 'width', 'number of clusters', 'number of samples'])
+    stats_df = pd.DataFrame(stats, columns=['region_id', 'width', 'number of clusters', 'number of samples',
+                                            'BroadtoNarrow', 'ConcavetoConvex', 'Shift', 'Pattern', 'Other'])
     stats_df = stats_df.set_index(['region_id'])
 
     region_df.to_csv(output+'region.tsv', sep='\t', index=False, header=False)

@@ -118,3 +118,14 @@ def super_wig():
     save_obj(superwig, "superwig")
 
     return superwig
+
+
+if __name__ == "__main__":
+
+    # super = load_obj('./wig/superwig')
+    # total_signals=0
+    # for key, value in super.genome.iteritems():
+    #     total_signals += np.sum(value.signals)
+    #
+    # print total_signals
+    pass

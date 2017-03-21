@@ -28,8 +28,8 @@ def region_cluster(number_sample_used,
     regions = []
 
     n = 0
-    for file_name in list_files:
-        print file_name
+    for file_name in list_files[30000:]:
+        # print file_name
         # if file_name == "chr3_197900280_197900820.csv":
         #     print n
         #     break
@@ -167,7 +167,7 @@ regions = region_cluster(300, directory='./csv', verbose=False)
 #
 import pickle
 
-with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
+with open('75refmap_combined_3kb_regions_part4' + '.pkl', 'wb') as f:
     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
 
 f.close()
