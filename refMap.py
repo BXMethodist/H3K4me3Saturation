@@ -20,6 +20,9 @@ class refMap:
         self.coverage = [[0] * self.iterations for i in range(sampleNumber)]
         self.region = [[0] * self.iterations for i in range(sampleNumber)]
         self.regionLength = [[0] * self.iterations for i in range(sampleNumber)]
+        self.noise_coverage = [[0] * self.iterations for i in range(sampleNumber)]
+        self.non_noise_coverage = [[0] * self.iterations for i in range(sampleNumber)]
+
 
     def saturated(self, path, sampleSequence, iteration, cutoff=0):
         file = open(path, "rb")
@@ -109,7 +112,7 @@ class refMap:
         output.close()
 
 
-    def trainMap(self, directories, surfix=None, cutoff=0, saveRefMap=True):
+    def trainMap(self, directories, surfix=None, cutoff=0, saveRefMap=True, individual=False):
         listFiles = os.listdir(directories)
 
         if surfix is not None:
@@ -125,6 +128,8 @@ class refMap:
             np.random.shuffle(listFiles)
             seq = 0
             for file in listFiles:
+                if individual:
+                    self.genome = genome_size()
                 self.saturated(directories + '/' + file, seq, n, cutoff=cutoff)
                 seq += 1
 
@@ -141,5 +146,5 @@ class refMap:
         table[:, 2] = np.mean(self.regionLength, axis=1)
         table[:, 3] = np.mean(self.region, axis=1)
 
-        np.savetxt(str(cutoff) + ".csv", table, delimiter=",")
+        np.savetxt(str(cutoff) + "_individual.csv", table, delimiter=",")
 

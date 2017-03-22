@@ -41,7 +41,7 @@ from Wig import Wig
 # np.savetxt("/home/tmhbxx3/archive/refmap_saturation/code/peak_number_vs_cutoff.txt", peak_number, delimiter="\t")
 
 for cutoff in range(10,310,10):
-    refMap = refMap(335)
+    refMap = refMap(1)
     refMap.trainMap("/home/tmhbxx3/archive/KFH3K4me3/"+str(cutoff)+"cutoff/pooled", cutoff=cutoff)
     # refMap.trainMap(kfPath, surfix="regions.xls", cutoff=cutoff)
 # end = time()

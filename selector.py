@@ -8,6 +8,7 @@
 
 import numpy as np, pandas as pd, pickle
 from collections import defaultdict
+from RefRegion import ReferenceRegion, ReferenceVariant, ReferenceUnit
 
 def AnnotationToMap(annotation, outputmap):
     """
@@ -40,7 +41,7 @@ def AnnotationToMap(annotation, outputmap):
     f.close()
     return annotationmap
 
-def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0):
+def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
     refname = refmap[0:-4] if refmap.rfind('/') == -1 else refmap[refmap.rfind('/')+1:-4]
     featurename = featuremap[0:-4] if featuremap.rfind('/') == -1 else featuremap[featuremap.rfind('/')+1:-4]
     output_name = refname + featurename+str(cutoff1) + str(cutoff2)
@@ -178,13 +179,15 @@ def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0):
         else:
             best_results.append((region.id, None, None, None, True, None))
 
+    outputdir = outputdir +'/' if not outputdir.endswith('/') else outputdir
+
     df = pd.DataFrame(results, columns=colnames)
     df = df.set_index(['region_id'])
-    df.to_csv(output_name+'.tsv', sep='\t')
+    df.to_csv(outputdir+output_name+'.tsv', sep='\t')
 
     df2 = pd.DataFrame(best_results, columns=colnames)
     df2 = df2.set_index(['region_id'])
-    df2.to_csv(output_name+'best_assign.tsv', sep='\t')
+    df2.to_csv(outputdir+output_name+'best_assign.tsv', sep='\t')
 
     return df
 
@@ -210,25 +213,29 @@ def StackedBarPlot(featuremap, groupby):
     :param groupby: feature groupby
     :return: a dataframe used for draw the percentage stacked bar plot
     """
-    outputname = featuremap[:-4]+groupby+'stackedbarplot.tsv'
+    if len(groupby) == 1:
+        groupby = groupby[0]
+        outputname = featuremap[:-4]+groupby+'stackedbarplot.tsv'
 
-    df = pd.read_csv(featuremap, sep='\t', index_col=0)
+        df = pd.read_csv(featuremap, sep='\t', index_col=0)
 
-    overall_counts = df.count(axis=0)
+        overall_counts = df.count(axis=0)
 
-    results = [('All', overall_counts['TSS'], overall_counts['gene_body'], overall_counts['inter_gene'])]
-    groups = df[groupby].unique()
+        results = [('All', overall_counts['TSS'], overall_counts['gene_body'], overall_counts['inter_gene'])]
+        groups = df[groupby].unique()
 
-    for group in groups:
-        if not pd.isnull(group):
-            sub_df = df[df[groupby]==group]
-            sub_counts = sub_df.count(axis=0)
-            results.append((group, sub_counts['TSS'], sub_counts['gene_body'], sub_counts['inter_gene']))
-    featuremap_groups = pd.DataFrame(results, columns=['group', 'TSS', ' gene_body', 'inter_gene'])
+        for group in groups:
+            if not pd.isnull(group):
+                sub_df = df[df[groupby]==group]
+                sub_counts = sub_df.count(axis=0)
+                results.append((group, sub_counts['TSS'], sub_counts['gene_body'], sub_counts['inter_gene']))
+        featuremap_groups = pd.DataFrame(results, columns=['group', 'TSS', ' gene_body', 'inter_gene'])
 
-    featuremap_groups.to_csv(outputname, sep='\t')
+        featuremap_groups.to_csv(outputname, sep='\t')
 
-    return featuremap_groups
+        return featuremap_groups
+    else:
+
 
 def overlap(start1, end1, start2, end2):
     """
@@ -293,10 +300,10 @@ class gene():
 
 # AnnotationToMap('./pkl/hg19_RefSeq_refGene.txt', './pkl/hg19_RefSeq_refGene')
 
-feature_refmap('./pkl/75_combined_3kb.pkl', './pkl/hg19_RefSeq_refGene.pkl', 3000, 3000)
-# combine_feature_cluster('75_combined_3kbhg38_RefSeq_allgene30003000.tsv', '75_combined_3kbstats.tsv')
+# feature_refmap('./pkl/75_combined_3kb.pkl', './pkl/hg19_RefSeq_refGene.pkl', 3000, 3000, outputdir='./pkl')
+# combine_feature_cluster('./pkl/75_combined_3kbhg19_RefSeq_refGene30003000.tsv', './pkl/75_combined_3kbstats.tsv')
 #
-# StackedBarPlot("75_combined_3kbhg38_RefSeq_allgene30003000with_cluster.tsv", "number of clusters")
+StackedBarPlot("./pkl/75_combined_3kbhg19_RefSeq_refGene30003000with_cluster.tsv", ["number of clusters"])
 
 # comulative_TSS_plot("75_combined_3kbhg38_RefSeq_allgene30003000with_cluster.tsv", "number of clusters")
 
