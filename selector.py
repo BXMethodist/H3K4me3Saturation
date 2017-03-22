@@ -1,6 +1,11 @@
 # This module is used to create a hashmap contains genome feature annotations with bin size 10.
 # to facilitate the query of genome features for certain peaks.
 
+# 1. Convert and Annotation file to pkl by AnnotationToMap
+# 2. Map annotation to peaks by 'feature_refmap'
+# 3. combine featured referencemap with cluster_category map by 'combine_feature_cluster'
+# 4. Generate excel table for plot by 'StackedBarPlot'
+
 import numpy as np, pandas as pd, pickle
 from collections import defaultdict
 
@@ -17,7 +22,7 @@ def AnnotationToMap(annotation, outputmap):
     annotationmap = {}
 
     for i in range(df.shape[0]):
-        gene_id = df.loc[i, '#name']
+        gene_id = df.loc[i, 'name']
         gene_chr = df.loc[i, 'chrom']
         strand = 1 if df.loc[i, 'strand'] == '+' else -1
         tss = int(df.loc[i, 'txStart'])
@@ -286,9 +291,9 @@ class gene():
 
 
 
+# AnnotationToMap('./pkl/hg19_RefSeq_refGene.txt', './pkl/hg19_RefSeq_refGene')
 
-
-# feature_refmap('./pkl/75_combined_3kb.pkl', './pkl/hg38_RefSeq_allgene.pkl', 3000, 3000)
+feature_refmap('./pkl/75_combined_3kb.pkl', './pkl/hg19_RefSeq_refGene.pkl', 3000, 3000)
 # combine_feature_cluster('75_combined_3kbhg38_RefSeq_allgene30003000.tsv', '75_combined_3kbstats.tsv')
 #
 # StackedBarPlot("75_combined_3kbhg38_RefSeq_allgene30003000with_cluster.tsv", "number of clusters")

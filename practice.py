@@ -101,18 +101,22 @@ import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 
 
-x = np.random.randint(0, 180, size=50)
-
-y = np.zeros(200)
-print x
-for i in x:
-    y[i:i+20] +=1
-
-
-index = [i for i in range(y.shape[0])]
-
-plt.bar(index, y)
-plt.show()
-# add a 'best fit' line
+# x = np.random.randint(0, 180, size=50)
+#
+# y = np.zeros(200)
+# print x
+# for i in x:
+#     y[i:i+20] +=1
+#
+#
+# index = [i for i in range(y.shape[0])]
+#
+# plt.bar(index, y)
 # plt.show()
-print y
+# # add a 'best fit' line
+# # plt.show()
+# print y
+
+from scipy.stats import poisson
+
+print poisson.pmf(8 , 6)

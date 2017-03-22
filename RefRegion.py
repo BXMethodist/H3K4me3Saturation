@@ -158,3 +158,5 @@ def Annotation(path, output):
     print counts
     return region_annotations, variant_annotations, units_annotations
 
+# if __name__ == "__main__":
+Annotation("75refmap_combined_3kb_regions.pkl", "./pkl/75_combined_3kb")
