@@ -207,13 +207,16 @@ def combine_feature_cluster(feature, cluster):
 
     return result_df
 
-def StackedBarPlot(featuremap, groupby):
+def StackedBarPlot(featuremap, groupby, groupby2=[]):
     """
     :param featuremap: dataframe
-    :param groupby: feature groupby
+    :param groupby: feature groupby, if only one features in groupby, it will group the different value in that
+    features towards TSS, genebody....
+    if more than one feature in groupby, it will group different feature with TSS, gene body.
+    if groupby feature is 1 and groupby2 feature is not empty, it means get the number of feature group 2 groupby feature group 1.
     :return: a dataframe used for draw the percentage stacked bar plot
     """
-    if len(groupby) == 1:
+    if len(groupby) == 1 and len(groupby2) == 0:
         groupby = groupby[0]
         outputname = featuremap[:-4]+groupby+'stackedbarplot.tsv'
 
@@ -234,7 +237,39 @@ def StackedBarPlot(featuremap, groupby):
         featuremap_groups.to_csv(outputname, sep='\t')
 
         return featuremap_groups
-    else:
+    elif len(groupby) > 1:
+        outputname = featuremap[:-4] + '_'.join(groupby) + 'stackedbarplot.tsv'
+        df = pd.read_csv(featuremap, sep='\t', index_col=0)
+        overall_counts = df.count(axis=0)
+        results = [('All', overall_counts['TSS'], overall_counts['gene_body'], overall_counts['inter_gene'])]
+
+        for group in groupby:
+            sub_df = df[df[group]==True]
+            sub_counts = sub_df.count(axis=0)
+            results.append((group, sub_counts['TSS'], sub_counts['gene_body'], sub_counts['inter_gene']))
+        featuremap_groups = pd.DataFrame(results, columns=['group', 'TSS', ' gene_body', 'inter_gene'])
+
+        featuremap_groups.to_csv(outputname, sep='\t')
+
+    elif len(groupby) == 1 and len(groupby2) != 0:
+        outputname = featuremap[:-4] + '_'.join(groupby) + "_".join(groupby2) + 'stackedbarplot.tsv'
+        df = pd.read_csv(featuremap, sep='\t', index_col=0)
+        results = []
+
+        for feature in groupby2:
+            df.loc[df[feature]==False, feature] = np.nan
+
+        for group in df[groupby[0]].unique():
+            if not pd.isnull(group):
+                sub_df = df[df[groupby[0]]==group]
+                sub_counts = sub_df.count(axis=0)
+                cur_result =[group] + [sub_counts[feature] for feature in groupby2]
+                results.append(cur_result)
+        featuremap_groups = pd.DataFrame(results, columns=['group']+ [feature for feature in groupby2])
+
+        featuremap_groups.to_csv(outputname, sep='\t')
+
+
 
 
 def overlap(start1, end1, start2, end2):
@@ -302,8 +337,8 @@ class gene():
 
 # feature_refmap('./pkl/75_combined_3kb.pkl', './pkl/hg19_RefSeq_refGene.pkl', 3000, 3000, outputdir='./pkl')
 # combine_feature_cluster('./pkl/75_combined_3kbhg19_RefSeq_refGene30003000.tsv', './pkl/75_combined_3kbstats.tsv')
-#
-StackedBarPlot("./pkl/75_combined_3kbhg19_RefSeq_refGene30003000with_cluster.tsv", ["number of clusters"])
+# #
+StackedBarPlot("./pkl/75_combined_3kbhg19_RefSeq_refGene30003000with_cluster.tsv",['number of clusters'], ['BroadtoNarrow',	'ConcavetoConvex',	'Shift',	'Pattern',	'Other'])
 
 # comulative_TSS_plot("75_combined_3kbhg38_RefSeq_allgene30003000with_cluster.tsv", "number of clusters")
 
