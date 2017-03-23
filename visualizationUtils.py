@@ -11,7 +11,7 @@ from scipy.cluster.hierarchy import linkage
 # from rpy2 import robjects
 from cycler import cycler
 
-def plotSaturation(title, variant, sample_names, data_values):
+def plotSaturation(title, variant, sample_names, data_values, types, verbose=False):
     width = variant.end-variant.start
     array = variant.members
     rep = variant.signals
@@ -71,17 +71,22 @@ def plotSaturation(title, variant, sample_names, data_values):
 
     fig.set_tight_layout(True)
 
-    fig.savefig("./pictures/"+title+'.png', dpi=600, facecolor='w', edgecolor='w',
-                orientation='portrait', bbox_inches='tight')
+    variant_id = title.replace("_", ".")[3:]
+
+    for type in types:
+        fig.savefig("./pictures/"+type+'/'+variant_id+'.png', dpi=600, facecolor='w', edgecolor='w',
+                    orientation='portrait', bbox_inches='tight')
     plt.close('all')
 
-    best_sample_index = variant.best_representative_sample()
-    for i in range(len(best_sample_index)):
-        index = best_sample_index[i]
-        sample_name = sample_names[index]
-        output_name = title + " " + sample_name
-        cur_data = data_values[index]
-        plotBestSample(sample_name, output_name, cur_data, xvalues)
+
+    if verbose:
+        best_sample_index = variant.best_representative_sample()
+        for i in range(len(best_sample_index)):
+            index = best_sample_index[i]
+            sample_name = sample_names[index]
+            output_name = variant_id + " " + sample_name
+            cur_data = data_values[index]
+            plotBestSample(sample_name, output_name, cur_data, xvalues)
     return peaks
 
 def plotBestSample(title, output_name, signals, xvalues):

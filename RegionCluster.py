@@ -28,7 +28,7 @@ def region_cluster(number_sample_used,
     regions = []
 
     n = 0
-    for file_name in list_files[30000:]:
+    for file_name in list_files:
         # print file_name
         # if file_name == "chr3_197900280_197900820.csv":
         #     print n
@@ -102,14 +102,21 @@ def region_cluster(number_sample_used,
         if verbose:
             if len(peak.variants) > 1 and peak.plot:
                 for i in range(len(peak.variants)):
+                    types = set()
                     variant = peak.variants[i]
-                    plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members)
-                pass
-            else:
-                for i in range(len(peak.variants)):
-                    variant = peak.variants[i]
-                    plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members)
-                pass
+                    for key in peak.transitions.keys():
+                        if i in key:
+                            types.add(peak.transitions[key])
+                    types = list(types)
+                    plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members,
+                                   types=types,
+                                   verbose=verbose)
+            #     pass
+            # else:
+            #     for i in range(len(peak.variants)):
+            #         variant = peak.variants[i]
+            #         plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members)
+            #     pass
 
         # if len(cluster.labels_) > 1:
         #     i = 0
@@ -147,7 +154,7 @@ def region_cluster(number_sample_used,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=False)
+regions = region_cluster(300, directory='./csv', verbose=True)
 
 
 
@@ -165,11 +172,11 @@ regions = region_cluster(300, directory='./csv', verbose=False)
 #
 # print regions
 #
-import pickle
-
-with open('75refmap_combined_3kb_regions_part4' + '.pkl', 'wb') as f:
-    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
-
-f.close()
+# import pickle
+#
+# with open('75refmap_combined_3kb_regions_part4' + '.pkl', 'wb') as f:
+#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+#
+# f.close()
     # region_cluster(directory="./csv")
 

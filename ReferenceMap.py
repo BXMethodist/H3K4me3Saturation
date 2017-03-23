@@ -193,7 +193,7 @@ class refMap:
             seq = 0
             for file in listFiles:
                 if individual:
-                    self.genome = genome_size()
+                    self.reset()
                 self.saturated(directories + '/' + file, seq, n, cutoff=cutoff)
                 seq += 1
 
