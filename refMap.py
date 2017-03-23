@@ -10,6 +10,8 @@ class refMap:
     ### use plotSaturation.py to make figure
     def __init__(self, iterations):
         self.genome = genome_size()
+        self.non_noise_genome = genome_size()
+        self.noise_genome = genome_size()
         self.iterations = iterations
         self.coverage = None
         self.region = None
@@ -20,9 +22,14 @@ class refMap:
         self.coverage = [[0] * self.iterations for i in range(sampleNumber)]
         self.region = [[0] * self.iterations for i in range(sampleNumber)]
         self.regionLength = [[0] * self.iterations for i in range(sampleNumber)]
-        self.noise_coverage = [[0] * self.iterations for i in range(sampleNumber)]
-        self.non_noise_coverage = [[0] * self.iterations for i in range(sampleNumber)]
 
+        self.noise_coverage = [[0] * self.iterations for i in range(sampleNumber)]
+        self.noise_region = [[0] * self.iterations for i in range(sampleNumber)]
+        self.noise_regionLength = [[0] * self.iterations for i in range(sampleNumber)]
+
+        self.non_noise_coverage = [[0] * self.iterations for i in range(sampleNumber)]
+        self.non_noise_region = [[0] * self.iterations for i in range(sampleNumber)]
+        self.non_noise_regionLength = [[0] * self.iterations for i in range(sampleNumber)]
 
     def saturated(self, path, sampleSequence, iteration, cutoff=0):
         file = open(path, "rb")
@@ -38,6 +45,10 @@ class refMap:
             if height >= cutoff:
                 if chrName in self.genome:
                     self.genome[chrName][start - 1:end] = 1
+                    self.non_noise_genome[chrName][start-1:end] = 1
+            elif height < cutoff:
+                if chrName in self.genome:
+                    self.noise_genome[chrName][start-1:end] = 1
         file.close()
         totalCoverage = 0
         totalIsland = 0
@@ -66,6 +77,57 @@ class refMap:
         self.region[sampleSequence][iteration] = totalIsland
         self.regionLength[sampleSequence][iteration] = avgLength
 
+        totalCoverage = 0
+        totalIsland = 0
+        for value in self.non_noise_genome.values():
+            newCoverage = np.sum(value)
+            totalCoverage += newCoverage
+            if newCoverage == 0:
+                continue
+            else:
+                sign = ((np.roll(value, 1) - value) != 0).astype(int)
+                sign[0] = 0
+                islandNumber = np.sum(sign)
+                if value[0] == 1:
+                    islandNumber+=1
+                if value[-1] == 1:
+                    islandNumber+=1
+                totalIsland += islandNumber/2
+
+        if totalIsland == 0:
+            avgLength = 0
+        else:
+            avgLength = totalCoverage*1.0/totalIsland*10
+
+        self.non_noise_coverage[sampleSequence][iteration] = totalCoverage * 10
+        self.non_noise_region[sampleSequence][iteration] = totalIsland
+        self.non_noise_regionLength[sampleSequence][iteration] = avgLength
+
+        totalCoverage = 0
+        totalIsland = 0
+        for value in self.noise_genome.values():
+            newCoverage = np.sum(value)
+            totalCoverage += newCoverage
+            if newCoverage == 0:
+                continue
+            else:
+                sign = ((np.roll(value, 1) - value) != 0).astype(int)
+                sign[0] = 0
+                islandNumber = np.sum(sign)
+                if value[0] == 1:
+                    islandNumber += 1
+                if value[-1] == 1:
+                    islandNumber += 1
+                totalIsland += islandNumber / 2
+
+        if totalIsland == 0:
+            avgLength = 0
+        else:
+            avgLength = totalCoverage * 1.0 / totalIsland * 10
+
+        self.noise_coverage[sampleSequence][iteration] = totalCoverage * 10
+        self.noise_region[sampleSequence][iteration] = totalIsland
+        self.noise_regionLength[sampleSequence][iteration] = avgLength
 
     def converge(self, prev, current, convergeCap = 10):
         prevCoverage, prevNumber = prev
@@ -82,6 +144,8 @@ class refMap:
 
     def reset(self):
         self.genome = genome_size()
+        self.non_noise_genome = genome_size()
+        self.noise_genome = genome_size()
 
 
     def saveRefMap(self, cutoff):

@@ -2,7 +2,7 @@
 
 # import pandas as pd
 import numpy as np, os, csv
-from refMap import *
+from refMap import refMap
 from time import time
 from Wig import Wig
 
