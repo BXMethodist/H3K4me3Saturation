@@ -65,7 +65,7 @@ class Region():
         # Does it worth to be plot and check
         self.plot = self.plotable()
         self.transitions = self.type_transition()
-        # print self.transitions
+        print self.transitions
         # print self.chromosome, self.start, self.end
 
     def create_variants(self, variants_members):
@@ -576,11 +576,13 @@ def isShift(variant1, variant2):
     distance = abs(variant1_max_index-variant2_max_index)
     if variant1_max_index < variant1_max_index:
         rolling_variant1_signals = np.roll(variant1.signals, distance)
-        if np.corrcoef(rolling_variant1_signals, variant2.signals)[0 ,1] > 0.8:
+        rolling_variant1_signals[:distance] = 0
+        if np.corrcoef(rolling_variant1_signals, variant2.signals)[0 ,1] > 0.9:
             return True
     else:
         rolling_variant2_signals = np.roll(variant2.signals, distance)
-        if np.corrcoef(rolling_variant2_signals, variant1.signals)[0 ,1] > 0.8:
+        rolling_variant2_signals[:distance] = 0
+        if np.corrcoef(rolling_variant2_signals, variant1.signals)[0 ,1] > 0.9:
             return True
     return False
 
@@ -594,6 +596,19 @@ def isBroadNarrow(variant1, variant2):
     """
     total_width = abs(variant1.end - variant1.start)
     variant1_max_index = variant1.start + np.argmax(variant1.signals)*variant1.step
+    variant2_max_index = variant2.start + np.argmax(variant2.signals) * variant2.step
+
+    v1_total_units_width = units_total_length(variant1.units, [x for x in range(len(variant1.units))])
+    v2_total_units_width = units_total_length(variant2.units, [x for x in range(len(variant2.units))])
+
+    if v1_total_units_width > 2*v2_total_units_width or v2_total_units_width > 2 * v1_total_units_width:
+        pass
+    else:
+        return False
+
+    if abs(variant1_max_index-variant2_max_index) > total_width*0.5:
+        return False
+
 
     max_start = None
     max_end = None
@@ -603,13 +618,15 @@ def isBroadNarrow(variant1, variant2):
             max_end = unit.end
         elif unit.start == max_end:
             max_end = unit.end
-        elif max_start < variant1_max_index < max_end:
+        elif max_start <= variant1_max_index <= max_end:
             break
         else:
             max_start = unit.start
             max_end = unit.end
-    if max_start < variant1_max_index < max_end:
+    if max_start <= variant1_max_index <= max_end:
         v1_max_width = max_end - max_start
+    else:
+        print variant1_max_index, max_end, max_start
 
     max_start = None
     max_end = None
@@ -619,13 +636,15 @@ def isBroadNarrow(variant1, variant2):
             max_end = unit.end
         elif unit.start == max_end:
             max_end = unit.end
-        elif max_start < variant1_max_index < max_end:
+        elif max_start <= variant2_max_index <= max_end:
             break
         else:
             max_start = unit.start
             max_end = unit.end
-    if max_start < variant1_max_index < max_end:
+    if max_start <= variant2_max_index <= max_end:
         v2_max_width = max_end - max_start
+    else:
+        print variant2_max_index, max_end, max_start
 
     if v1_max_width * 2 <= v2_max_width and v2_max_width >= 0.6* total_width:
         return True

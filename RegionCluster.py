@@ -106,7 +106,8 @@ def region_cluster(number_sample_used,
                     variant = peak.variants[i]
                     for key in peak.transitions.keys():
                         if i in key:
-                            types.add(peak.transitions[key])
+                            for type in peak.transitions[key]:
+                                types.add(type)
                     types = list(types)
                     plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members,
                                    types=types,
@@ -154,7 +155,7 @@ def region_cluster(number_sample_used,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=True)
+regions = region_cluster(300, directory='./csv', verbose=False)
 
 
 
@@ -174,7 +175,7 @@ regions = region_cluster(300, directory='./csv', verbose=True)
 #
 # import pickle
 #
-# with open('75refmap_combined_3kb_regions_part4' + '.pkl', 'wb') as f:
+# with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
 #     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
 #
 # f.close()

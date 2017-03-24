@@ -98,6 +98,7 @@
 # runFastqdump(list, path, bowtie_path)
 import numpy as np, pandas as pd
 
-a = [1,2,3,4]
+a = [0, 0, 1]
+b = [1, 0, 1]
 
-print np.corrcoef(np.roll(a, -1),a)[0,1]
+print np.corrcoef(a, b)[0,1]
