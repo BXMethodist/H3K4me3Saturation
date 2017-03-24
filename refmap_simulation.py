@@ -107,7 +107,7 @@ def noise_simulation(cutoffs):
     wigFiles = [path for path in os.listdir(wigPath) if path.endswith("wig")]
 
     n = 0
-    for i in range(len(wigFiles))[0:100]:
+    for i in range(len(wigFiles))[300:]:
         print wigFiles[i]
         cur_wig = Wig(wigPath+wigFiles[i])
         callcoverage(cur_wig, cutoffs)

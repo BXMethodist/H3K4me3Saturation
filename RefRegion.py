@@ -26,7 +26,10 @@ class ReferenceRegion():
             id1 = self.variants[id1].id
             id2 = self.variants[id2].id
             self.transitions[(id1, id2)] = value
-        self.categories = list(set(self.transitions.values()))
+        categories = []
+        for value in self.transitions.values():
+            categories += value
+        self.categories = list(set(categories))
 
     def setVariants(self, variants):
         self.variants = []

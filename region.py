@@ -65,7 +65,7 @@ class Region():
         # Does it worth to be plot and check
         self.plot = self.plotable()
         self.transitions = self.type_transition()
-        # print self.transitions
+        print self.transitions
         # print self.chromosome, self.start, self.end
 
     def create_variants(self, variants_members):
@@ -276,15 +276,21 @@ class Region():
         return transition
 
     def get_types(self, variant1, variant2):
+        types = []
         if isShift(variant1, variant2):
-            return 'SH'
+            types.append('SH')
         if isBroadNarrow(variant1, variant2):
-            return 'BN'
+            types.append('BN')
         if isConvexConcave(variant1, variant2):
-            return 'CC'
-        if isPattern(variant1, variant2):
-            return 'PT'
-        return 'SO'
+            types.append('CC')
+        if len(types) == 0 and isPattern(variant1, variant2):
+            types.append('PT')
+        if len(types) == 0:
+            types.append('SO')
+        if ('SH' in types and 'CC' in types) or ('SH' in types and 'BN' in types):
+            print variant1.chromosome, variant1.start, variant1.end
+            print variant2.chromosome, variant2.start, variant2.end
+        return types
 
 
 class Variant():
@@ -313,7 +319,7 @@ class Variant():
         self.signals = signals
         self.step = step
         self.cutoff = np.max(signals)*0.1
-        self.convex_cutoff = np.max(signals)/3.0
+        self.convex_cutoff = np.max(signals)*2.0/3.0
         self.members = members
         self.seed = seed
         self.labels = labels
@@ -564,38 +570,19 @@ def isShift(variant1, variant2):
     # if len(variant1.units) != len(variant2.units):
     #     return False
 
-    distances = []
-    for i in range(min(len(variant1.units), len(variant2.units))):
-        cur_unit1 = variant1.units[i]
-        cur_unit2 = variant2.units[i]
-        distances.append(cur_unit1.start - cur_unit2.start)
-        distances.append(cur_unit1.end - cur_unit2.end)
+    variant1_max_index = np.argmax(variant1.signals)
+    variant2_max_index = np.argmax(variant2.signals)
 
-    for j in range(min(len(variant1.units), len(variant2.units)), max(len(variant1.units), len(variant2.units))):
-        if len(variant1.units) > len(variant2.units):
-            additional = variant1.units[j].end - variant1.units[j].start
-        else:
-            additional = variant2.units[j].end - variant2.units[j].start
-        if distances[-1] >= 0:
-            distances[-1] += additional
-        else:
-            distances[-1] -= additional
-
-    width1 = [x for x in range(len(variant1.units))]
-    width2 = [y for y in range(len(variant2.units))]
-
-    width1 = sorted(width1, key=lambda x : variant1.units[x].end - variant1.units[x].start, reverse=True)
-    width2 = sorted(width2, key=lambda y: variant2.units[y].end - variant2.units[y].start, reverse=True)
-
-    max_width = max(variant1.units[width1[0]].end - variant1.units[width1[0]].start,
-                    variant2.units[width2[0]].end - variant2.units[width2[0]].start)
-
-    # print np.std(distances), np.mean(distances), max_width
-
-    if np.std(distances) > 0.15 * np.mean(distances) or np.mean(distances) * 2.0 < max_width:
-        return False
+    distance = abs(variant1_max_index-variant2_max_index)
+    if variant1_max_index < variant1_max_index:
+        rolling_variant1_signals = np.roll(variant1.signals, distance)
+        if np.corrcoef(rolling_variant1_signals, variant2.signals)[0 ,1] > 0.8:
+            return True
     else:
-        return True
+        rolling_variant2_signals = np.roll(variant2.signals, distance)
+        if np.corrcoef(rolling_variant2_signals, variant1.signals)[0 ,1] > 0.8:
+            return True
+    return False
 
 def isBroadNarrow(variant1, variant2):
     """
@@ -678,7 +665,8 @@ def isConvexConcave(variant1, variant2):
 
     # distance = right_submit - left_submit
 
-    if mid_submit - left_submit > 200 and right_submit - mid_submit > 200:
+    if mid_submit - left_submit > (right_submit-left_submit)*0.2 and \
+                            right_submit - mid_submit > (right_submit-left_submit)*0.2:
         return True
     else:
         return False

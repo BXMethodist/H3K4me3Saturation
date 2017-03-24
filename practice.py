@@ -98,11 +98,6 @@
 # runFastqdump(list, path, bowtie_path)
 import numpy as np, pandas as pd
 
-a = np.zeros((10, 4))
+a = [1,2,3,4]
 
-df = pd.DataFrame(a, index=np.arange(10),
-                      columns=['noise_coverage', 'noise_signals', 'non_noise_coverage', 'non_noise_signals'])
-
-
-df.ix[0, 2] += 1
-print df
+print np.corrcoef(np.roll(a, -1),a)[0,1]

@@ -29,7 +29,7 @@ def region_cluster(number_sample_used,
 
     n = 0
     for file_name in list_files:
-        # print file_name
+        print file_name
         # if file_name == "chr3_197900280_197900820.csv":
         #     print n
         #     break
