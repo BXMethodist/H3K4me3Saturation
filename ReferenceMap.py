@@ -189,7 +189,8 @@ class refMap:
         n = 0
 
         while n < self.iterations:
-            np.random.shuffle(listFiles)
+            if self.iterations > 1:
+                np.random.shuffle(listFiles)
             seq = 0
             for file in listFiles:
                 if individual:

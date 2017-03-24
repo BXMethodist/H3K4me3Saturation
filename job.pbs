@@ -12,3 +12,8 @@ cd /home/tmhbxx3/archive/ec_vs_hsc/bamfiles
 module load python/2.7.11
 
 python ./tophat.py
+
+
+['ENCFF048ZOQ_ENCFF827YXC.fastq',  'ENCFF716YLE_ENCFF665BBC.fastq',  'ENCFF853HFC_ENCFF398JCG.fastq',
+'ENCFF163PYU_ENCFF486LTO.fastq',  'ENCFF768AIX_ENCFF694EZB.fastq',  'ENCFF878ZLP_ENCFF269SMY.fastq',
+'ENCFF584YEG_ENCFF802LTL.fastq',  'ENCFF794IID_ENCFF102BFB.fastq']

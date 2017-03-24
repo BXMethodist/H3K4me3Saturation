@@ -96,27 +96,13 @@
 # bowtie_path = '/home/tmhbxx3/archive/H3K4me3/GEO_with_input/sample/FASTQ/'
 #
 # runFastqdump(list, path, bowtie_path)
-import numpy as np
-import matplotlib.mlab as mlab
-import matplotlib.pyplot as plt
+import numpy as np, pandas as pd
+
+a = np.zeros((10, 4))
+
+df = pd.DataFrame(a, index=np.arange(10),
+                      columns=['noise_coverage', 'noise_signals', 'non_noise_coverage', 'non_noise_signals'])
 
 
-# x = np.random.randint(0, 180, size=50)
-#
-# y = np.zeros(200)
-# print x
-# for i in x:
-#     y[i:i+20] +=1
-#
-#
-# index = [i for i in range(y.shape[0])]
-#
-# plt.bar(index, y)
-# plt.show()
-# # add a 'best fit' line
-# # plt.show()
-# print y
-
-from scipy.stats import poisson
-
-print poisson.pmf(8 , 6)
+df.ix[0, 2] += 1
+print df
