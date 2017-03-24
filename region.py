@@ -65,7 +65,7 @@ class Region():
         # Does it worth to be plot and check
         self.plot = self.plotable()
         self.transitions = self.type_transition()
-        print self.transitions
+        # print self.transitions
         # print self.chromosome, self.start, self.end
 
     def create_variants(self, variants_members):
@@ -593,33 +593,44 @@ def isBroadNarrow(variant1, variant2):
     :return: boolean, whether these two's relation are Broad to Narrow
     """
     total_width = abs(variant1.end - variant1.start)
+    variant1_max_index = variant1.start + np.argmax(variant1.signals)*variant1.step
 
-    for i in range(min(len(variant1.units), len(variant2.units))):
-        unit1 = variant1.units[i]
-        unit2 = variant2.units[i]
+    max_start = None
+    max_end = None
+    for unit in variant1.units:
+        if max_start is None:
+            max_start = unit.start
+            max_end = unit.end
+        elif unit.start == max_end:
+            max_end = unit.end
+        elif max_start < variant1_max_index < max_end:
+            break
+        else:
+            max_start = unit.start
+            max_end = unit.end
+    if max_start < variant1_max_index < max_end:
+        v1_max_width = max_end - max_start
 
-        if abs(unit1.start - unit2.start) < 0.1 * total_width:
-            v1_sum = units_total_length(variant1.units, [j for j in range(len(variant1.units)) if j >= i])
-            v2_sum = units_total_length(variant2.units, [k for k in range(len(variant2.units)) if k >= i])
+    max_start = None
+    max_end = None
+    for unit in variant2.units:
+        if max_start is None:
+            max_start = unit.start
+            max_end = unit.end
+        elif unit.start == max_end:
+            max_end = unit.end
+        elif max_start < variant1_max_index < max_end:
+            break
+        else:
+            max_start = unit.start
+            max_end = unit.end
+    if max_start < variant1_max_index < max_end:
+        v2_max_width = max_end - max_start
 
-            # print v1_sum, v2_sum
-            # print total_width
-            # print any([v1_sum / total_width > 0.6, v2_sum / total_width > 0.6])
-            # print v1_sum > 2 * v2_sum or 2 * v1_sum > v2_sum
-
-            if any([v1_sum > 0.6 * total_width, v2_sum > 0.6 * total_width]) and (
-                    v1_sum > 2 * v2_sum or 2 * v1_sum < v2_sum):
-                return True
-    for m in range(min(len(variant1.units), len(variant2.units))):
-        i = (m+1)*-1
-        unit1 = variant1.units[i]
-        unit2 = variant2.units[i]
-        if abs(unit1.end - unit2.end) < 0.1 * total_width:
-            v1_sum = units_total_length(variant1.units, [j for j in range(len(variant1.units)-m-1, -1, -1)])
-            v2_sum = units_total_length(variant2.units, [k for k in range(len(variant2.units)-m-1, -1, -1)])
-            if any([v1_sum > 0.6 * total_width, v2_sum > 0.6 * total_width]) and (
-                            v1_sum > 2 * v2_sum or 2 * v1_sum < v2_sum):
-                return True
+    if v1_max_width * 2 <= v2_max_width and v2_max_width >= 0.6* total_width:
+        return True
+    if v2_max_width * 2 <= v1_max_width and v1_max_width >= 0.6* total_width:
+        return True
     return False
 
 def units_total_length(units, indexes):
