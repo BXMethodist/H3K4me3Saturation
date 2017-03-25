@@ -11,7 +11,8 @@ def region_cluster(number_sample_used,
                    list_files=None,
                    directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/",
                    affinity=np.corrcoef,
-                   verbose=True):
+                   verbose=True,
+                   example=False):
     if not os.path.isdir("./pictures"):
         os.system("mkdir pictures")
     if not os.path.isdir("./tempcsv"):
@@ -29,7 +30,7 @@ def region_cluster(number_sample_used,
 
     n = 0
     for file_name in list_files:
-        print file_name
+        # print file_name
         # if file_name == "chr3_197900280_197900820.csv":
         #     print n
         #     break
@@ -111,7 +112,7 @@ def region_cluster(number_sample_used,
                     types = list(types)
                     plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members,
                                    types=types,
-                                   verbose=verbose)
+                                   verbose=example)
             #     pass
             # else:
             #     for i in range(len(peak.variants)):
@@ -155,7 +156,7 @@ def region_cluster(number_sample_used,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=False)
+regions = region_cluster(300, directory='./csv', verbose=True, example=False)
 
 
 
@@ -173,11 +174,11 @@ regions = region_cluster(300, directory='./csv', verbose=False)
 #
 # print regions
 #
-# import pickle
-#
-# with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
-#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
-#
-# f.close()
+import pickle
+
+with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
+    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+
+f.close()
     # region_cluster(directory="./csv")
 

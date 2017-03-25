@@ -65,7 +65,7 @@ class Region():
         # Does it worth to be plot and check
         self.plot = self.plotable()
         self.transitions = self.type_transition()
-        print self.transitions
+        # print self.transitions
         # print self.chromosome, self.start, self.end
 
     def create_variants(self, variants_members):
@@ -576,13 +576,15 @@ def isShift(variant1, variant2):
     distance = abs(variant1_max_index-variant2_max_index)
     if variant1_max_index < variant1_max_index:
         rolling_variant1_signals = np.roll(variant1.signals, distance)
+        rolling_variant1_signals = np.append(rolling_variant1_signals, rolling_variant1_signals[:distance])
         rolling_variant1_signals[:distance] = 0
-        if np.corrcoef(rolling_variant1_signals, variant2.signals)[0 ,1] > 0.9:
+        if np.corrcoef(rolling_variant1_signals, np.append(variant2.signals, [0]*distance))[0 ,1] > 0.9:
             return True
     else:
         rolling_variant2_signals = np.roll(variant2.signals, distance)
+        rolling_variant2_signals = np.append(rolling_variant2_signals, rolling_variant2_signals[:distance])
         rolling_variant2_signals[:distance] = 0
-        if np.corrcoef(rolling_variant2_signals, variant1.signals)[0 ,1] > 0.9:
+        if np.corrcoef(rolling_variant2_signals, np.append(variant1.signals, [0]*distance))[0 ,1] > 0.9:
             return True
     return False
 
@@ -606,7 +608,7 @@ def isBroadNarrow(variant1, variant2):
     else:
         return False
 
-    if abs(variant1_max_index-variant2_max_index) > total_width*0.5:
+    if abs(variant1_max_index-variant2_max_index) > total_width*0.25:
         return False
 
 
@@ -690,13 +692,11 @@ def isConvexConcave(variant1, variant2):
     left_submit = np.argmax(left.signals)*left.step + left.start
     right_submit = np.argmax(right.signals)*right.step + right.start
     mid_submit = np.argmax(mid.signals)*mid.step + mid.start
+    break_point = (right.start + left.end)/2
 
-    # print left_submit, right_submit, mid_submit
+    distance = min(abs(left_submit - break_point), abs(right_submit - break_point))
 
-    # distance = right_submit - left_submit
-
-    if mid_submit - left_submit > (right_submit-left_submit)*0.2 and \
-                            right_submit - mid_submit > (right_submit-left_submit)*0.2:
+    if abs(mid_submit - break_point) < distance:
         return True
     else:
         return False

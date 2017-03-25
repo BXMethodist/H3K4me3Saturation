@@ -96,9 +96,10 @@
 # bowtie_path = '/home/tmhbxx3/archive/H3K4me3/GEO_with_input/sample/FASTQ/'
 #
 # runFastqdump(list, path, bowtie_path)
-import numpy as np, pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
-a = [0, 0, 1]
-b = [1, 0, 1]
-
-print np.corrcoef(a, b)[0,1]
+s = np.random.negative_binomial(1, 0.2, 100000)
+print np.mean(s)
+plt.hist(s, bins=100)
+plt.show()

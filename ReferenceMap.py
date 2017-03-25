@@ -8,15 +8,16 @@ class refMap:
     ### take a directory of wig files, generate reference map
     ### based on number of iterations, generate saturation map for coverage, average peak size and number of average peak number
     ### use plotSaturation.py to make figure
-    def __init__(self, iterations):
-        self.genome = genome_size()
-        self.non_noise_genome = genome_size()
-        self.noise_genome = genome_size()
+    def __init__(self, iterations, genome_size_path="/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt"):
+        self.genome = genome_size(genome_size_path)
+        self.non_noise_genome = genome_size(genome_size_path)
+        self.noise_genome = genome_size(genome_size_path)
         self.iterations = iterations
         self.coverage = None
         self.region = None
         self.regionLength = None
         self.numberSample = None
+        self.genome_size_path=genome_size_path
 
     def initialization(self, sampleNumber):
         self.coverage = [[0] * self.iterations for i in range(sampleNumber)]
@@ -143,9 +144,9 @@ class refMap:
 
 
     def reset(self):
-        self.genome = genome_size()
-        self.non_noise_genome = genome_size()
-        self.noise_genome = genome_size()
+        self.genome = genome_size(self.genome_size_path)
+        self.non_noise_genome = genome_size(self.genome_size_path)
+        self.noise_genome = genome_size(self.genome_size_path)
 
 
     def saveRefMap(self, cutoff):
@@ -177,7 +178,17 @@ class refMap:
 
 
     def trainMap(self, directories, surfix=None, cutoff=0, saveRefMap=True, individual=False):
+        """
+        :param directories: directory of danpas peak calling results xlsx(txt format) files
+        :param surfix: file suffix
+        :param cutoff: peak height cutoff
+        :param saveRefMap: whether save the reference map
+        :param individual: whether it is a individual value, or accumulative value
+        :return: the result table file address, the table index is the sample number, columns are coverage, average length,
+                number of peaks
+        """
         listFiles = os.listdir(directories)
+
 
         if surfix is not None:
             listFiles = [x for x in listFiles if x.endswith(surfix)]
@@ -212,4 +223,6 @@ class refMap:
         table[:, 3] = np.mean(self.region, axis=1)
 
         np.savetxt(str(cutoff) + "_individual.csv", table, delimiter=",")
+
+        return str(cutoff) + "_individual.csv"
 
