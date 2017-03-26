@@ -177,7 +177,7 @@ class refMap:
         output.close()
 
 
-    def trainMap(self, directories, surfix=None, cutoff=0, saveRefMap=True, individual=False):
+    def trainMap(self, directories, outputname, surfix=None, cutoff=0, saveRefMap=True, individual=False):
         """
         :param directories: directory of danpas peak calling results xlsx(txt format) files
         :param surfix: file suffix
@@ -187,8 +187,13 @@ class refMap:
         :return: the result table file address, the table index is the sample number, columns are coverage, average length,
                 number of peaks
         """
+        if individual:
+            outputname += "_individual"
+
         listFiles = os.listdir(directories)
 
+        if not directories.endswith("/"):
+            directories += "/"
 
         if surfix is not None:
             listFiles = [x for x in listFiles if x.endswith(surfix)]
@@ -206,7 +211,7 @@ class refMap:
             for file in listFiles:
                 if individual:
                     self.reset()
-                self.saturated(directories + '/' + file, seq, n, cutoff=cutoff)
+                self.saturated(directories + file, seq, n, cutoff=cutoff)
                 seq += 1
 
             if saveRefMap and n == 0:
@@ -222,7 +227,7 @@ class refMap:
         table[:, 2] = np.mean(self.regionLength, axis=1)
         table[:, 3] = np.mean(self.region, axis=1)
 
-        np.savetxt(str(cutoff) + "_individual.csv", table, delimiter=",")
+        np.savetxt(outputname + str(cutoff) +".csv", table, delimiter=",")
 
-        return str(cutoff) + "_individual.csv"
+        return outputname + str(cutoff) +".csv"
 

@@ -43,8 +43,12 @@ from Wig import Wig
 for cutoff in range(260,310,10):
     cur_refmap = refMap(1)
     print cutoff, 'is start'
-    cur_refmap.trainMap("/home/tmhbxx3/archive/KFH3K4me3/"+str(cutoff)+"cutoff/pooled", cutoff=cutoff,
-                    individual=True)
+    # cur_refmap.trainMap("/home/tmhbxx3/archive/KFH3K4me3/"+str(cutoff)+"cutoff/pooled", cutoff=cutoff,
+    #                 individual=True)
+
+    cur_refmap.trainMap("/home/tmhbxx3/archive/WigChrSplits/code/simulation_results" + str(cutoff),
+                        outputname='simulation', cutoff=cutoff,
+                        individual=False, saveRefMap=False)
     # refMap.trainMap(kfPath, surfix="regions.xls", cutoff=cutoff)
 # end = time()
 

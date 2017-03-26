@@ -99,7 +99,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-s = np.random.negative_binomial(1, 0.2, 100000)
-print np.mean(s)
-plt.hist(s, bins=100)
-plt.show()
+a = np.asarray([1, 2, 3])
+print np.where(a>2)[0]
