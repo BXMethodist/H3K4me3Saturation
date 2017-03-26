@@ -42,6 +42,7 @@ class refMap:
             start = int(info[1])/10
             end = int(info[2])/10
             height = float(info[6])
+            # print height
             chrName = info[0]
             if height >= cutoff:
                 if chrName in self.genome:

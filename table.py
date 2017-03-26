@@ -1,5 +1,8 @@
 import os, pandas as pd
 import numpy as np
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 def distance(p0, p1, p2):
@@ -47,17 +50,17 @@ def cumulative_stat_vs_samplenumber_vs_cutoff(cutoffs, samplenumber_ranges, file
     outputnames = [outputname+"cutoff_vs_coverage_samplenumber.csv",
                    outputname + "cutoff_vs_length_samplenumber.csv",
                    outputname + "cutoff_vs_regionnumber.csv"]
-    for i in range(3):
-        cur_df = dfs[i]
-        ax = cur_df.plot(y=[str(x) for x in samplenumber_ranges], kind='line')
-        cur_pic_name = outputnames[i]
-        plt.tight_layout()
-        plt.savefig(cur_pic_name[:-4]+".pdf", format='pdf', dpi=600, facecolor='w', edgecolor='w',
-                    figsize=(3, 3))
-        plt.close('all')
+    # for i in range(3):
+    #     cur_df = dfs[i]
+    #     ax = cur_df.plot(y=[str(x) for x in samplenumber_ranges], kind='line')
+    #     cur_pic_name = outputnames[i]
+    #     plt.tight_layout()
+    #     plt.savefig(cur_pic_name[:-4]+".pdf", format='pdf', dpi=600, facecolor='w', edgecolor='w',
+    #                 figsize=(3, 3))
+    #     plt.close('all')
     return outputnames
 
-def finalpoint_cutoff_vs_stat(cutoffs, file_addresses, number_sample, outputname):
+def finalpoint_cutoff_vs_stat(cutoffs, file_addresses, number_sample, outputname, prefix):
     """
     generate table for x: cutoff, y: stat at final point
     :param cutoffs: peak height cutoffs
@@ -69,19 +72,20 @@ def finalpoint_cutoff_vs_stat(cutoffs, file_addresses, number_sample, outputname
     if not file_addresses.endswith("/"):
         file_addresses += "/"
 
-    maps = [file_addresses + str(x) + ".csv" for x in cutoffs]
+    maps = [file_addresses + prefix + str(x) + ".csv" for x in cutoffs]
 
     table = []
     index = []
 
     # print maps
-    for map in maps:
+    for i in range(len(maps)):
+        map = maps[i]
         df = pd.read_csv(map, header=None)
         info = df.iloc[number_sample-1, 1:]
         # print info
         table.append(info)
         # print map[:-4]
-        index.append(int(map[map.rfind("/")+1:-4]))
+        index.append(cutoffs[i])
 
     df = pd.DataFrame(table, columns=None, index=index)
     # df.to_csv("q_vs_map.csv", header=None)
@@ -93,11 +97,11 @@ def finalpoint_cutoff_vs_stat(cutoffs, file_addresses, number_sample, outputname
     df.columns = ['Coverage (bp)', 'Length of Region', 'Number of Region (bp)']
     df.to_csv(outputname + "cutoff_vs_map.csv")
 
-    for col in ['Coverage (bp)', 'Length of Region', 'Number of Region (bp)']:
-        ax = df.plot(y=col, kind='line')
-        plt.savefig(outputname + col+ "cutoff_vs_map" + ".pdf", format='pdf', dpi=600, facecolor='w', edgecolor='w',
-                    figsize=(3, 3))
-        plt.close('all')
+    # for col in ['Coverage (bp)', 'Length of Region', 'Number of Region (bp)']:
+    #     ax = df.plot(y=col, kind='line')
+    #     plt.savefig(outputname + col+ "cutoff_vs_map" + ".pdf", format='pdf', dpi=600, facecolor='w', edgecolor='w',
+    #                 figsize=(3, 3))
+    #     plt.close('all')
 
     return outputname + "cutoff_vs_map.csv"
 
@@ -133,12 +137,12 @@ def sample_number_vs_stat(cutoffs, file_addresses, sample_number, outputname):
     outputnames = [outputname+'samplenumber_coverage.csv',
                    outputname + 'samplenumber_length.csv',
                    outputname + 'samplenumber_regionnumber.csv']
-    for i in range(3):
-        cur_df = dfs[i]
-        ax = cur_df.plot(y=[str(i) for i in cutoffs], kind='line')
-        cur_pic_name = outputnames[i]
-        plt.tight_layout()
-        plt.savefig(cur_pic_name[:-4]+".pdf", format='pdf', dpi=600, facecolor='w', edgecolor='w',
-                    figsize=(3, 3))
-        plt.close('all')
+    # for i in range(3):
+    #     cur_df = dfs[i]
+    #     ax = cur_df.plot(y=[str(i) for i in cutoffs], kind='line')
+    #     cur_pic_name = outputnames[i]
+    #     plt.tight_layout()
+    #     plt.savefig(cur_pic_name[:-4]+".pdf", format='pdf', dpi=600, facecolor='w', edgecolor='w',
+    #                 figsize=(3, 3))
+    #     plt.close('all')
     return outputnames
