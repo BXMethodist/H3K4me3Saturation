@@ -574,17 +574,17 @@ def isShift(variant1, variant2):
     variant2_max_index = np.argmax(variant2.signals)
 
     distance = abs(variant1_max_index-variant2_max_index)
-    if variant1_max_index < variant1_max_index:
+    if variant1_max_index < variant2_max_index:
         rolling_variant1_signals = np.roll(variant1.signals, distance)
         rolling_variant1_signals = np.append(rolling_variant1_signals, rolling_variant1_signals[:distance])
         rolling_variant1_signals[:distance] = 0
-        if np.corrcoef(rolling_variant1_signals, np.append(variant2.signals, [0]*distance))[0 ,1] > 0.9:
+        if np.corrcoef(rolling_variant1_signals, np.append(variant2.signals, [0]*distance))[0 ,1] > 0.95:
             return True
     else:
         rolling_variant2_signals = np.roll(variant2.signals, distance)
         rolling_variant2_signals = np.append(rolling_variant2_signals, rolling_variant2_signals[:distance])
         rolling_variant2_signals[:distance] = 0
-        if np.corrcoef(rolling_variant2_signals, np.append(variant1.signals, [0]*distance))[0 ,1] > 0.9:
+        if np.corrcoef(rolling_variant2_signals, np.append(variant1.signals, [0]*distance))[0 ,1] > 0.95:
             return True
     return False
 
@@ -692,9 +692,12 @@ def isConvexConcave(variant1, variant2):
     left_submit = np.argmax(left.signals)*left.step + left.start
     right_submit = np.argmax(right.signals)*right.step + right.start
     mid_submit = np.argmax(mid.signals)*mid.step + mid.start
+
+    if not left_submit < mid_submit < right_submit:
+        return False
     break_point = (right.start + left.end)/2
 
-    distance = min(abs(left_submit - break_point), abs(right_submit - break_point))
+    distance = min(abs(left_submit - mid_submit), abs(right_submit - mid_submit))
 
     if abs(mid_submit - break_point) < distance:
         return True
@@ -730,6 +733,14 @@ def isConcave(variant):
     unit_indexes = sorted(unit_indexes)
 
     left, right = variant.units[unit_indexes[0]], variant.units[unit_indexes[1]]
+
+    total_width = variant.end - variant.start
+    left_submit = np.argmax(left.signals) * left.step + left.start
+    right_submit = np.argmax(right.signals) * right.step + right.start
+
+    if right_submit - left_submit > total_width *0.5:
+        max_unit = left if left.height > right.height else right
+        return False, max_unit, None
 
     if left.height > variant.convex_cutoff and \
                     right.height > variant.convex_cutoff and \

@@ -99,5 +99,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-a = np.asarray([1, 2, 3])
-print np.where(a>2)[0]
+a = np.asarray([1, 2, 3, 4, 5,6])
+
+
+rolling_variant1_signals = np.roll(a, 2)
+rolling_variant1_signals = np.append(rolling_variant1_signals, rolling_variant1_signals[:2])
+rolling_variant1_signals[:2] = 0
+
+print rolling_variant1_signals

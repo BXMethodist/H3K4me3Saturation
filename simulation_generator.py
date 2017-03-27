@@ -3,7 +3,7 @@ from ReferenceMap import refMap
 from table import *
 
 #
-# s = np.random.negative_binomial(2, 0.2, 100000)
+# s = np.random.negative_binomial(2, 0.001, 100000)
 # print np.mean(s)
 # plt.hist(s, bins=100)
 # plt.show()
@@ -17,14 +17,13 @@ def simulation_genome_size_generater(genome_size):
         path += "/"
     return path + 'simulation_genome_sizes.txt'
 
-def get_negative_binomial_random_samples(mean, p, size):
+def get_negative_binomial_random_samples(n, p, size):
     """
     random sample generator for negative binomial distribution
     :param mean: distribution mean
     :param p: probability
     :return: 1-d array containing numbers
     """
-    n = int(p*mean/(1-p))
     return np.random.negative_binomial(n, p, size)
 
 def get_random_locations(locations, peak_number):
@@ -51,8 +50,8 @@ def draw_simulated_sample(ndarray, start, end):
     return
 
 def generater(H_real, p_real,  H_noise, p_noise, W_real, W_noise, wp_real, wp_noise,
-              genome_size=100000, real_peak_number=250,
-              noise_peak_number=1000, real_peak_locations=None, sample_number=300,
+              genome_size=1000000, real_peak_number=200,
+              noise_peak_number=500, real_peak_locations=None, sample_number=300,
               cutoffs=[x for x in range(10, 310, 10)],
               simulation_directory='./simulation_results/'):
     """
@@ -117,21 +116,23 @@ def generater(H_real, p_real,  H_noise, p_noise, W_real, W_noise, wp_real, wp_no
 
 if __name__ == "__main__":
     # step 1
-    H_real = 100
+    H_real = 1
     p_real = 0.01
-    H_noise = 30
-    p_noise = 0.3
-    W_real = 100
-    wp_real = 0.05
-    W_noise = 10
-    wp_noise = 0.1
+    H_noise = 5
+    p_noise = 0.2
+    W_real = 2
+    wp_real = 0.001
+    W_noise = 250
+    wp_noise = 0.5
+    genome_size = 1000000
 
     generater(H_real=H_real, p_real=p_real,
               H_noise=H_noise, p_noise=p_noise,
               W_real=W_real, W_noise=W_noise,
               wp_real=wp_real,
-              wp_noise=wp_noise)
-    genome_file_path = simulation_genome_size_generater(100000)
+              wp_noise=wp_noise,
+              genome_size=genome_size)
+    genome_file_path = simulation_genome_size_generater(genome_size)
     #
     simulation_path = "/home/tmhbxx3/archive/WigChrSplits/code/simulation_results/"
 
