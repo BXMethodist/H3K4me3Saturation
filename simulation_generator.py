@@ -3,7 +3,7 @@ from ReferenceMap import refMap
 from table import *
 
 #
-# s = np.random.negative_binomial(2, 0.001, 100000)
+# s = np.random.negative_binomial(1, 0.1, 100000)
 # print np.mean(s)
 # plt.hist(s, bins=100)
 # plt.show()
@@ -51,8 +51,8 @@ def draw_simulated_sample(ndarray, start, end):
 
 def generater(H_real, p_real,  H_noise, p_noise, W_real, W_noise, wp_real, wp_noise,
               genome_size=1000000, real_peak_number=200,
-              noise_peak_number=500, real_peak_locations=None, sample_number=300,
-              cutoffs=[x for x in range(10, 310, 10)],
+              noise_peak_number=2000, real_peak_locations=None, sample_number=300,
+              cutoffs=[6]+[x for x in range(10, 310, 10)],
               simulation_directory='./simulation_results/'):
     """
     :param H_real:
@@ -118,13 +118,13 @@ if __name__ == "__main__":
     # step 1
     H_real = 1
     p_real = 0.01
-    H_noise = 5
-    p_noise = 0.2
-    W_real = 2
+    H_noise = 1
+    p_noise = 0.12
+    W_real = 1
     wp_real = 0.001
-    W_noise = 250
-    wp_noise = 0.5
-    genome_size = 1000000
+    W_noise = 1
+    wp_noise = 0.1
+    genome_size = 3000000
 
     generater(H_real=H_real, p_real=p_real,
               H_noise=H_noise, p_noise=p_noise,
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     #
     simulation_path = "/home/tmhbxx3/archive/WigChrSplits/code/simulation_results/"
 
-    for cutoff in range(10, 310, 10):
+    for cutoff in [6]+range(10, 310, 10):
         cur_refmap = refMap(1, genome_size_path=genome_file_path)
         print cutoff, 'is start'
         # cur_refmap.trainMap("/home/tmhbxx3/archive/KFH3K4me3/"+str(cutoff)+"cutoff/pooled", cutoff=cutoff,
@@ -149,7 +149,8 @@ if __name__ == "__main__":
     refmap_path = "/home/tmhbxx3/archive/WigChrSplits/code/"
     outputname = 'simulation'+'_H_real_'+str(H_real) + '_p_real_'+str(p_real)+\
                  "_H_noise_"+str(H_noise)+"_p_noise_" + str(p_noise) \
-                 + "_W_real_" + str(W_real) + "_W_noise_" + str(W_noise)
-    finalpoint_cutoff_vs_stat(cutoffs=[x for x in range(10, 310, 10)],
+                 + "_W_real_" + str(W_real) + "_W_noise_" + str(W_noise) + \
+                 "_wp_real_" + str(wp_real) + "_wp_noise_" + str(wp_noise)
+    finalpoint_cutoff_vs_stat(cutoffs=[x for x in [6]+range(10, 310, 10)],
                               file_addresses=refmap_path,
                               number_sample=300, outputname=outputname, prefix='simulation')

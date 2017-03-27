@@ -452,7 +452,7 @@ def splitable(chromosome, start, end, signals, convex_cutoff):
 
         # print left + min, min_height
         # print left_peak_height, right_peak_height, min_height
-        if left_unit_height > 2 * min_height and right_unit_height > 2 * min_height and \
+        if left_unit_height > 3 * min_height and right_unit_height > 3 * min_height and \
                 (left_unit_height >= convex_cutoff and right_unit_height >= convex_cutoff):
             if split_indexes is None:
                 split_indexes = left+min
@@ -648,9 +648,9 @@ def isBroadNarrow(variant1, variant2):
     else:
         print variant2_max_index, max_end, max_start
 
-    if v1_max_width * 2 <= v2_max_width and v2_max_width >= 0.6* total_width:
+    if v1_max_width * 4 <= v2_max_width and v2_max_width >= 0.6* total_width:
         return True
-    if v2_max_width * 2 <= v1_max_width and v1_max_width >= 0.6* total_width:
+    if v2_max_width * 4 <= v1_max_width and v1_max_width >= 0.6* total_width:
         return True
     return False
 
