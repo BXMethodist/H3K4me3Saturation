@@ -1,11 +1,14 @@
 import numpy as np, pandas as pd, os
 from ReferenceMap import refMap
 from table import *
+from CallPeak import callpeak
+import matplotlib.pyplot as plt
+
 
 #
-# s = np.random.negative_binomial(1, 0.1, 100000)
+# s = np.random.negative_binomial(1, 0.9, 100000)
 # print np.mean(s)
-# plt.hist(s, bins=100)
+# plt.hist(s, bins=10)
 # plt.show()
 
 def simulation_genome_size_generater(genome_size):
@@ -52,7 +55,7 @@ def draw_simulated_sample(ndarray, start, end):
 def generater(H_real, p_real,  H_noise, p_noise, W_real, W_noise, wp_real, wp_noise,
               genome_size=1000000, real_peak_number=200,
               noise_peak_number=2000, real_peak_locations=None, sample_number=300,
-              cutoffs=[6]+[x for x in range(10, 310, 10)],
+              cutoffs=[x for x in [6]+ range(10, 310, 10)],
               simulation_directory='./simulation_results/'):
     """
     :param H_real:
@@ -79,6 +82,7 @@ def generater(H_real, p_real,  H_noise, p_noise, W_real, W_noise, wp_real, wp_no
     if real_peak_locations is None:
         real_peak_locations = get_random_locations(np.arange(genome_size), real_peak_number*2)
 
+    samples = []
     for i in range(sample_number):
         # generate simulated real peaks
         cur_real_peak_locations = get_random_locations(real_peak_locations, real_peak_number)
@@ -87,44 +91,57 @@ def generater(H_real, p_real,  H_noise, p_noise, W_real, W_noise, wp_real, wp_no
 
         # generate simulated noise peaks
         noise_peak_locations = get_random_locations(np.arange(genome_size), noise_peak_number)
-        noise_peak_heights = get_negative_binomial_random_samples(W_noise, wp_noise, noise_peak_number)
-        noise_peak_widths = get_negative_binomial_random_samples(H_noise, p_noise, noise_peak_number)
+        noise_peak_heights = get_negative_binomial_random_samples(H_noise, p_noise, noise_peak_number)
+        noise_peak_widths = get_negative_binomial_random_samples(W_noise, wp_noise, noise_peak_number)
+
+        signals = np.zeros(genome_size)
+
+        for j in range(real_peak_number):
+            cur_width = int(cur_real_peak_widths[j])
+            cur_height = int(cur_real_peak_heights[j])
+            cur_location = int(cur_real_peak_locations[j])
+            cur_width = cur_width/2*2
+            cur_signals = np.sin(np.linspace(0, np.pi, cur_width))
+            if cur_location - (cur_width / 2) >= 0 and cur_location + (cur_width / 2) < signals.shape[0]:
+                signals[cur_location-(cur_width/2):cur_location+(cur_width/2)] = cur_signals*cur_height
+            elif cur_location - (cur_width / 2) < 0 and cur_location + cur_width < signals.shape[0]:
+                signals[cur_location:cur_location + (cur_width)] = cur_signals * cur_height
+            elif cur_location - (cur_width) >= 0 and cur_location + cur_width/2 >= signals.shape[0]:
+                signals[cur_location-cur_width:cur_location] = cur_signals * cur_height
+
+        for k in range(noise_peak_number):
+            cur_width = int(noise_peak_widths[k])
+            cur_height = int(noise_peak_heights[k])
+            cur_location = int(noise_peak_locations[k])
+            cur_width = cur_width/2*2
+            cur_signals = np.sin(np.linspace(0, np.pi, cur_width))
+            if cur_location - (cur_width / 2) >= 0 and cur_location + (cur_width / 2) < signals.shape[0]:
+                signals[cur_location-(cur_width/2):cur_location+(cur_width/2)] = cur_signals*cur_height
+            elif cur_location - (cur_width / 2) < 0 and cur_location + cur_width < signals.shape[0]:
+                signals[cur_location:cur_location + (cur_width)] = cur_signals * cur_height
+            elif cur_location - (cur_width) >= 0 and cur_location + cur_width/2 >= signals.shape[0]:
+                signals[cur_location-cur_width:cur_location] = cur_signals * cur_height
+        samples.append(signals)
 
         for cutoff in cutoffs:
-            results = []
-            for j in range(real_peak_number):
-                cur_width = int(cur_real_peak_widths[j])
-                cur_height = int(cur_real_peak_heights[j])
-                cur_location = int(cur_real_peak_locations[j])
-
-                if cur_height >= cutoff:
-                    results.append(('simulation', cur_location-cur_width/2, cur_location+cur_width/2,
-                                   0,0,0,cur_height))
-
-            for k in range(noise_peak_number):
-                cur_width = int(noise_peak_widths[k])
-                cur_height = int(noise_peak_heights[k])
-                cur_location = int(noise_peak_locations[k])
-                if cur_height >= cutoff:
-                    results.append(('simulation', cur_location-cur_width/2, cur_location+cur_width/2,
-                                   0, 0, 0, cur_height))
-
+            genome_signals = {'simulation':signals}
+            results = callpeak(genome_signals, cutoff, step=1)
             df = pd.DataFrame(results, index=None, columns=None)
             df.to_csv(simulation_directory+ str(cutoff)+'/'+'simulated_sample'+str(i)+'cutoff'+str(cutoff)+".tsv",
                       sep='\t', index=None, header=None)
     return
 
-if __name__ == "__main__":
+def simulation_final():
     # step 1
-    H_real = 1
-    p_real = 0.01
+    H_real = 2
+    p_real = 0.005
     H_noise = 1
-    p_noise = 0.12
-    W_real = 1
-    wp_real = 0.001
-    W_noise = 1
-    wp_noise = 0.1
-    genome_size = 3000000
+    p_noise = 0.35
+    W_real = 4
+    wp_real = 0.01
+    W_noise = 2
+    wp_noise = 0.01
+    genome_size = 1000000
 
     generater(H_real=H_real, p_real=p_real,
               H_noise=H_noise, p_noise=p_noise,

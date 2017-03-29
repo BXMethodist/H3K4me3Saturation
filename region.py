@@ -648,9 +648,9 @@ def isBroadNarrow(variant1, variant2):
     else:
         print variant2_max_index, max_end, max_start
 
-    if v1_max_width * 4 <= v2_max_width and v2_max_width >= 0.6* total_width:
+    if v1_max_width * 3 <= v2_max_width and v2_max_width >= 0.6* total_width:
         return True
-    if v2_max_width * 4 <= v1_max_width and v1_max_width >= 0.6* total_width:
+    if v2_max_width * 3 <= v1_max_width and v1_max_width >= 0.6* total_width:
         return True
     return False
 

@@ -99,11 +99,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-a = np.asarray([1, 2, 3, 4, 5,6])
+x = np.linspace(0, np.pi, 200)
 
-
-rolling_variant1_signals = np.roll(a, 2)
-rolling_variant1_signals = np.append(rolling_variant1_signals, rolling_variant1_signals[:2])
-rolling_variant1_signals[:2] = 0
-
-print rolling_variant1_signals
+plt.plot(x, np.sin(x)*10)
+plt.show()

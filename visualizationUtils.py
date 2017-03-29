@@ -18,7 +18,7 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
     original_seed = variant.seed
     parameters = len(variant.members)
 
-    fig = plt.figure(figsize=(8,2))
+    fig = plt.figure(figsize=(8,4))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -90,7 +90,7 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
     return peaks
 
 def plotBestSample(title, output_name, signals, xvalues):
-    fig = plt.figure(figsize=(8, 2))
+    fig = plt.figure(figsize=(8, 4))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -170,7 +170,7 @@ def plotBestSample(title, output_name, signals, xvalues):
     # # ''')
 
 def plot_predict(data, representatives, allocs):
-    fig = plt.figure(figsize=(8, 2))
+    fig = plt.figure(figsize=(8, 4))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
