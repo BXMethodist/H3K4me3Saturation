@@ -95,7 +95,7 @@ def finalpoint_cutoff_vs_stat(cutoffs, file_addresses, number_sample, outputname
 
     # df = pd.read_csv("q_vs_map.csv", header=None, index_col=0)
     df.columns = ['Coverage (bp)', 'Length of Region', 'Number of Region (bp)']
-    df.to_csv(outputname + "cutoff_vs_map.csv")
+    # df.to_csv(outputname + "cutoff_vs_map.csv")
 
     # for col in ['Coverage (bp)', 'Length of Region', 'Number of Region (bp)']:
     #     ax = df.plot(y=col, kind='line')
@@ -103,7 +103,7 @@ def finalpoint_cutoff_vs_stat(cutoffs, file_addresses, number_sample, outputname
     #                 figsize=(3, 3))
     #     plt.close('all')
 
-    return outputname + "cutoff_vs_map.csv"
+    return df
 
 def sample_number_vs_stat(cutoffs, file_addresses, sample_number, outputname):
     """

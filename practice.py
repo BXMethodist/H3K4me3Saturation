@@ -99,7 +99,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-x = np.linspace(0, np.pi, 200)
-
-plt.plot(x, np.sin(x)*10)
+s = np.random.negative_binomial(1, 0.04, 100000)
+print np.mean(s)
+plt.hist(s, bins=100)
 plt.show()

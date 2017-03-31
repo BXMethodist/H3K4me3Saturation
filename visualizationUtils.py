@@ -90,7 +90,7 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
     return peaks
 
 def plotBestSample(title, output_name, signals, xvalues):
-    fig = plt.figure(figsize=(8, 4))
+    fig = plt.figure(figsize=(6, 3))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -101,9 +101,9 @@ def plotBestSample(title, output_name, signals, xvalues):
                   'verticalalignment': 'bottom'}  # Bottom vertical alignment for more space
     axis_font = {'fontname': 'Arial', 'size': '15', 'weight': 'bold'}
 
-    ax.set_xlabel("bp", **axis_font)
-    ax.set_ylabel("Signal", **axis_font)
-    ax.set_title(title, **title_font)
+    ax.set_xlabel("base pair(bp)", **axis_font)
+    ax.set_ylabel("peak height", **axis_font)
+    # ax.set_title(title, **title_font)
 
     ax.set_prop_cycle(color=['blue'])
     ax.fill_between(xvalues, 0, signals, alpha=1, color='blue')
