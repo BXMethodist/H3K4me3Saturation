@@ -99,7 +99,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-s = np.random.negative_binomial(1, 0.04, 100000)
-print np.mean(s)
-plt.hist(s, bins=100)
-plt.show()
+from region import Local_Min
+
+signals = np.asarray([1,2,1,3,5,1,6])
+
+print np.r_[True, signals[1:] < signals[:-1]] & np.r_[signals[:-1] < signals[1:], True]

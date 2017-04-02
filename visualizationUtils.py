@@ -18,7 +18,7 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
     original_seed = variant.seed
     parameters = len(variant.members)
 
-    fig = plt.figure(figsize=(8,4))
+    fig = plt.figure(figsize=(8,6))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)

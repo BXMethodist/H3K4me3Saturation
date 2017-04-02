@@ -418,12 +418,21 @@ class Unit():
             print self.chromosome, self.start, self.end, "width is 0, why?"
         self.height = np.max(self.signals)
 
-def splitable(chromosome, start, end, signals, convex_cutoff):
-    local_min = np.r_[True, signals[1:] < signals[:-1]] & np.r_[signals[:-1] < signals[1:], True]
-    local_max = np.r_[True, signals[1:] > signals[:-1]] & np.r_[signals[:-1] > signals[1:], True]
 
-    min_index = np.where(local_min)[0]
-    max_index = np.where(local_max)[0]
+def Local_Min(signals):
+    if not isinstance(signals, np.ndarray):
+        signals = np.asarray(signals)
+    return np.where(np.r_[True, signals[1:] < signals[:-1]] & np.r_[signals[:-1] < signals[1:], True])[0]
+
+def Local_Max(signals):
+    if not isinstance(signals, np.ndarray):
+        signals = np.asarray(signals)
+    return np.where(np.r_[True, signals[1:] > signals[:-1]] & np.r_[signals[:-1] > signals[1:], True])[0]
+
+
+def splitable(chromosome, start, end, signals, convex_cutoff):
+    min_index = Local_Min(signals)
+    max_index = Local_Max(signals)
 
     if len(max_index)==0 or len(min_index) == 0:
         return None
@@ -689,20 +698,23 @@ def isConvexConcave(variant1, variant2):
         left, right = concave2[1], concave2[2]
         mid = concave1[1]
 
-    left_submit = np.argmax(left.signals)*left.step + left.start
-    right_submit = np.argmax(right.signals)*right.step + right.start
-    mid_submit = np.argmax(mid.signals)*mid.step + mid.start
+    left_submit = Local_Max(left.signals)[-1]*left.step + left.start
+    right_submit = Local_Max(right.signals)[0]*right.step + right.start
 
-    if not left_submit < mid_submit < right_submit:
-        return False
-    break_point = (right.start + left.end)/2
+    mid_submits = Local_Max(mid.signals)*mid.step + mid.start
 
-    distance = min(abs(left_submit - mid_submit), abs(right_submit - mid_submit))
+    break_point = (right.start + left.end) / 2
 
-    if abs(mid_submit - break_point) < distance:
-        return True
-    else:
-        return False
+    for mid_submit in mid_submits:
+        if not left_submit < mid_submit < right_submit:
+            return False
+        distance = min(abs(left_submit - mid_submit), abs(right_submit - mid_submit))
+
+        if abs(mid_submit - break_point) < distance:
+            continue
+        else:
+            return False
+    return True
 
 def isPattern(variant1, variant2):
     """
