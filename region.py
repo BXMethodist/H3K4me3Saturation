@@ -583,6 +583,9 @@ def isShift(variant1, variant2):
     variant2_max_index = np.argmax(variant2.signals)
 
     distance = abs(variant1_max_index-variant2_max_index)
+    if distance < 200:
+        return False
+
     if variant1_max_index < variant2_max_index:
         rolling_variant1_signals = np.roll(variant1.signals, distance)
         rolling_variant1_signals = np.append(rolling_variant1_signals, rolling_variant1_signals[:distance])
@@ -690,6 +693,8 @@ def isConvexConcave(variant1, variant2):
         return False
     elif (not concave1[0] and not concave2[0]):
         return False
+    elif (concave1[0] is None or concave2[0] is None):
+        return False
 
     if (concave1[0]):
         left, right = concave1[1], concave1[2]
@@ -750,14 +755,20 @@ def isConcave(variant):
     left_submit = np.argmax(left.signals) * left.step + left.start
     right_submit = np.argmax(right.signals) * right.step + right.start
 
-    if right_submit - left_submit > total_width *0.5:
-        max_unit = left if left.height > right.height else right
-        return False, max_unit, None
+    # if right_submit - left_submit > total_width *0.6:
+    #     if left.end != right.start:
+    #         max_unit = left if left.height > right.height else right
+    #         return False, max_unit, None
+    #     else:
+    #         return None, None, None
 
     if left.height > variant.convex_cutoff and \
                     right.height > variant.convex_cutoff and \
                                     (right.start - left.end) < min(right.end-right.start, left.end-left.start):
         return True, left, right
     else:
-        max_unit = left if left.height > right.height else right
-        return False, max_unit, None
+        if left.end != right.start:
+            max_unit = left if left.height > right.height else right
+            return False, max_unit, None
+        else:
+            return None, None, None

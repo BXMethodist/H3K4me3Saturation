@@ -40,8 +40,13 @@ def get_random_peak(height, width):
     :param width: peak width
     :return:
     """
-    x = np.tri(height, width, int(width/height))
-    x = np.sum(x, axis=0)
+    p = np.random.randint(0,2)
+
+    if p > 2:
+        x = np.tri(height, width, int(width/height))
+        x = np.sum(x, axis=0)
+    else:
+        x = np.sin(np.linspace(0, np.pi, width)) * height
     return x
     # if width <= 80:
     #     return np.sin(np.linspace(0, np.pi, width))
@@ -116,6 +121,9 @@ def generater(H_real, p_real,  H_noise, p_noise, W_real, W_noise, wp_real, wp_no
 
         signals = np.zeros(genome_size)
 
+        real_signals = np.zeros(genome_size)
+        noise_signals = np.zeros(genome_size)
+
         for j in range(real_peak_number):
             cur_width = int(cur_real_peak_widths[j])
             cur_height = int(cur_real_peak_heights[j])
@@ -127,10 +135,14 @@ def generater(H_real, p_real,  H_noise, p_noise, W_real, W_noise, wp_real, wp_no
             cur_signals = get_random_peak(cur_height, cur_width)
             if cur_location - (cur_width / 2) >= 0 and cur_location + (cur_width / 2) < signals.shape[0]:
                 signals[cur_location-(cur_width/2):cur_location+(cur_width/2)] = cur_signals*(cur_height/np.max(cur_signals))
+                real_signals[cur_location - (cur_width / 2):cur_location + (cur_width / 2)] = cur_signals * (
+                cur_height / np.max(cur_signals))
             elif cur_location - (cur_width / 2) < 0 and cur_location + cur_width < signals.shape[0]:
                 signals[cur_location:cur_location + (cur_width)] = cur_signals * (cur_height/np.max(cur_signals))
+                real_signals[cur_location:cur_location + (cur_width)] = cur_signals * (cur_height / np.max(cur_signals))
             elif cur_location - (cur_width) >= 0 and cur_location + cur_width/2 >= signals.shape[0]:
                 signals[cur_location-cur_width:cur_location] = cur_signals * (cur_height/np.max(cur_signals))
+                real_signals[cur_location - cur_width:cur_location] = cur_signals * (cur_height / np.max(cur_signals))
 
         for k in range(noise_peak_number):
             cur_width = int(noise_peak_widths[k])
@@ -142,10 +154,14 @@ def generater(H_real, p_real,  H_noise, p_noise, W_real, W_noise, wp_real, wp_no
             cur_signals = get_random_peak(cur_height, cur_width)
             if cur_location - (cur_width / 2) >= 0 and cur_location + (cur_width / 2) < signals.shape[0]:
                 signals[cur_location-(cur_width/2):cur_location+(cur_width/2)] = cur_signals*(cur_height/np.max(cur_signals))
+                noise_signals[cur_location - (cur_width / 2):cur_location + (cur_width / 2)] = cur_signals * (
+                cur_height / np.max(cur_signals))
             elif cur_location - (cur_width / 2) < 0 and cur_location + cur_width < signals.shape[0]:
                 signals[cur_location:cur_location + (cur_width)] = cur_signals * (cur_height/np.max(cur_signals))
+                noise_signals[cur_location:cur_location + (cur_width)] = cur_signals * (cur_height / np.max(cur_signals))
             elif cur_location - (cur_width) >= 0 and cur_location + cur_width/2 >= signals.shape[0]:
                 signals[cur_location-cur_width:cur_location] = cur_signals * (cur_height/np.max(cur_signals))
+                noise_signals[cur_location - cur_width:cur_location] = cur_signals * (cur_height / np.max(cur_signals))
         samples.append(signals)
 
         # signals = signals[1000:3000]
@@ -158,22 +174,36 @@ def generater(H_real, p_real,  H_noise, p_noise, W_real, W_noise, wp_real, wp_no
             df = pd.DataFrame(results, index=None, columns=None)
             df.to_csv(simulation_directory+ str(cutoff)+'/'+'simulated_sample'+str(i)+'cutoff'+str(cutoff)+".tsv",
                       sep='\t', index=None, header=None)
+
+            genome_signals = {'simulation': real_signals}
+            results = callpeak(genome_signals, cutoff, step=1)
+            df = pd.DataFrame(results, index=None, columns=None)
+            df.to_csv(simulation_directory + str(cutoff) + '/' + 'simulated_real' + str(i) + 'cutoff' + str(
+                cutoff) + ".tsv",
+                      sep='\t', index=None, header=None)
+
+            genome_signals = {'simulation': noise_signals}
+            results = callpeak(genome_signals, cutoff, step=1)
+            df = pd.DataFrame(results, index=None, columns=None)
+            df.to_csv(simulation_directory + str(cutoff) + '/' + 'simulated_noise' + str(i) + 'cutoff' + str(
+                cutoff) + ".tsv",
+                      sep='\t', index=None, header=None)
     return
 
 if __name__ == "__main__":
-    H_reals = [2]
-    p_reals = [0.003,0.004,0.005]
+    H_reals = [4]
+    p_reals = [0.01]
     # p_reals = [x/1000.0 for x in range(1, 1000)]
     H_noises = [1]
-    p_noises = [0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5]
+    p_noises = [0.1]
     # p_noises = [x/100.0 for x in range(1, 100)]
-    W_reals = [1,2,3,4]
-    wp_reals = [0.01, 0.02,0.03,0.04,0.05]
-    W_noises = [1,2]
-    wp_noises = [0.02,0.04,0.06,0.08,0.1,0.15,0.2,0.25,0.3]
-    genome_size = 1000000
+    W_reals = [3]
+    wp_reals = [0.05]
+    W_noises = [1]
+    wp_noises = [0.05]
+    genome_size = 200000
     real_peak_numbers = [100]
-    noise_peak_numbers =[400]
+    noise_peak_numbers =[150]
     # real_peak_numbers = [x for x in range(100,310, 100)]
     # noise_peak_numbers = [x for x in range(100,1510,100)]
     # step 1
@@ -224,13 +254,23 @@ if __name__ == "__main__":
 
         for cutoff in [6]+range(10, 310, 10):
             cur_refmap = refMap(1, genome_size_path=genome_file_path)
-            # print cutoff, 'is start'
-            # cur_refmap.trainMap("/home/tmhbxx3/archive/KFH3K4me3/"+str(cutoff)+"cutoff/pooled", cutoff=cutoff,
-            #                 individual=True)
 
             cur_refmap.trainMap(simulation_path + str(cutoff),
                                 outputname='simulation', cutoff=cutoff,
-                                individual=False, saveRefMap=False)
+                                individual=False, saveRefMap=False, preffix='simulated_sample')
+
+            cur_refmap = refMap(1, genome_size_path=genome_file_path)
+
+            cur_refmap.trainMap(simulation_path + str(cutoff),
+                                outputname='real', cutoff=cutoff,
+                                individual=False, saveRefMap=False, preffix='simulated_real')
+
+            cur_refmap = refMap(1, genome_size_path=genome_file_path)
+
+            cur_refmap.trainMap(simulation_path + str(cutoff),
+                                outputname='noise', cutoff=cutoff,
+                                individual=False, saveRefMap=False, preffix='simulated_noise')
+
 
         refmap_path = "/home/tmhbxx3/archive/WigChrSplits/code/"
         outputname = 'simulation'+'_H_real_'+str(H_real) + '_p_real_'+str(p_real)+\
@@ -242,13 +282,41 @@ if __name__ == "__main__":
                                   number_sample=300, outputname=outputname, prefix='simulation')
 
         sub_df = df.ix[1:, :]
-        print df['Length of Region'].argmin(), type(df['Length of Region'].argmin())
-        print sub_df['Length of Region'].argmax(), type(sub_df['Length of Region'].argmax())
-        print df.ix[10, 'Length of Region'], type(df.ix[10, 'Length of Region'])
-        print df.ix[sub_df['Length of Region'].argmax(), 'Length of Region']
-        print parameter
-        if df['Length of Region'].argmin() == 10:
-            if 70<= sub_df['Length of Region'].argmax() <= 110:
-                if 100 <= df.ix[10, 'Length of Region'] < 300 and \
-                    600 < df.ix[100, 'Length of Region'] < 1000:
-                    df.to_csv(outputname)
+
+        df.to_csv(outputname+'.csv')
+
+        outputname = 'real' + '_H_real_' + str(H_real) + '_p_real_' + str(p_real) + \
+                     "_H_noise_" + str(H_noise) + "_p_noise_" + str(p_noise) \
+                     + "_W_real_" + str(W_real) + "_W_noise_" + str(W_noise) + \
+                     "_wp_real_" + str(wp_real) + "_wp_noise_" + str(wp_noise)
+        df = finalpoint_cutoff_vs_stat(cutoffs=[x for x in [6] + range(10, 310, 10)],
+                                       file_addresses=refmap_path,
+                                       number_sample=300, outputname=outputname, prefix='real')
+
+        sub_df = df.ix[1:, :]
+
+        df.to_csv(outputname + '.csv')
+
+        outputname = 'noise' + '_H_real_' + str(H_real) + '_p_real_' + str(p_real) + \
+                     "_H_noise_" + str(H_noise) + "_p_noise_" + str(p_noise) \
+                     + "_W_real_" + str(W_real) + "_W_noise_" + str(W_noise) + \
+                     "_wp_real_" + str(wp_real) + "_wp_noise_" + str(wp_noise)
+        df = finalpoint_cutoff_vs_stat(cutoffs=[x for x in [6] + range(10, 310, 10)],
+                                       file_addresses=refmap_path,
+                                       number_sample=300, outputname=outputname, prefix='noise')
+
+        sub_df = df.ix[1:, :]
+
+        df.to_csv(outputname + '.csv')
+
+
+        # print df['Length of Region'].argmin(), type(df['Length of Region'].argmin())
+        # print sub_df['Length of Region'].argmax(), type(sub_df['Length of Region'].argmax())
+        # print df.ix[10, 'Length of Region'], type(df.ix[10, 'Length of Region'])
+        # print df.ix[sub_df['Length of Region'].argmax(), 'Length of Region']
+        # print parameter
+        # if df['Length of Region'].argmin() == 10:
+        #     if 70<= sub_df['Length of Region'].argmax() <= 110:
+        #         if 100 <= df.ix[10, 'Length of Region'] < 300 and \
+        #             600 < df.ix[100, 'Length of Region'] < 1000:
+        #             df.to_csv(outputname+'.csv')

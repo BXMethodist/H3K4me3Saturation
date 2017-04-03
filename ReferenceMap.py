@@ -178,7 +178,7 @@ class refMap:
         output.close()
 
 
-    def trainMap(self, directories, outputname, surfix=None, cutoff=0, saveRefMap=True, individual=False):
+    def trainMap(self, directories, outputname, preffix= None, surfix=None, cutoff=0, saveRefMap=True, individual=False):
         """
         :param directories: directory of danpas peak calling results xlsx(txt format) files
         :param surfix: file suffix
@@ -198,6 +198,9 @@ class refMap:
 
         if surfix is not None:
             listFiles = [x for x in listFiles if x.endswith(surfix)]
+
+        if preffix is not None:
+            listFiles = [x for x in listFiles if x.startswith(preffix)]
 
         self.numberSample = len(listFiles)
 
