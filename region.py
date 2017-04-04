@@ -590,13 +590,13 @@ def isShift(variant1, variant2):
         rolling_variant1_signals = np.roll(variant1.signals, distance)
         rolling_variant1_signals = np.append(rolling_variant1_signals, rolling_variant1_signals[:distance])
         rolling_variant1_signals[:distance] = 0
-        if np.corrcoef(rolling_variant1_signals, np.append(variant2.signals, [0]*distance))[0 ,1] > 0.95:
+        if np.corrcoef(rolling_variant1_signals, np.append(variant2.signals, [0]*distance))[0 ,1] >= 0.8:
             return True
     else:
         rolling_variant2_signals = np.roll(variant2.signals, distance)
         rolling_variant2_signals = np.append(rolling_variant2_signals, rolling_variant2_signals[:distance])
         rolling_variant2_signals[:distance] = 0
-        if np.corrcoef(rolling_variant2_signals, np.append(variant1.signals, [0]*distance))[0 ,1] > 0.95:
+        if np.corrcoef(rolling_variant2_signals, np.append(variant1.signals, [0]*distance))[0 ,1] >= 0.8:
             return True
     return False
 
@@ -660,9 +660,9 @@ def isBroadNarrow(variant1, variant2):
     else:
         print variant2_max_index, max_end, max_start
 
-    if v1_max_width * 3 <= v2_max_width and v2_max_width >= 0.6* total_width:
+    if v1_max_width * 2 <= v2_max_width and v2_max_width >= 0.6* total_width:
         return True
-    if v2_max_width * 3 <= v1_max_width and v1_max_width >= 0.6* total_width:
+    if v2_max_width * 2 <= v1_max_width and v1_max_width >= 0.6* total_width:
         return True
     return False
 
@@ -703,23 +703,36 @@ def isConvexConcave(variant1, variant2):
         left, right = concave2[1], concave2[2]
         mid = concave1[1]
 
-    left_submit = Local_Max(left.signals)[-1]*left.step + left.start
-    right_submit = Local_Max(right.signals)[0]*right.step + right.start
-
-    mid_submits = Local_Max(mid.signals)*mid.step + mid.start
+    left_submit = np.argmax(left.signals) * left.step + left.start
+    right_submit = np.argmax(right.signals) * right.step + right.start
+    mid_submit = np.argmax(mid.signals) * mid.step + mid.start
 
     break_point = (right.start + left.end) / 2
 
-    for mid_submit in mid_submits:
-        if not left_submit < mid_submit < right_submit:
-            return False
-        distance = min(abs(left_submit - mid_submit), abs(right_submit - mid_submit))
+    if not left_submit < mid_submit < right_submit:
+        return False
+    distance = min(abs(left_submit - mid_submit), abs(right_submit - mid_submit))
+    if abs(mid_submit - break_point) < distance:
+        return True
+    else:
+        return False
+    # left_submit = Local_Max(left.signals)[-1]*left.step + left.start
+    # right_submit = Local_Max(right.signals)[0]*right.step + right.start
+    #
+    # mid_submits = Local_Max(mid.signals)*mid.step + mid.start
 
-        if abs(mid_submit - break_point) < distance:
-            continue
-        else:
-            return False
-    return True
+    # break_point = (right.start + left.end) / 2
+    #
+    # for mid_submit in mid_submits:
+    #     if not left_submit < mid_submit < right_submit:
+    #         return False
+    #     distance = min(abs(left_submit - mid_submit), abs(right_submit - mid_submit))
+    #
+    #     if abs(mid_submit - break_point) < distance:
+    #         continue
+    #     else:
+    #         return False
+    # return True
 
 def isPattern(variant1, variant2):
     """

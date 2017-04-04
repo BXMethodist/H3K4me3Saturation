@@ -96,11 +96,26 @@
 # bowtie_path = '/home/tmhbxx3/archive/H3K4me3/GEO_with_input/sample/FASTQ/'
 #
 # runFastqdump(list, path, bowtie_path)
-import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
+# from rpy2.robjects import r
+# import scipy.stats as stats
+# log10ppois = r('''function(q,r){ppois(q,r,lower.tail=FALSE,log.p = TRUE)/log(10)}''')
+# a = [[2,1],[4,3],[5, 6,],[7,8],[9,10]]
+#
+# df = pd.DataFrame(a, columns=['A','B'])
+# print log10ppois(df[['A','B']].max(axis=1), df[['A','B']].min(axis=1))
 
-from region import Local_Min
+from rpy2.robjects.packages import importr
+from rpy2.robjects.vectors import FloatVector
 
-signals = np.asarray([1,2,1,3,5,1,6])
+a = [[1,2],[3,4]]
+df = pd.DataFrame(a, columns=['A', 'B'])
+print df['A'].tolist()
 
-print np.r_[True, signals[1:] < signals[:-1]] & np.r_[signals[:-1] < signals[1:], True]
+stats = importr('stats')
+
+p_adjust = stats.p_adjust(FloatVector([0.05,0.8]), method = 'BH')
+
+df['C'] = p_adjust
+
+print df

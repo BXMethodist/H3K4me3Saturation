@@ -6,7 +6,9 @@ from collections import defaultdict
 from multiprocessing import Process, Queue
 from predict import optimize_allocs
 from RefRegion import ReferenceRegion, ReferenceVariant, ReferenceUnit, Annotation
-
+import scipy.stats
+from rpy2.robjects.packages import importr
+from rpy2.robjects.vectors import FloatVector
 
 def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
     """
@@ -14,7 +16,7 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
     :param refmap: the path for the reference map
     :param callvariant: whether to call variants expression level
     :param alias: a map contains group - samples alias for output table
-    :return:
+    :return: variant df and region df
     """
 
     # Load refmap
@@ -71,21 +73,40 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
         dfs_variant[key] = dfs_variant[key] + min_variant
         dfs_region[key] = dfs_region[key] + min_region
 
+    stats = importr('stats')
     for i in range(len(groupnames.keys())):
         key1 = groupnames.keys()[i]
         for j in range(i+1, len(groupnames.keys())):
             key2 = groupnames.keys()[j]
             dfs_variant[key1+"_vs_"+key2+"_log2FC"] = np.log2(dfs_variant[key1]/dfs_variant[key2])
+            dfs_variant[key1 + '_vs_' + key2 + "_P"] = 1 - scipy.stats.poisson.cdf(
+                dfs_variant[[key1, key2]].max(axis=1),
+                dfs_variant[[key1, key2]].min(axis=1))
+            dfs_variant[key1 + '_vs_' + key2 + "_log10P"] = np.log10(dfs_variant[key1 + '_vs_' + key2 + "_P"])
+            dfs_variant[key1 + '_vs_' + key2 + "_FDR"] = stats.p_adjust(
+                FloatVector(dfs_variant[key1 + '_vs_' + key2 + "_P"].tolist()),
+                method='BH')
+
+
             dfs_region[key1 + "_vs_" + key2 + "_log2FC"] = np.log2(dfs_region[key1] / dfs_region[key2])
+            dfs_region[key1 + '_vs_' + key2 + "_P"] = 1-scipy.stats.poisson.cdf(
+                                                                dfs_region[[key1, key2]].max(axis=1),
+                                                                dfs_region[[key1, key2]].min(axis=1))
+            dfs_region[key1 + '_vs_' + key2 + "_log10P"] = np.log10(dfs_region[key1 + '_vs_' + key2 + "_P"])
+            dfs_region[key1 + '_vs_' + key2 + "_FDR"] = stats.p_adjust(
+                FloatVector(dfs_region[key1 + '_vs_' + key2 + "_P"].tolist()),
+                method='BH')
 
     dfs_region_error.to_csv(output+'_region_error.csv')
     dfs_variant.to_csv(output + '_variant.csv')
     dfs_region.to_csv(output + '_region.csv')
+    return dfs_variant, dfs_region
+
 
 def CallVariants(wig, refmap, process):
     """
     :param wig: the Wig object
-    :param refmap: referencemap path, a dictionary group by chromosome
+    :param refmap: referencemap, a dictionary group by chromosome
     :param group: the group of sample belongs to
     :param callvariant: whether to call variant
     :param process: number of process
@@ -177,17 +198,27 @@ def CallVariantsProcess(wigchrome, refmap, queue):
     queue.put((cur_region_results, cur_region_results_error, cur_variant_results))
     return
 
+def DiffVariant(refmap, dfs_variant, dfs_region):
+    """
+    this function is used to call the pattern alterations
+    :param refmap: reference map, a dictionary group by chromosome
+    :param dfs_variant: data frame from callregion for variant
+    :param dfs_region: data frame from callregion for region
+    :return: a df containing all the variant and regions that involved in pattern alteration.
+    """
+    # to do:
+    pass
 
 # Annotation('./75refmap_combined_3kb_regions.pkl','75_combined_3kb')
 
-with open('./superwig.pkl', 'rb') as f:
+with open('./wig/superwig.pkl', 'rb') as f:
     superwig = pickle.load(f)
 f.close()
 print "loading complete"
 wigs = {'super1':[superwig], 'super2':[superwig]}
 # print superwig.genome['chr4'].get_signals(9980, 10280)
 
-path = './75_combined_3kb.pkl'
+path = './pkl/75_combined_3kb.pkl'
 genomesize = '/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt'
 #
 CallRegion(wigs, path, genomesize, 'super', process=8)

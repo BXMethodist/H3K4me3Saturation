@@ -156,7 +156,7 @@ def region_cluster(number_sample_used,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=True, example=False)
+regions = region_cluster(300, directory='./csv', verbose=True, example=True)
 
 
 
