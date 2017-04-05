@@ -4,7 +4,8 @@ from DistinctAffinityPropagation import DistinctAffinityPropagation
 from region import Region
 import pandas as pd, os, numpy as np, pickle
 from clusterUtils import get_map
-from visualizationUtils import plotSaturation #, heatmap
+from visualizationUtils import plotSaturation
+from multiprocessing import Process, Queue
 
 def region_cluster(number_sample_used,
                    cutoff=75,
@@ -12,7 +13,10 @@ def region_cluster(number_sample_used,
                    directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/",
                    affinity=np.corrcoef,
                    verbose=True,
-                   example=False):
+                   example=False,
+                   process=8,
+                   outputdir='./pictures/',
+                   hide=False):
     if not os.path.isdir("./pictures"):
         os.system("mkdir pictures")
     if not os.path.isdir("./tempcsv"):
@@ -26,17 +30,60 @@ def region_cluster(number_sample_used,
     if list_files is None:
         list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")]
 
+    chunks = []
+    cur_index = 0
+    reminder = len(list_files) % process
+    chunk_size = len(list_files) / process
+    for i in range(process):
+        if reminder > 0:
+            chunks.append(list_files[cur_index + i * chunk_size:cur_index + (i + 1) * chunk_size + 1])
+            cur_index += 1
+            reminder -= 1
+        else:
+            chunks.append(list_files[cur_index + i * chunk_size: cur_index + (i + 1) * chunk_size])
+
+    total_chunk_size = 0
+    for chunk in chunks:
+        total_chunk_size += len(chunk)
+    if total_chunk_size != len(list_files):
+        print 'multiple processes chunk size is not correct'
+        return None
+
+    queue = Queue()
+    processes = []
+
+    for i in range(process):
+        cur_chunk = chunks[i]
+        p = Process(target=Region_Cluster_Process, args=(queue, number_sample_used, cutoff, cur_chunk, directory, np.corrcoef,
+                   verbose, example, outputdir, hide))
+        processes.append(p)
+        p.start()
+
     regions = []
 
-    n = 0
+    for i in range(process):
+        cur_regions = queue.get()
+        regions += cur_regions
+
+    for p in processes:
+        p.join()
+
+    return regions
+
+
+
+def Region_Cluster_Process(queue,
+                           number_sample_used,
+                           cutoff,
+                           list_files,
+                           directory,
+                           affinity,
+                           verbose,
+                           example,
+                           outputdir,
+                           hide):
+    regions = []
     for file_name in list_files:
-        # print file_name
-        # if file_name == "chr3_197900280_197900820.csv":
-        #     print n
-        #     break
-        # else:
-        #     n += 1
-        #     continue
         cluster = DistinctAffinityPropagation(number_sample_used, affinity=affinity)
         df = pd.read_csv(directory+file_name, sep="\t")
 
@@ -65,9 +112,6 @@ def region_cluster(number_sample_used,
         cluster.fit(data_values, 0.8, 0.3, cutoff=cutoff)
 
         data_values = cluster.data
-
-        # print cluster.cluster_centers_indices_
-        # print [len(x) for x in cluster.labels_]
 
         np.set_printoptions(threshold=np.nan)
 
@@ -112,7 +156,15 @@ def region_cluster(number_sample_used,
                     types = list(types)
                     plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names, peak.variants_members,
                                    types=types,
-                                   verbose=example)
+                                   verbose=example,
+                                   outputdir=outputdir)
+                    if hide:
+                        plotSaturation(pos_surfix + "_cluster" + str(i), variant, peak.sample_names,
+                                       peak.variants_members,
+                                       types=types,
+                                       verbose=example,
+                                       outputdir='./web_pictures/',
+                                       hide=hide)
             #     pass
             # else:
             #     for i in range(len(peak.variants)):
@@ -143,7 +195,8 @@ def region_cluster(number_sample_used,
         #
         #     # diable single cluster photo for now
         #     pass
-    return regions
+    queue.put(regions)
+    return
 
 
 # if __name__ == "__main__":
@@ -156,7 +209,7 @@ def region_cluster(number_sample_used,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=True, example=True)
+regions = region_cluster(300, directory='./csv', verbose=True, example=False, hide=True)
 
 
 
@@ -174,8 +227,6 @@ regions = region_cluster(300, directory='./csv', verbose=True, example=True)
 #
 # print regions
 #
-
-
 
 import pickle
 

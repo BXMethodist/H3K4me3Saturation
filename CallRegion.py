@@ -1,7 +1,7 @@
 # This is the main module to initiate the region calling
 
 from Wig import Wig
-import pickle, numpy as np, pandas as pd, os
+import pickle, numpy as np, pandas as pd, os, itertools
 from collections import defaultdict
 from multiprocessing import Process, Queue
 from predict import optimize_allocs
@@ -41,9 +41,11 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
     groupnames = defaultdict(list)
 
     for key, value in wigs.items():
+        # print wigs
         for i in range(len(value)):
             cur_wig = value[i]
             colname = key+'_'+cur_wig.file_name if alias is None else alias[key][i]
+            # print colname
             groupnames[key].append(colname)
             region, region_error, variant = CallVariants(cur_wig, region_map, process)
 
@@ -55,10 +57,12 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
             df_region = df_region.set_index(['region_id'])
 
             df_variant = pd.DataFrame(variant,
-                                      columns=['variant_id', colname])
+                                      columns=['variant_id', colname, 'region_id'])
             df_variant = df_variant.set_index(['variant_id'])
 
             dfs_region_error = dfs_region_error.join(df_region_error)
+            if 'region_id' in dfs_variant.columns:
+                del dfs_variant['region_id']
             dfs_variant = dfs_variant.join(df_variant)
             dfs_region = dfs_region.join(df_region)
 
@@ -69,16 +73,12 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
     min_variant = min(dfs_variant[[key for key in groupnames.keys()]].min())
     min_region = min(dfs_region[[key for key in groupnames.keys()]].min())
 
-    for key in groupnames.keys():
-        dfs_variant[key] = dfs_variant[key] + min_variant
-        dfs_region[key] = dfs_region[key] + min_region
-
     stats = importr('stats')
     for i in range(len(groupnames.keys())):
         key1 = groupnames.keys()[i]
         for j in range(i+1, len(groupnames.keys())):
             key2 = groupnames.keys()[j]
-            dfs_variant[key1+"_vs_"+key2+"_log2FC"] = np.log2(dfs_variant[key1]/dfs_variant[key2])
+            dfs_variant[key1+"_vs_"+key2+"_log2FC"] = np.log2((dfs_variant[key1]+min_variant)/(dfs_variant[key2]+min_variant))
             dfs_variant[key1 + '_vs_' + key2 + "_P"] = 1 - scipy.stats.poisson.cdf(
                 dfs_variant[[key1, key2]].max(axis=1),
                 dfs_variant[[key1, key2]].min(axis=1))
@@ -87,8 +87,7 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
                 FloatVector(dfs_variant[key1 + '_vs_' + key2 + "_P"].tolist()),
                 method='BH')
 
-
-            dfs_region[key1 + "_vs_" + key2 + "_log2FC"] = np.log2(dfs_region[key1] / dfs_region[key2])
+            dfs_region[key1 + "_vs_" + key2 + "_log2FC"] = np.log2((dfs_region[key1]+min_region) / (dfs_region[key2]+min_region))
             dfs_region[key1 + '_vs_' + key2 + "_P"] = 1-scipy.stats.poisson.cdf(
                                                                 dfs_region[[key1, key2]].max(axis=1),
                                                                 dfs_region[[key1, key2]].min(axis=1))
@@ -100,7 +99,10 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
     dfs_region_error.to_csv(output+'_region_error.csv')
     dfs_variant.to_csv(output + '_variant.csv')
     dfs_region.to_csv(output + '_region.csv')
-    return dfs_variant, dfs_region
+
+    df_region_correlation = DiffVariant(region_map, dfs_variant, groupnames)
+
+    return dfs_variant, dfs_region, df_region_correlation
 
 
 def CallVariants(wig, refmap, process):
@@ -188,37 +190,66 @@ def CallVariantsProcess(wigchrome, refmap, queue):
 
             for i in range(len(region.variants)):
                 cur_var_signal = cur_total_signals*cur_allocs[i]
-                cur_variant_results.append((cur_ids[i], cur_var_signal))
+                cur_variant_results.append((cur_ids[i], cur_var_signal, region.id))
                 predict_signals += cur_var_signal
             error = abs(cur_total_signals-predict_signals)/cur_total_signals
             # print (region.id, cur_total_signals, predict_signals, error)
             cur_region_results_error.append((region.id, cur_total_signals, predict_signals, error))
             cur_region_results.append((region.id, cur_total_signals))
-
+    # print cur_variant_results[0]
     queue.put((cur_region_results, cur_region_results_error, cur_variant_results))
     return
 
-def DiffVariant(refmap, dfs_variant, dfs_region):
+def DiffVariant(refmap, dfs_variant, groupnames, cutoff=0):
     """
     this function is used to call the pattern alterations
     :param refmap: reference map, a dictionary group by chromosome
     :param dfs_variant: data frame from callregion for variant
-    :param dfs_region: data frame from callregion for region
+    :param groupnames: a dictionary containing group name and corresponding column names
+    :param cutoff: the correlation cutoff to identify the pattern alternation
     :return: a df containing all the variant and regions that involved in pattern alteration.
     """
-    # to do:
-    pass
+    pairs = list(itertools.combinations(groupnames.keys(), 2))
+    results = [] # a list of tuple, in the format of (region_id, correlation of pair1, correlation of pair2, ....)
+
+    for region in refmap:
+        if len(region.variants) <2:
+            continue
+        cur_region_df = dfs_variant[dfs_variant['region_id'] == region.id]
+        cur_result = [region.id]
+        for pair in pairs:
+            key1, key2 = pair
+            cur_correlation = np.corrcoef(cur_region_df[key1], cur_region_df[key2])[0, 1]
+            cur_result += [cur_correlation]
+        results.append(cur_result)
+
+    column_names = ['region_id'] + ['_vs_'.join(pair) for pair in pairs]
+
+    df = pd.DataFrame(results, columns=column_names)
+    df = df.set_index(['region_id'])
+
+    outputnames = '_'.join(groupnames.keys()) + '_pattern_diff.csv'
+
+    df.to_csv(outputnames)
+    return df
+
 
 # Annotation('./75refmap_combined_3kb_regions.pkl','75_combined_3kb')
 
-with open('./wig/superwig.pkl', 'rb') as f:
-    superwig = pickle.load(f)
-f.close()
-print "loading complete"
-wigs = {'super1':[superwig], 'super2':[superwig]}
-# print superwig.genome['chr4'].get_signals(9980, 10280)
-
-path = './pkl/75_combined_3kb.pkl'
-genomesize = '/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt'
+# with open('./wig/superwig.pkl', 'rb') as f:
+#     superwig = pickle.load(f)
+# f.close()
+# print "loading complete"
+# wigs = {'super1':[superwig], 'super2':[superwig]}
+# # print superwig.genome['chr4'].get_signals(9980, 10280)
 #
-CallRegion(wigs, path, genomesize, 'super', process=8)
+# path = './pkl/75_combined_3kb.pkl'
+# genomesize = '/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt'
+# #
+# CallRegion(wigs, path, genomesize, 'super', process=8)
+
+with open('./pkl/75_combined_3kb.pkl', 'rb') as f:
+    region_map = pickle.load(f)
+f.close()
+df = pd.read_csv('super_variant.csv')
+DiffVariant(region_map, df, groupnames={'super1':'', 'super2':''})

@@ -11,7 +11,7 @@ from scipy.cluster.hierarchy import linkage
 # from rpy2 import robjects
 from cycler import cycler
 
-def plotSaturation(title, variant, sample_names, data_values, types, verbose=False):
+def plotSaturation(title, variant, sample_names, data_values, types, verbose=False, hide=False, outputdir='./pictures/'):
     width = variant.end-variant.start
     array = variant.members
     rep = variant.signals
@@ -32,7 +32,6 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
     chromosome, start, end, cluster_number = title.split("_")
     ax.set_xlabel("bp", **axis_font)
     ax.set_ylabel("Signal", **axis_font)
-    ax.set_title(chromosome + " " + start + "~"+end+" "+"variant "+str(int(cluster_number[-1])+1), **title_font)
 
     xvalues = np.arange(array.shape[1])*10
 
@@ -73,8 +72,14 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
 
     variant_id = title.replace("_", ".")[3:]
 
+    if hide:
+        plt.axis('off')
+    else:
+        ax.set_title(chromosome + " " + start + "~" + end + " " + "variant " + str(int(cluster_number[-1]) + 1),
+                     **title_font)
+
     for type in types:
-        fig.savefig("./pictures/"+type+'/'+variant_id+'.png', dpi=600, facecolor='w', edgecolor='w',
+        fig.savefig(outputdir+type+'/'+variant_id+'.png', dpi=600, facecolor='w', edgecolor='w',
                     orientation='portrait', bbox_inches='tight')
     plt.close('all')
 
@@ -86,10 +91,10 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
             sample_name = sample_names[index]
             output_name = variant_id + " " + sample_name
             cur_data = data_values[index]
-            plotBestSample(sample_name, output_name, cur_data, xvalues)
+            plotBestSample(sample_name, output_name, cur_data, xvalues, outputdir, hide)
     return peaks
 
-def plotBestSample(title, output_name, signals, xvalues):
+def plotBestSample(title, output_name, signals, xvalues, outputdir, hide):
     fig = plt.figure(figsize=(6, 3))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
@@ -110,7 +115,9 @@ def plotBestSample(title, output_name, signals, xvalues):
 
     fig.set_tight_layout(True)
 
-    fig.savefig("./pictures/" + output_name + '.png', dpi=600, facecolor='w', edgecolor='w',
+    if hide:
+        plt.axis('off')
+    fig.savefig(outputdir + output_name + '.png', dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
     plt.close('all')
 

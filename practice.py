@@ -96,26 +96,13 @@
 # bowtie_path = '/home/tmhbxx3/archive/H3K4me3/GEO_with_input/sample/FASTQ/'
 #
 # runFastqdump(list, path, bowtie_path)
-import pandas as pd
-# from rpy2.robjects import r
-# import scipy.stats as stats
-# log10ppois = r('''function(q,r){ppois(q,r,lower.tail=FALSE,log.p = TRUE)/log(10)}''')
-# a = [[2,1],[4,3],[5, 6,],[7,8],[9,10]]
+import pandas as pd, numpy as np
 #
-# df = pd.DataFrame(a, columns=['A','B'])
-# print log10ppois(df[['A','B']].max(axis=1), df[['A','B']].min(axis=1))
+# a = [[1,2,3],[4,5,6]]
+#
+# df = pd.DataFrame(a, columns=['A','B', 'C'])
+# print df
+# print df[['B']].mean(axis=1)
 
-from rpy2.robjects.packages import importr
-from rpy2.robjects.vectors import FloatVector
-
-a = [[1,2],[3,4]]
-df = pd.DataFrame(a, columns=['A', 'B'])
-print df['A'].tolist()
-
-stats = importr('stats')
-
-p_adjust = stats.p_adjust(FloatVector([0.05,0.8]), method = 'BH')
-
-df['C'] = p_adjust
-
-print df
+# print np.corrcoef(np.asarray([4,2]),np.asarray([-3,-1]))[0,1]
+print '.'.join(('A','B'))
