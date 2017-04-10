@@ -162,4 +162,22 @@ def Annotation(path, output):
     return region_annotations, variant_annotations, units_annotations
 
 # if __name__ == "__main__":
-# Annotation("75refmap_combined_3kb_regions.pkl", "./pkl/75_combined_3kb")
+import os
+pkls = os.listdir("./pkl")
+
+regions = []
+
+for pkl in pkls:
+    with open("./pkl/" + pkl, 'rb') as f:
+        region = pickle.load(f)
+    regions += region
+    f.close()
+
+import pickle
+
+with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
+    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+
+f.close()
+
+Annotation("75refmap_combined_3kb_regions.pkl", "./pkl/75_combined_3kb")

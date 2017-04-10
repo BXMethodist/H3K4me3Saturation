@@ -24,12 +24,12 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
         region_map = pickle.load(f)
     f.close()
 
-    # for key, value in wigs.items():
-    #     new_wig_objs = []
-    #     for wig in value:
-    #         cur_wig = Wig(wig, genome_size_path)
-    #         new_wig_objs.append(cur_wig)
-    #     wigs[key] = new_wig_objs
+    for key, value in wigs.items():
+        new_wig_objs = []
+        for wig in value:
+            cur_wig = Wig(wig, genome_size_path)
+            new_wig_objs.append(cur_wig)
+        wigs[key] = new_wig_objs
 
     rownames_region = [region.id for region in region_map]
     rownames_variant = [variant.id for region in region_map for variant in region.variants]
@@ -240,16 +240,18 @@ def DiffVariant(refmap, dfs_variant, groupnames, cutoff=0):
 #     superwig = pickle.load(f)
 # f.close()
 # print "loading complete"
-# wigs = {'super1':[superwig], 'super2':[superwig]}
+wigs = {'MCF10A':['./wigs/SRR2044722.bgsub.Fnor.wig', './wigs/SRR2044723.bgsub.Fnor.wig'],
+        'MCF7':['./wigs/SRR2044728.bgsub.Fnor.wig', './wigs/SRR2044729.bgsub.Fnor.wig'],
+        'MDA-MB-231':['./wigs/SRR2044734.bgsub.Fnor.wig', './wigs/SRR2044735.bgsub.Fnor.wig']}
 # # print superwig.genome['chr4'].get_signals(9980, 10280)
 #
-# path = './pkl/75_combined_3kb.pkl'
-# genomesize = '/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt'
-# #
-# CallRegion(wigs, path, genomesize, 'super', process=8)
+path = './pkl/75_combined_3kb.pkl'
+genomesize = '/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt'
+#
+CallRegion(wigs, path, genomesize, 'breast_met', process=8)
 
-with open('./pkl/75_combined_3kb.pkl', 'rb') as f:
-    region_map = pickle.load(f)
-f.close()
-df = pd.read_csv('super_variant.csv')
-DiffVariant(region_map, df, groupnames={'super1':'', 'super2':''})
+# with open('./pkl/75_combined_3kb.pkl', 'rb') as f:
+#     region_map = pickle.load(f)
+# f.close()
+# df = pd.read_csv('super_variant.csv')
+# DiffVariant(region_map, df, groupnames={'super1':'', 'super2':''})

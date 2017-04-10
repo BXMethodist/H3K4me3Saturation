@@ -3,15 +3,15 @@
 #PBS -q mediummem
 #PBS -m e
 #PBS -M bxia@houstonmethodist.org
-#PBS -l walltime=96:00:00
-#PBS -l nodes=1:ppn=1
+#PBS -l walltime=32:00:00
+#PBS -l nodes=1:ppn=8
 #PBS -l pmem=16000mb
 
-cd /home/tmhbxx3/archive/ec_vs_hsc/bamfiles
+cd /home/tmhbxx3/archive/BreastMetastasis
 
 module load python/2.7.11
 
-python ./tophat.py
+python ./CallRegion.py
 
 
 ['ENCFF048ZOQ_ENCFF827YXC.fastq',  'ENCFF716YLE_ENCFF665BBC.fastq',  'ENCFF853HFC_ENCFF398JCG.fastq',

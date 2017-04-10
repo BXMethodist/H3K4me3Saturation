@@ -209,7 +209,7 @@ def Region_Cluster_Process(queue,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=True, example=False, hide=True)
+regions = region_cluster(300, directory='./csv', verbose=False, example=False, hide=False)
 
 
 
