@@ -65,6 +65,7 @@ class Region():
         # Does it worth to be plot and check
         self.plot = self.plotable()
         self.transitions = self.type_transition()
+        self.set_boundary_centers()
         # print self.transitions
         # print self.chromosome, self.start, self.end
 
@@ -292,6 +293,17 @@ class Region():
             print variant2.chromosome, variant2.start, variant2.end
         return types
 
+    def set_boundary_centers(self):
+        """
+        redefine the boundary of the variant and center to assist the gene mapping later
+        :return: None
+        """
+        for variant in self.variants:
+            variant.center = np.argmax(variant.signals) * variant.step + variant.start
+            variant.left_boundary = variant.units[0].start
+            variant.right_boundary = variant.units[-1].end
+
+
 
 class Variant():
     """
@@ -323,6 +335,9 @@ class Variant():
         self.members = members
         self.seed = seed
         self.labels = labels
+        self.center = None
+        self.left_boundary = None
+        self.right_boundary = None
 
         units= callunitbycutoff(self.chromosome, self.start, self.end, self.signals,
                                           cutoff=self.cutoff, step=self.step)

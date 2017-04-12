@@ -11,7 +11,7 @@ from collections import defaultdict
 from RefRegion import ReferenceRegion, ReferenceVariant, ReferenceUnit
 
 def AnnotationToMap(annotation, outputmap):
-    """
+    """ Create gene featurn annotation map, 1 lvl chromosome, 2 lvl location, 3 lvl gene obj
     :param annotation: gene annotation file downloaded for UCSC genome browser
     :param outputmap: the output map name
     :return: outputmap
@@ -42,11 +42,21 @@ def AnnotationToMap(annotation, outputmap):
     return annotationmap
 
 def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
+    """
+    Map the refmap with feature map based on the cutoff, cutoff1 is for -, cutoff2 is for +,
+    for example, -3000, 3000 means map feature by +- 3000 bp
+    :param refmap:
+    :param featuremap:
+    :param cutoff1:
+    :param cutoff2:
+    :param outputdir:
+    :return:
+    """
     refname = refmap[0:-4] if refmap.rfind('/') == -1 else refmap[refmap.rfind('/')+1:-4]
     featurename = featuremap[0:-4] if featuremap.rfind('/') == -1 else featuremap[featuremap.rfind('/')+1:-4]
     output_name = refname + featurename+str(cutoff1) + str(cutoff2)
 
-    colnames = ['region_id', 'TSS', 'TSS_distance', 'gene_body', 'inter_gene', 'gene_name2']
+    colnames = ['variant_id', 'TSS', 'TSS_distance', 'gene_body', 'inter_gene', 'gene_name2']
     results = []
     best_results = []
 
@@ -61,138 +71,142 @@ def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
     extend_range = max(cutoff1, cutoff2)
 
     for region in refmap:
-        potential_genes = set()
-        for key in range(region.start-extend_range, region.end+extend_range, 10):
-            if key in featuremap[region.chromosome]:
-                potential_genes = potential_genes.union(featuremap[region.chromosome][key])
-        if len(potential_genes) == 0:
-            results.append((region.id,
-                            None,
-                            None,
-                            None,
-                            True,
-                            None))
-            best_results.append((region.id, None, None, None, True, None))
-            continue
+        for variant in region.variants:
+            potential_genes = set()
+            left = variant.center - min(variant.center-variant.start, variant.end - variant.center)
+            right = variant.center + min(variant.center-variant.start, variant.end - variant.center)
+            for key in range(left-extend_range, right+extend_range, 10):
+                if key in featuremap[region.chromosome]:
+                    potential_genes = potential_genes.union(featuremap[region.chromosome][key])
+            if len(potential_genes) == 0:
+                results.append((variant.id,
+                                None,
+                                None,
+                                None,
+                                True,
+                                None))
+                best_results.append((variant.id, None, None, None, True, None))
+                continue
 
-        inter_gene = True
+            inter_gene = True
 
-        best_distance = None
-        best_overlap = 0
-        best_gene_id = None
-        best_type = None
-        best_name2 = None
+            best_distance = None
+            best_overlap = 0
+            best_gene_id = None
+            best_type = None
+            best_name2 = None
 
-        for gene in potential_genes:
-            if gene.strand == 1:
-                tss_region_start, tss_region_end = gene.tss-cutoff1, gene.tss+cutoff2
-                gene_body_region = (gene.tss+cutoff2, gene.tts) if gene.tss+cutoff2 < gene.tts else None
-                if overlap(region.start, region.end, tss_region_start, tss_region_end) != 0:
-                    results.append((region.id,
-                                    gene.gene_id,
-                                    (region.end-region.start)/2+region.start-gene.tss,
-                                    None,
-                                    None,
-                                    gene.name2))
-                    inter_gene = False
-
-                    cur_overlap = overlap(region.start, region.end, tss_region_start, tss_region_end)
-
-                    if cur_overlap > best_overlap:
-                        best_distance = (region.end-region.start)/2+region.start-gene.tss
-                        best_gene_id = gene.gene_id
-                        best_overlap = cur_overlap
-                        best_type = 'TSS'
-                        best_name2 = gene.name2
-
-                elif gene_body_region:
-                    if overlap(region.start, region.end, gene_body_region[0], gene_body_region[1]):
-                        results.append((region.id,
-                                        None,
-                                        None,
+            for gene in potential_genes:
+                if gene.strand == 1:
+                    tss_region_start, tss_region_end = gene.tss-cutoff1, gene.tss+cutoff2
+                    gene_body_region = (gene.tss+cutoff2, gene.tts) if gene.tss+cutoff2 < gene.tts else None
+                    if overlap(variant.left_boundary, variant.right_boundary, tss_region_start, tss_region_end) != 0:
+                        results.append((variant.id,
                                         gene.gene_id,
+                                        variant.center-gene.tss,
+                                        None,
                                         None,
                                         gene.name2))
                         inter_gene = False
 
-                        cur_overlap = overlap(region.start, region.end, gene_body_region[0], gene_body_region[1])
+                        cur_overlap = overlap(left, right, tss_region_start, tss_region_end)
 
                         if cur_overlap > best_overlap:
-                            best_distance = None
+                            best_distance = variant.center-gene.tss
                             best_gene_id = gene.gene_id
                             best_overlap = cur_overlap
-                            best_type = 'gene_body'
+                            best_type = 'TSS'
                             best_name2 = gene.name2
 
-            elif gene.strand == -1:
-                tss_region_start, tss_region_end = gene.tts - cutoff2, gene.tts + cutoff1
-                gene_body_region = (gene.tss, gene.tts-cutoff2) if gene.tts - cutoff2 > gene.tss else None
-                if overlap(region.start, region.end, tss_region_start, tss_region_end):
-                    results.append((region.id,
-                                    gene.gene_id,
-                                    ((region.end - region.start) / 2 + region.start - gene.tts)*-1,
-                                    None,
-                                    None,
-                                    gene.name2))
-                    inter_gene = False
+                    elif gene_body_region:
+                        if overlap(left, right, gene_body_region[0], gene_body_region[1]):
+                            results.append((variant.id,
+                                            None,
+                                            None,
+                                            gene.gene_id,
+                                            None,
+                                            gene.name2))
+                            inter_gene = False
 
-                    cur_overlap = overlap(region.start, region.end, tss_region_start, tss_region_end)
+                            cur_overlap = overlap(left, right, gene_body_region[0], gene_body_region[1])
 
-                    if cur_overlap > best_overlap:
-                        best_distance = ((region.end - region.start) / 2 + region.start - gene.tts)*-1
-                        best_gene_id = gene.gene_id
-                        best_overlap = cur_overlap
-                        best_type = 'TSS'
-                        best_name2 = gene.name2
+                            if cur_overlap > best_overlap:
+                                best_distance = None
+                                best_gene_id = gene.gene_id
+                                best_overlap = cur_overlap
+                                best_type = 'gene_body'
+                                best_name2 = gene.name2
 
-                elif gene_body_region:
-                    if overlap(region.start, region.end, gene_body_region[0], gene_body_region[1]):
-                        results.append((region.id,
-                                        None,
-                                        None,
+                elif gene.strand == -1:
+                    tss_region_start, tss_region_end = gene.tts - cutoff2, gene.tts + cutoff1
+                    gene_body_region = (gene.tss, gene.tts-cutoff2) if gene.tts - cutoff2 > gene.tss else None
+                    if overlap(left, right, tss_region_start, tss_region_end):
+                        results.append((variant.id,
                                         gene.gene_id,
+                                        (variant.center - gene.tts)*-1,
+                                        None,
                                         None,
                                         gene.name2))
                         inter_gene = False
 
-                        cur_overlap = overlap(region.start, region.end, gene_body_region[0], gene_body_region[1])
+                        cur_overlap = overlap(left, right, tss_region_start, tss_region_end)
 
                         if cur_overlap > best_overlap:
-                            best_distance = None
+                            best_distance = (variant.center - gene.tts)*-1
                             best_gene_id = gene.gene_id
                             best_overlap = cur_overlap
-                            best_type = 'gene_body'
+                            best_type = 'TSS'
                             best_name2 = gene.name2
 
-        if inter_gene:
-            results.append((region.id,
-                            None,
-                            None,
-                            None,
-                            True,
-                            None))
+                    elif gene_body_region:
+                        if overlap(left, right, gene_body_region[0], gene_body_region[1]):
+                            results.append((variant.id,
+                                            None,
+                                            None,
+                                            gene.gene_id,
+                                            None,
+                                            gene.name2))
+                            inter_gene = False
 
-        if best_type == 'TSS':
-            best_results.append((region.id, best_gene_id, best_distance, None, None, best_name2))
-        elif best_type == "gene_body":
-            best_results.append((region.id, None, best_distance, best_gene_id, None, best_name2))
-        else:
-            best_results.append((region.id, None, None, None, True, None))
+                            cur_overlap = overlap(left, right, gene_body_region[0], gene_body_region[1])
+
+                            if cur_overlap > best_overlap:
+                                best_distance = None
+                                best_gene_id = gene.gene_id
+                                best_overlap = cur_overlap
+                                best_type = 'gene_body'
+                                best_name2 = gene.name2
+
+            if inter_gene:
+                results.append((variant.id,
+                                None,
+                                None,
+                                None,
+                                True,
+                                None))
+
+            if best_type == 'TSS':
+                best_results.append((variant.id, best_gene_id, best_distance, None, None, best_name2))
+            elif best_type == "gene_body":
+                best_results.append((variant.id, None, best_distance, best_gene_id, None, best_name2))
+            else:
+                best_results.append((variant.id, None, None, None, True, None))
 
     outputdir = outputdir +'/' if not outputdir.endswith('/') else outputdir
 
     df = pd.DataFrame(results, columns=colnames)
-    df = df.set_index(['region_id'])
+    df = df.set_index(['variant_id'])
     df.to_csv(outputdir+output_name+'.tsv', sep='\t')
 
     df2 = pd.DataFrame(best_results, columns=colnames)
-    df2 = df2.set_index(['region_id'])
+    df2 = df2.set_index(['variant_id'])
     df2.to_csv(outputdir+output_name+'best_assign.tsv', sep='\t')
 
     return df
 
 def combine_feature_cluster(feature, cluster):
     """
+    Combine the features for region (TSS, intergene...) with number of clusters
     :param feature: tsv with region feature
     :param cluster:  tsv with region cluster
     :return: combine gene feature (TSS, genebody...) information with cluster, category(number of clusters, BN, PT..)
@@ -290,6 +304,15 @@ def overlap(start1, end1, start2, end2):
         return (right-left)*1.0/length
 
 def comulative_TSS_plot(df, groupby, start=0, end=10000, bin=100):
+    """
+    This function is used to check the distance of each cluster towards TSS
+    :param df:
+    :param groupby:
+    :param start:
+    :param end:
+    :param bin:
+    :return:
+    """
     df = pd.read_csv(df, index_col=0, sep='\t')
     results = []
     colnames = ['distance', 'All'] + [group for group in df[groupby].unique() if not pd.isnull(group)]
@@ -315,11 +338,11 @@ def comulative_TSS_plot(df, groupby, start=0, end=10000, bin=100):
     return_df = pd.DataFrame(results, columns=colnames)
     return_df = return_df.set_index(['distance'])
 
-    # return_df.plot()
-    #
-    # import matplotlib.pyplot as plt
-    #
-    # plt.show()
+    return_df.plot()
+
+    import matplotlib.pyplot as plt
+
+    plt.show()
 
 
 class gene():
@@ -337,8 +360,10 @@ class gene():
 
 # feature_refmap('./pkl/75_combined_3kb.pkl', './pkl/hg19_RefSeq_refGene.pkl', 3000, 3000, outputdir='./pkl')
 # combine_feature_cluster('./pkl/75_combined_3kbhg19_RefSeq_refGene30003000.tsv', './pkl/75_combined_3kbstats.tsv')
-# #
-StackedBarPlot("./pkl/75_combined_3kbhg19_RefSeq_refGene30003000with_cluster.tsv",['number of clusters'], ['BroadtoNarrow',	'ConcavetoConvex',	'Shift',	'Pattern',	'Other'])
+# # #
+#StackedBarPlot("./pkl/75_combined_3kbhg19_RefSeq_refGene30003000with_cluster.tsv",['Pattern'])
+               #['number of clusters'])
+               #['BroadtoNarrow',	'ConcavetoConvex',	'Shift',	'Pattern',	'Other'])
 
-# comulative_TSS_plot("75_combined_3kbhg38_RefSeq_allgene30003000with_cluster.tsv", "number of clusters")
+# comulative_TSS_plot("./pkl/75_combined_3kbhg19_RefSeq_refGene30003000with_cluster.tsv", "number of clusters")
 

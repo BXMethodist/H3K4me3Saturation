@@ -49,6 +49,9 @@ class ReferenceVariant():
         self.id = '.'.join([self.chromosome[3:], str(self.start), str(self.end), str(i+1)])
 
         self.setUnits(variant.units)
+        self.center = variant.center
+        self.left_boundary = variant.left_boundary
+        self.right_boundary = variant.right_boundary
 
     def setUnits(self, units):
         self.units = []
@@ -128,10 +131,40 @@ def Annotation(path, output):
 
         for i in range(len(referenceRegion.variants)):
             cur_variant = referenceRegion.variants[i]
-            row = [cur_variant.chromosome, str(cur_variant.start), str(cur_variant.end)]
-            cur_variant_id = 'variant_id:'+cur_variant.id+';'
-            row.append(cur_variant_id)
-            row.append(','.join(map(str, cur_variant.representative)))
+            row = [cur_variant.id, referenceRegion.id, cur_variant.chromosome, cur_variant.start, cur_variant.end]
+            cur_changes = set()
+            cur_changes_map = defaultdict(set)
+            for key, value in region.transitions.items():
+                if cur_variant.id in key:
+                    cur_changes.add(value)
+                    key1, key2 = key
+                    if key1 == cur_variant.id:
+                        cur_key = key2
+                    elif key2 == cur_variant.id:
+                        cur_key = key1
+                    cur_changes_map[value].add(cur_key)
+            if 'BN' in cur_changes:
+                row += [cur_changes_map['BN']]
+            else:
+                row += [False]
+            if 'CC' in cur_changes:
+                row += [cur_changes_map['CC']]
+            else:
+                row += [False]
+            if 'SH' in cur_changes:
+                row += [cur_changes_map['SH']]
+            else:
+                row += [False]
+            if 'PT' in cur_changes:
+                row += [cur_changes_map['PT']]
+            else:
+                row += [False]
+            if 'SO' in cur_changes:
+                row += [cur_changes_map['SO']]
+            else:
+                row += [False]
+
+            # row.append(cur_variant.representative)
             variant_annotations.append(row)
 
             for j in range(len(cur_variant.units)):
@@ -142,7 +175,10 @@ def Annotation(path, output):
                 units_annotations.append(row)
 
     region_df = pd.DataFrame(region_annotations)
-    variant_df = pd.DataFrame(variant_annotations)
+    variant_df = pd.DataFrame(variant_annotations, columns=['variant_id', "region_id", 'chromosome', 'start', 'end',
+                                                            'BroadtoNarrow', 'ConcavetoConvex', 'Shift', 'Pattern',
+                                                            'Other'])
+    variant_df = variant_df.set_index(['variant_id'])
     units_df = pd.DataFrame(units_annotations)
     stats_df = pd.DataFrame(stats, columns=['region_id', 'width', 'number of clusters', 'number of samples',
                                             'BroadtoNarrow', 'ConcavetoConvex', 'Shift', 'Pattern', 'Other'])
@@ -162,22 +198,22 @@ def Annotation(path, output):
     return region_annotations, variant_annotations, units_annotations
 
 # if __name__ == "__main__":
-import os
-pkls = os.listdir("./pkl")
-
-regions = []
-
-for pkl in pkls:
-    with open("./pkl/" + pkl, 'rb') as f:
-        region = pickle.load(f)
-    regions += region
-    f.close()
-
-import pickle
-
-with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
-    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
-
-f.close()
-
-Annotation("75refmap_combined_3kb_regions.pkl", "./pkl/75_combined_3kb")
+# import os
+# pkls = os.listdir("./pkl_parts")
+#
+# regions = []
+#
+# for pkl in pkls:
+#     with open("./pkl_parts/" + pkl, 'rb') as f:
+#         region = pickle.load(f)
+#     regions += region
+#     f.close()
+#
+# import pickle
+#
+# with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
+#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+#
+# f.close()
+#
+# Annotation("75refmap_combined_3kb_regions.pkl", "./pkl/75_combined_3kb")

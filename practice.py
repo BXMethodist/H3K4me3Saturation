@@ -96,7 +96,7 @@
 # bowtie_path = '/home/tmhbxx3/archive/H3K4me3/GEO_with_input/sample/FASTQ/'
 #
 # runFastqdump(list, path, bowtie_path)
-import pandas as pd, numpy as np
+# import pandas as pd, numpy as np
 #
 # a = [[1,2,3],[4,5,6]]
 #
@@ -105,4 +105,14 @@ import pandas as pd, numpy as np
 # print df[['B']].mean(axis=1)
 
 # print np.corrcoef(np.asarray([4,2]),np.asarray([-3,-1]))[0,1]
-print '.'.join(('A','B'))
+# f= open("hg19_chr_sizes.txt", "r")
+#
+# info = f.readlines()
+# sizes = {}
+# for line in info:
+#     line = line.strip().split()
+#     sizes[line[0]] = line[1]
+#
+# print sizes
+
+print sorted([3,2,2,1])

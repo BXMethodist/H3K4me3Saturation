@@ -28,7 +28,7 @@ def region_cluster(number_sample_used,
         directory += "/"
 
     if list_files is None:
-        list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")]
+        list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")][20000:]
 
     chunks = []
     cur_index = 0
@@ -230,7 +230,7 @@ regions = region_cluster(300, directory='./csv', verbose=False, example=False, h
 
 import pickle
 
-with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
+with open('./pkl/75refmap_combined_3kb_regions_part2' + '.pkl', 'wb') as f:
     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
 
 f.close()
