@@ -50,7 +50,7 @@ def CallRegion(wigs, refmap, genome_size_path, output, alias=None, process=8):
             region, region_error, variant = CallVariants(cur_wig, region_map, process)
 
             df_region_error = pd.DataFrame(region_error,
-                                     columns=['region_id', colname+'_target', colname+"_predict", colname+"_error"])
+                                     columns=['region_id', colname+"_error"])
             df_region_error = df_region_error.set_index(['region_id'])
 
             df_region = pd.DataFrame(region, columns=['region_id', colname])
@@ -177,7 +177,6 @@ def CallVariantsProcess(wigchrome, refmap, queue):
             # print "fetch data complete for ", region.id
             # print n
             # n +=1
-
             cur_variant_representatives = []
             cur_ids = []
             for variant in region.variants:
@@ -187,15 +186,18 @@ def CallVariantsProcess(wigchrome, refmap, queue):
 
             cur_total_signals = np.sum(cur_data)
             predict_signals = 0
-
+            normalized_signals = 0
             for i in range(len(region.variants)):
                 cur_var_signal = cur_total_signals*cur_allocs[i]
-                cur_variant_results.append((cur_ids[i], cur_var_signal, region.id))
+                FPKM_factor = variant_length_FPKM(region.variants[i])
+                cur_normalized_signals = cur_var_signal * FPKM_factor
+                cur_variant_results.append((cur_ids[i], cur_normalized_signals, region.id))
                 predict_signals += cur_var_signal
+                normalized_signals += cur_normalized_signals
             error = abs(cur_total_signals-predict_signals)/cur_total_signals
             # print (region.id, cur_total_signals, predict_signals, error)
-            cur_region_results_error.append((region.id, cur_total_signals, predict_signals, error))
-            cur_region_results.append((region.id, cur_total_signals))
+            cur_region_results_error.append((region.id, error))
+            cur_region_results.append((region.id, normalized_signals))
     # print cur_variant_results[0]
     queue.put((cur_region_results, cur_region_results_error, cur_variant_results))
     return
@@ -233,6 +235,17 @@ def DiffVariant(refmap, dfs_variant, groupnames, cutoff=0):
     df.to_csv(outputnames)
     return df
 
+def variant_length_FPKM(variant):
+    """
+    calculate the total_length of the variant for normalized factor
+    :param variant: variant object
+    :return: FPKM normalization factor
+    """
+    total_length = 0
+    for unit in variant.units:
+        total_length += unit.end - unit.start
+    FPKM_facotr = 1.0 * total_length/1000000
+    return FPKM_facotr
 
 # Annotation('./75refmap_combined_3kb_regions.pkl','75_combined_3kb')
 

@@ -115,4 +115,8 @@
 #
 # print sizes
 
-print sorted([3,2,2,1])
+a =[1,0]
+b =[100,2]
+import numpy as np
+
+print np.corrcoef(a,b)

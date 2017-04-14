@@ -45,7 +45,6 @@ def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
     """
     Map the refmap with feature map based on the cutoff, cutoff1 is for -, cutoff2 is for +,
     for example, -3000, 3000 means map feature by +- 3000 bp
-    this is for the overlap
     :param refmap:
     :param featuremap:
     :param cutoff1:
@@ -80,8 +79,8 @@ def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
     for region in refmap:
         for variant in region.variants:
             potential_genes = set()
-            left = variant.center - min(variant.center-variant.start, variant.end - variant.center)
-            right = variant.center + min(variant.center-variant.start, variant.end - variant.center)
+            left = variant.start
+            right = variant.end
             for key in range(left-extend_range, right+extend_range, 10):
                 if key in featuremap[region.chromosome]:
                     potential_genes = potential_genes.union(featuremap[region.chromosome][key])
@@ -108,11 +107,11 @@ def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
                 if gene.strand == 1:
                     tss_region_start, tss_region_end = gene.tss-cutoff1, gene.tss+cutoff2
                     gene_body_region = (gene.tss+cutoff2, gene.tts) if gene.tss+cutoff2 < gene.tts else None
-                    if overlap(variant.left_boundary, variant.right_boundary, tss_region_start, tss_region_end) != 0:
+                    if overlap(variant.start, variant.end, tss_region_start, tss_region_end) != 0:
                         results.append((variant.id,
                                         region.id,
                                         gene.gene_id,
-                                        variant.center-gene.tss,
+                                        variant.end-variant.start-gene.tss,
                                         None,
                                         None,
                                         gene.name2))
@@ -125,17 +124,17 @@ def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
                         if gene.name2 in count_gene_body:
                             count_gene_body.remove(gene.name2)
 
-                        cur_overlap = overlap(variant.left_boundary, variant.right_boundary, tss_region_start, tss_region_end)
+                        cur_overlap = overlap(left, right, tss_region_start, tss_region_end)
 
                         if cur_overlap > best_overlap:
-                            best_distance = variant.center-gene.tss
+                            best_distance = variant.end-variant.start-gene.tss
                             best_gene_id = gene.gene_id
                             best_overlap = cur_overlap
                             best_type = 'TSS'
                             best_name2 = gene.name2
 
                     elif gene_body_region:
-                        if overlap(variant.left_boundary, variant.right_boundary, gene_body_region[0], gene_body_region[1]):
+                        if overlap(left, right, gene_body_region[0], gene_body_region[1]):
                             results.append((variant.id,
                                             region.id,
                                             None,
@@ -148,7 +147,7 @@ def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
                             count_transcript_body.add(gene.gene_id)
                             count_gene_body.add(gene.name2)
 
-                            cur_overlap = overlap(variant.left_boundary, variant.right_boundary, gene_body_region[0], gene_body_region[1])
+                            cur_overlap = overlap(left, right, gene_body_region[0], gene_body_region[1])
 
                             if cur_overlap > best_overlap:
                                 best_distance = None
@@ -160,11 +159,11 @@ def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
                 elif gene.strand == -1:
                     tss_region_start, tss_region_end = gene.tts - cutoff2, gene.tts + cutoff1
                     gene_body_region = (gene.tss, gene.tts-cutoff2) if gene.tts - cutoff2 > gene.tss else None
-                    if overlap(variant.left_boundary, variant.right_boundary, tss_region_start, tss_region_end):
+                    if overlap(left, right, tss_region_start, tss_region_end):
                         results.append((variant.id,
                                         region.id,
                                         gene.gene_id,
-                                        (variant.center - gene.tts)*-1,
+                                        (variant.end-variant.start - gene.tts)*-1,
                                         None,
                                         None,
                                         gene.name2))
@@ -177,17 +176,17 @@ def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
                         if gene.name2 in count_gene_body:
                             count_gene_body.remove(gene.name2)
 
-                        cur_overlap = overlap(variant.left_boundary, variant.right_boundary, tss_region_start, tss_region_end)
+                        cur_overlap = overlap(left, right, tss_region_start, tss_region_end)
 
                         if cur_overlap > best_overlap:
-                            best_distance = (variant.center - gene.tts)*-1
+                            best_distance = (variant.end-variant.start - gene.tts)*-1
                             best_gene_id = gene.gene_id
                             best_overlap = cur_overlap
                             best_type = 'TSS'
                             best_name2 = gene.name2
 
                     elif gene_body_region:
-                        if overlap(variant.left_boundary, variant.right_boundary, gene_body_region[0], gene_body_region[1]):
+                        if overlap(left, right, gene_body_region[0], gene_body_region[1]):
                             results.append((variant.id,
                                             region.id,
                                             None,
@@ -200,7 +199,7 @@ def feature_refmap(refmap, featuremap, cutoff1, cutoff2=0, outputdir='./pkl/'):
                             count_transcript_body.add(gene.gene_id)
                             count_gene_body.add(gene.name2)
 
-                            cur_overlap = overlap(variant.left_boundary, variant.right_boundary, gene_body_region[0], gene_body_region[1])
+                            cur_overlap = overlap(left, right, gene_body_region[0], gene_body_region[1])
 
                             if cur_overlap > best_overlap:
                                 best_distance = None
@@ -324,6 +323,9 @@ def StackedBarPlot(featuremap, groupby, groupby2=[]):
 
         featuremap_groups.to_csv(outputname, sep='\t')
 
+
+
+
 def overlap(start1, end1, start2, end2):
     """
     :param start1:
@@ -396,7 +398,7 @@ class gene():
 
 # AnnotationToMap('./pkl/hg19_RefSeq_refGene.txt', './pkl/hg19_RefSeq_refGene')
 
-# feature_refmap('./pkl/75_combined_3kb.pkl', './pkl/hg19_RefSeq_refGene.pkl', 3000, 3000, outputdir='./pkl')
+feature_refmap('./pkl/75_combined_3kb.pkl', './pkl/hg19_RefSeq_refGene.pkl', 3000, 3000, outputdir='./pkl')
 # combine_feature_cluster('./pkl/75_combined_3kbhg19_RefSeq_refGene30003000.tsv', './pkl/75_combined_3kbstats.tsv')
 # # #
 #StackedBarPlot("./pkl/75_combined_3kbhg19_RefSeq_refGene30003000with_cluster.tsv",['Pattern'])

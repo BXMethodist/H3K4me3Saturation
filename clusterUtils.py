@@ -1,3 +1,9 @@
+"""
+This module including functions to build referencemap. 'get_map' will take each reference region and go to get the signals block
+from splitted wig files, and return the corresponding region with all sample signals.
+"""
+
+
 import numpy as np, os, pandas as pd
 from collections import defaultdict
 
@@ -287,7 +293,7 @@ def get_map(refmap, step=10, sep=",", finished_job=()):
             end = int(line[1]) * step
             region_map[chr_name].append((start, end))
 
-    for chr_name in region_map.keys():
+    for chr_name in region_map.keys()[20:]:
         for line in region_map[chr_name]:
             start, end = line
 
@@ -351,4 +357,4 @@ def remove_duplicate(pairs):
     # plt.ylim((0, 200))
     # plt.hist(widths, bins='auto')
     # plt.show()
-
+# get_map('100_refmap.csv')
