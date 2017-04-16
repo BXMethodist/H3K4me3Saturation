@@ -8,7 +8,7 @@ class refMap:
     ### take a directory of wig files, generate reference map
     ### based on number of iterations, generate saturation map for coverage, average peak size and number of average peak number
     ### use plotSaturation.py to make figure
-    def __init__(self, iterations, genome_size_path="/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt"):
+    def __init__(self, iterations, genome_size_path="/archive/tmhkxc48/ref_data/hg19/hg19.chrom.sizes.xls"):
         self.genome = genome_size(genome_size_path)
         self.non_noise_genome = genome_size(genome_size_path)
         self.noise_genome = genome_size(genome_size_path)
@@ -169,7 +169,7 @@ class refMap:
 
             refmap[chr] = peaksindex
 
-        output = open(str(cutoff) + "_refmap.csv", "w")
+        output = open(str(cutoff) + "_413_refmap.csv", "w")
         writer = csv.writer(output)
         for chr, index in refmap.items():
             output.write(">" + chr + "\n")

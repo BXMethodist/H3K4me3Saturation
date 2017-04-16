@@ -293,7 +293,8 @@ def get_map(refmap, step=10, sep=",", finished_job=()):
             end = int(line[1]) * step
             region_map[chr_name].append((start, end))
 
-    for chr_name in region_map.keys()[20:]:
+    # for chr_name in region_map.keys()[20:]:
+    for chr_name in ['chrM']:
         for line in region_map[chr_name]:
             start, end = line
 
@@ -335,7 +336,7 @@ def remove_duplicate(pairs):
     return distinct_set
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
     # get_split_chr("chr3", 122562770, 122562820, cutoff=25)
 
     # prefix = "/home/tmhbxx3/archive/refmap_saturation/code/"
@@ -357,4 +358,4 @@ def remove_duplicate(pairs):
     # plt.ylim((0, 200))
     # plt.hist(widths, bins='auto')
     # plt.show()
-# get_map('100_refmap.csv')
+    get_map('100_413_refmap.csv')

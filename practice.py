@@ -115,8 +115,8 @@
 #
 # print sizes
 
-a =[1,0]
-b =[100,2]
-import numpy as np
+a =[0,1,2,3,4,5]
+b = 6
+from bisect import bisect
 
-print np.corrcoef(a,b)
+print bisect(a, b)

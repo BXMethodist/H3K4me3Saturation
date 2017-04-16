@@ -5,7 +5,7 @@ import wigChrom
 import pandas as pd
 
 
-def genome_size(path="/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt", step=10):
+def genome_size(path="/archive/tmhkxc48/ref_data/hg19/hg19.chrom.sizes.xls", step=10):
     genome = {}
     genome_size_file = open(path, "r")
     for line in genome_size_file.readlines():

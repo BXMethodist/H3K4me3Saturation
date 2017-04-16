@@ -398,7 +398,7 @@ class gene():
 
 # AnnotationToMap('./pkl/hg19_RefSeq_refGene.txt', './pkl/hg19_RefSeq_refGene')
 
-feature_refmap('./pkl/75_combined_3kb.pkl', './pkl/hg19_RefSeq_refGene.pkl', 3000, 3000, outputdir='./pkl')
+# feature_refmap('./pkl/75_combined_3kb.pkl', './pkl/hg19_RefSeq_refGene.pkl', 3000, 3000, outputdir='./pkl')
 # combine_feature_cluster('./pkl/75_combined_3kbhg19_RefSeq_refGene30003000.tsv', './pkl/75_combined_3kbstats.tsv')
 # # #
 #StackedBarPlot("./pkl/75_combined_3kbhg19_RefSeq_refGene30003000with_cluster.tsv",['Pattern'])

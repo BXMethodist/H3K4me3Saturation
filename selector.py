@@ -9,6 +9,7 @@
 import numpy as np, pandas as pd, pickle
 from collections import defaultdict
 from RefRegion import ReferenceRegion, ReferenceVariant, ReferenceUnit
+from converter import gene
 
 def AnnotationToMap(annotation, outputmap):
     """ Create gene featurn annotation map, 1 lvl chromosome, 2 lvl location, 3 lvl gene obj
@@ -383,14 +384,7 @@ def comulative_TSS_plot(df, groupby, start=0, end=10000, bin=100):
     plt.show()
 
 
-class gene():
-    def __init__(self, gene_id, gene_chr, tss, tts, strand, name2):
-        self.gene_id = gene_id
-        self.gene_chr = gene_chr
-        self.tss = tss
-        self.tts = tts
-        self.strand = strand
-        self.name2 = name2
+
 
 
 
