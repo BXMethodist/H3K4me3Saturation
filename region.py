@@ -63,9 +63,10 @@ class Region():
         #     print [(unit.start, unit.end) for unit in variant.units]
 
         # Does it worth to be plot and check
-        self.plot = self.plotable()
+
         self.transitions = self.type_transition()
         self.set_boundary_centers()
+        self.plot = self.plotable()
         # print self.transitions
         # print self.chromosome, self.start, self.end
 
@@ -227,11 +228,21 @@ class Region():
     def plotable(self):
         if len(self.variants) < 2:
             return False
-        # if self.end - self.start < 2000:
-        #     return False
-        # if all(len(variant.units)==1 for variant in self.variants):
-        #     return False
-        return True
+        target = len(self.variants)
+        count = 0
+        for variant in self.variants:
+            cur_cutoff = np.max(variant.signals) * 0.15
+            submits = Local_Max(variant.signals)
+            for s in submits:
+                if variant.signals[s] >= cur_cutoff:
+                    count += 1
+        if target < count:
+            return True
+        else:
+            for value in self.transitions.values():
+                if 'SH' in value:
+                    return True
+            return False
 
     def merge_split_index(self, splited_indexes):
         new_split_indexes = {}

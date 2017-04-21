@@ -15,7 +15,7 @@ class ReferenceRegion():
         self.start = region.start
         self.end = region.end
         self.member_size = len(region.variants_members)
-        self.plot = region.plotable()
+        self.plot = region.plot
         self.id = '.'.join([self.chromosome[3:], str(self.start), str(self.end)])
 
         self.setVariants(region.variants)
@@ -94,7 +94,9 @@ def Annotation(path, output):
         referenceRegion = ReferenceRegion(region)
         if referenceRegion.plot:
             count += 1
-        counts[len(referenceRegion.variants)]+=1
+            counts[len(referenceRegion.variants)]+=1
+        else:
+            counts[1]+=1
         BN = False
         PT = False
         SO = False
@@ -134,15 +136,16 @@ def Annotation(path, output):
             row = [cur_variant.id, referenceRegion.id, cur_variant.chromosome, cur_variant.start, cur_variant.end]
             cur_changes = set()
             cur_changes_map = defaultdict(set)
-            for key, value in region.transitions.items():
+            for key, value in referenceRegion.transitions.items():
                 if cur_variant.id in key:
-                    cur_changes.add(value)
+                    cur_changes.union(set(value))
                     key1, key2 = key
                     if key1 == cur_variant.id:
                         cur_key = key2
                     elif key2 == cur_variant.id:
                         cur_key = key1
-                    cur_changes_map[value].add(cur_key)
+                    for v in value:
+                        cur_changes_map[v].add(cur_key)
             if 'BN' in cur_changes:
                 row += [cur_changes_map['BN']]
             else:
@@ -211,9 +214,9 @@ def Annotation(path, output):
 #
 # import pickle
 #
-# with open('75refmap_combined_3kb_regions' + '.pkl', 'wb') as f:
+# with open('./pkl/100refmap_regions.pkl', 'wb') as f:
 #     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
 #
 # f.close()
 #
-# Annotation("75refmap_combined_3kb_regions.pkl", "./pkl/75_combined_3kb")
+# Annotation("./pkl/100refmap_regions.pkl", "./pkl/100_refregion")

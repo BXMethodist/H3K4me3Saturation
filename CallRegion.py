@@ -212,28 +212,43 @@ def DiffVariant(refmap, dfs_variant, groupnames, cutoff=0):
     :return: a df containing all the variant and regions that involved in pattern alteration.
     """
     pairs = list(itertools.combinations(groupnames.keys(), 2))
-    results = [] # a list of tuple, in the format of (region_id, correlation of pair1, correlation of pair2, ....)
 
-    for region in refmap:
-        if len(region.variants) <2:
-            continue
-        cur_region_df = dfs_variant[dfs_variant['region_id'] == region.id]
-        cur_result = [region.id]
-        for pair in pairs:
+    for pair in pairs:
+        results = []  # a list of tuple, in the format of (region_id, correlation of pair1, ....)
+        FDR_colname = key1 + '_vs_' + key2 + '_FDR' if key1 + '_vs_' + key2 + '_FDR' in dfs_variant else key2 + '_vs_' + key1 + '_FDR'
+        for region in refmap:
+            if len(region.variants) <2:
+                continue
+            cur_region_df = dfs_variant[dfs_variant['region_id'] == region.id]
+            cur_result = [region.id]
+
             key1, key2 = pair
             cur_correlation = np.corrcoef(cur_region_df[key1], cur_region_df[key2])[0, 1]
             cur_result += [cur_correlation]
-        results.append(cur_result)
 
-    column_names = ['region_id'] + ['_vs_'.join(pair) for pair in pairs]
+            FDR_info = cur_region_df[FDR_colname].tolist()
+            count = 0
+            for FDR in FDR_info:
+                if FDR < 0.05:
+                    count +=1
+            if count < 2:
+                more_than_two = 0
+            else:
+                more_than_two = 1
+            FDR_info = ';'.join(FDR_info)
+            cur_result += [FDR_info] + [more_than_two]
 
-    df = pd.DataFrame(results, columns=column_names)
-    df = df.set_index(['region_id'])
+            results.append(cur_result)
 
-    outputnames = '_'.join(groupnames.keys()) + '_pattern_diff.csv'
+        column_names = ['region_id'] + [FDR_colname[:-4]] + ['FDR_info'] + ['more_than_two']
 
-    df.to_csv(outputnames)
-    return df
+        df = pd.DataFrame(results, columns=column_names)
+        df = df.set_index(['region_id'])
+
+        outputnames = FDR_colname[:-4] + '_pattern_diff.csv'
+
+        df.to_csv(outputnames)
+    return
 
 def variant_length_FPKM(variant):
     """

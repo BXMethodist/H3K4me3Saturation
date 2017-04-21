@@ -33,8 +33,12 @@ def AnnotationToMap(annotation, outputmap, tss_only):
         gene_id = df.loc[i, 'name']
         gene_chr = df.loc[i, 'chrom']
         strand = 1 if df.loc[i, 'strand'] == '+' else -1
-        tss = int(df.loc[i, 'txStart'])
-        tts = int(df.loc[i, 'txEnd'])
+        if strand == 1:
+            tss = int(df.loc[i, 'txStart'])
+            tts = int(df.loc[i, 'txEnd'])
+        elif strand == -1:
+            tts = int(df.loc[i, 'txStart'])
+            tss = int(df.loc[i, 'txEnd'])
         name2 = df.loc[i, 'name2']
         gene_obj = gene(gene_id, gene_chr, tss, tts, strand, name2)
         if gene_chr not in annotationmap:
@@ -129,11 +133,11 @@ class gene():
         self.name2 = name2
 
 
-# AnnotationToMap('./pkl/hg19_RefSeq_refGene.txt', './pkl/hg19_RefSeq_refGene')
+# AnnotationToMap('./pkl/hg19_RefSeq_refGene.txt', './pkl/hg19_RefSeq_refGene', True)
 
 
 
 # './pkl/75_combined_3kb.pkl', './pkl/hg19_RefSeq_refGene.pkl'
 # AnnotationToMap('./pkl/hg19_RefSeq_refGene.txt', './pkl/hg19_RefSeq_refGene', True)
-# regiontomap('./pkl/75_combined_3kb.pkl', './pkl/75_distance_3kb')
-# varianttomap('./pkl/75_combined_3kb.pkl', './pkl/75_variant_distance_3kb')
+# regiontomap('./ref100/100_refregion.pkl', './pkl/100_distance')
+# varianttomap('./ref100/100_refregion.pkl', './pkl/100_variant_distance')

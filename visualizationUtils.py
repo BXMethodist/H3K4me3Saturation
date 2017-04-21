@@ -18,7 +18,7 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
     original_seed = variant.seed
     parameters = len(variant.members)
 
-    fig = plt.figure(figsize=(8,4))
+    fig = plt.figure(figsize=(4,1))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -30,8 +30,7 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
     axis_font = {'fontname': 'Arial', 'size': '15', 'weight': 'bold'}
 
     chromosome, start, end, cluster_number = title.split("_")
-    ax.set_xlabel("bp", **axis_font)
-    ax.set_ylabel("Signal", **axis_font)
+
 
     xvalues = np.arange(array.shape[1])*10
 
@@ -45,9 +44,7 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
 
     peaks = variant.units
 
-    for p in peaks:
-        plt.axvspan(xmin=p.start-int(start)+width/100.0, xmax=p.end-int(start)-width/100.0, ymin=0, ymax=0.05,
-                    facecolor='blue', alpha=0.5, edgecolor='black')
+
 
     #######
 
@@ -77,6 +74,12 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
     else:
         ax.set_title(chromosome + " " + start + "~" + end + " " + "variant " + str(int(cluster_number[-1]) + 1),
                      **title_font)
+        ax.set_xlabel("bp", **axis_font)
+        ax.set_ylabel("Signal", **axis_font)
+        for p in peaks:
+            plt.axvspan(xmin=p.start - int(start) + width / 100.0, xmax=p.end - int(start) - width / 100.0, ymin=0,
+                        ymax=0.05,
+                        facecolor='blue', alpha=0.5, edgecolor='black')
 
     for type in types:
         fig.savefig(outputdir+type+'/'+variant_id+'.png', dpi=600, facecolor='w', edgecolor='w',
@@ -95,7 +98,7 @@ def plotSaturation(title, variant, sample_names, data_values, types, verbose=Fal
     return peaks
 
 def plotBestSample(title, output_name, signals, xvalues, outputdir, hide):
-    fig = plt.figure(figsize=(6, 3))
+    fig = plt.figure(figsize=(4, 1))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -177,7 +180,7 @@ def plotBestSample(title, output_name, signals, xvalues, outputdir, hide):
     # # ''')
 
 def plot_predict(data, representatives, allocs):
-    fig = plt.figure(figsize=(6, 3))
+    fig = plt.figure(figsize=(4, 1))
     ax = fig.add_subplot(111)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)

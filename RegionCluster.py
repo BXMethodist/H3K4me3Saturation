@@ -28,7 +28,7 @@ def region_cluster(number_sample_used,
         directory += "/"
 
     if list_files is None:
-        list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")][20000:]
+        list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")]
 
     chunks = []
     cur_index = 0
@@ -209,7 +209,7 @@ def Region_Cluster_Process(queue,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=False, example=False, hide=False)
+regions = region_cluster(300, directory='./csv', verbose=True, example=True, hide=True)
 
 
 
@@ -228,11 +228,11 @@ regions = region_cluster(300, directory='./csv', verbose=False, example=False, h
 # print regions
 #
 
-import pickle
-
-with open('./pkl/75refmap_combined_3kb_regions_part2' + '.pkl', 'wb') as f:
-    pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
-
-f.close()
+# import pickle
+#
+# with open('./pkl/75refmap_combined_3kb_regions_part3' + '.pkl', 'wb') as f:
+#     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
+#
+# f.close()
     # region_cluster(directory="./csv")
 

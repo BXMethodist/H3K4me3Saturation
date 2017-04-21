@@ -169,7 +169,7 @@ class refMap:
 
             refmap[chr] = peaksindex
 
-        output = open(str(cutoff) + "_413_refmap.csv", "w")
+        output = open(str(cutoff) + "_418_extend_refmap.csv", "w")
         writer = csv.writer(output)
         for chr, index in refmap.items():
             output.write(">" + chr + "\n")

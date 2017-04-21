@@ -40,14 +40,14 @@ from Wig import Wig
 # np.savetxt("/home/tmhbxx3/archive/refmap_saturation/code/coverage_vs_cutoff.txt", coverage, delimiter="\t")
 # np.savetxt("/home/tmhbxx3/archive/refmap_saturation/code/peak_number_vs_cutoff.txt", peak_number, delimiter="\t")
 
-for cutoff in [100]:
+for cutoff in [10]:
     cur_refmap = refMap(1)
     print cutoff, 'is start'
     # cur_refmap.trainMap("/home/tmhbxx3/archive/KFH3K4me3/"+str(cutoff)+"cutoff/pooled", cutoff=cutoff,
     #                 individual=True)
 
-    cur_refmap.trainMap("/home/tmhbxx3/archive/KFH3K4me3/100cutoff/pooled/",
-                        outputname='simulation', cutoff=cutoff,
+    cur_refmap.trainMap("/home/tmhbxx3/archive/WigChrSplits/code/extend_100_10/",
+                        outputname='extended', cutoff=cutoff,
                         individual=False, saveRefMap=True)
     # refMap.trainMap(kfPath, surfix="regions.xls", cutoff=cutoff)
 # end = time()

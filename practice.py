@@ -120,3 +120,7 @@ b = 6
 from bisect import bisect
 
 print bisect(a, b)
+print a
+
+# if 1 <=2 <=3 <= 4:
+#     print 'lalaa'
