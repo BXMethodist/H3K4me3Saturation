@@ -109,19 +109,18 @@ def super_wig():
 
     wigFiles = [path for path in os.listdir(wigPath) if path.endswith("wig")]
 
-    superwig = Wig(wigPath+wigFiles[0])
+    # superwig = Wig(wigPath+wigFiles[0])
 
-    for i in range(1, len(wigFiles)):
+    for i in range(0, len(wigFiles)):
         print wigFiles[i]
         cur_wig = Wig(wigPath+wigFiles[i])
-        superwig = combine_wig(superwig, cur_wig)
-    save_obj(superwig, "superwig")
-
-    return superwig
+    #     superwig = combine_wig(superwig, cur_wig)
+        save_obj(cur_wig, "./wigs/"+cur_wig.file_name)
+    return
 
 
 if __name__ == "__main__":
-
+    super_wig()
     # super = load_obj('./wig/superwig')
     # total_signals=0
     # for key, value in super.genome.iteritems():

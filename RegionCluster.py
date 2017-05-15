@@ -8,13 +8,13 @@ from visualizationUtils import plotSaturation
 from multiprocessing import Process, Queue
 
 def region_cluster(number_sample_used,
-                   cutoff=75,
+                   cutoff=10,
                    list_files=None,
                    directory="/home/tmhbxx3/archive/WigChrSplits/code/csv/",
                    affinity=np.corrcoef,
                    verbose=True,
                    example=False,
-                   process=8,
+                   process=20,
                    outputdir='./pictures/',
                    hide=False):
     if not os.path.isdir("./pictures"):
@@ -28,7 +28,7 @@ def region_cluster(number_sample_used,
         directory += "/"
 
     if list_files is None:
-        list_files = [ x for x in os.listdir(directory) if x.endswith(".csv")]
+        list_files = [x for x in os.listdir(directory) if x.endswith(".csv")]
 
     chunks = []
     cur_index = 0
@@ -97,11 +97,11 @@ def Region_Cluster_Process(queue,
             continue
 
         max_values = np.max(data_values, axis=1)
-        first_ten_percentile = np.percentile(max_values, 2)
-        if cutoff is not None:
-            cutoff = min(cutoff, first_ten_percentile)
-        else:
-            cutoff = first_ten_percentile
+        # first_ten_percentile = np.percentile(max_values, 2)
+        # if cutoff is not None:
+        #     cutoff = min(cutoff, first_ten_percentile)
+        # else:
+        #     cutoff = first_ten_percentile
         left_index = np.where(max_values > cutoff)[0]
         data_values = data_values[left_index, :]
         sample_names = sample_names[left_index]
@@ -209,12 +209,13 @@ def Region_Cluster_Process(queue,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=True, example=True, hide=True)
+regions = region_cluster(300, directory='./csv', verbose=True, example=False, hide=False)
 
 
 
-#
+# this part is for draw the demo for the example of scipy minimizer
 # data = regions[0].variants[0].members[3, :]
+# # print data
 #
 # from visualizationUtils import plot_predict
 # from predict import optimize_allocs
@@ -223,6 +224,8 @@ regions = region_cluster(300, directory='./csv', verbose=True, example=True, hid
 #
 # plot_predict(data, regions[0].representatives, allocs)
 
+#####
+
 # regions = region_cluster()
 #
 # print regions
@@ -230,7 +233,7 @@ regions = region_cluster(300, directory='./csv', verbose=True, example=True, hid
 
 # import pickle
 #
-# with open('./pkl/75refmap_combined_3kb_regions_part3' + '.pkl', 'wb') as f:
+# with open('./pkl/100refmap_100_10_2200' + '.pkl', 'wb') as f:
 #     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
 #
 # f.close()

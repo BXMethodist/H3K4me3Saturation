@@ -15,7 +15,7 @@ def bowtie_results(path, surffix='.error'):
     print error_files[0]
     path = path + '/' if not path.endswith("/") else path
 
-    results = []
+    results = {}
     failed = []
     for error_file in error_files:
         f = open(path+error_file, "r")
@@ -23,15 +23,26 @@ def bowtie_results(path, surffix='.error'):
         f.close()
         error = True
         filename = error_file[:error_file.find(surffix)]
+        filename = filename.replace('bowtie', '')
+        filename = filename.replace("_", "")
         for line in info:
             if line.startswith("# reads with at least one reported alignment:"):
                 error = False
                 percentage = line[line.find("(")+1:line.find(")")]
-                results.append((filename,percentage))
+                if filename in results:
+                    results[filename] = max(results[filename], percentage)
+                else:
+                    results[filename] = percentage
+            if line.find("storage exhausted while writing file within file system module") != -1:
+                print error_file
         if error:
             failed.append(filename)
 
-    df = pd.DataFrame(results, columns=['sample_ID','percentage'])
+    final_results = []
+    for key, value in results.items():
+        final_results.append((key, value))
+
+    df = pd.DataFrame(final_results, columns=['sample_ID','percentage'])
 
     re_failed = []
     for fail in failed:

@@ -38,13 +38,20 @@ def difference_maps(large_distance_map, small_distance_map):
     # print len(overlapped.keys())
 
     merge_distance = []
+    large_distance_merge = defaultdict(set)
     for value in overlapped.values():
         cur_value = sorted(list(value), key=lambda x : x.start)
         for i in range(len(cur_value) - 1):
             cur = cur_value[i]
             next_cur = cur_value[i+1]
             merge_distance.append(next_cur.start - cur.end)
-    return merge_distance
+            if next_cur.start - cur.end > 3000:
+                large_distance_merge[next_cur.start - cur.end].add((cur.chromosome, cur.start, cur.end, next_cur.chromosome, next_cur.start, next_cur.end))
+    seq = sorted(large_distance_merge.keys())
+    for s in seq:
+        print s, large_distance_merge[s]
+    print len(large_distance_merge)
+    return merge_distance, overlapped
 
 
 
@@ -56,28 +63,38 @@ def difference_maps(large_distance_map, small_distance_map):
 #     small_map = pickle.load(f)
 # f.close()
 #
-# with open('./extend_100_10/extend_100_10_simple_region_distance.pkl', 'rb') as f:
+# with open('./extend_100_10_2200/extend_100_10_2200_simple_region_distance.pkl', 'rb') as f:
 #     large_map = pickle.load(f)
 # f.close()
 #
 #
-# merge_dis = difference_maps(large_map, small_map)
+# merge_dis, overlapped = difference_maps(large_map, small_map)
 
 # with open('100_10_extend_merge_distance' + '.pkl', 'wb') as f:
 #     pickle.dump(merge_dis, f, pickle.HIGHEST_PROTOCOL)
 # f.close()
+#
+# with open('100_10_extend_merge_distance.pkl', 'rb') as f:
+#     merge_dis = pickle.load(f)
+# f.close()
 
-with open('100_10_extend_merge_distance.pkl', 'rb') as f:
-    merge_dis = pickle.load(f)
-f.close()
+# merge_dis = sorted(merge_dis)
 
-merge_dis = sorted(merge_dis)
+# f = open('/extend_100_10_2200/100_10_2200_extend_merge_distance.txt', 'w')
+# for line in merge_dis:
+#     f.write(str(line)+'\n')
+# f.close()
 
-f = open('100_10_extend_merge_distance.txt', 'w')
-for line in merge_dis:
-    f.write(str(line)+'\n')
-f.close()
 
+# f = open('./extend_100_10_2200/100_10_2200_extend_merge_distance.txt', 'r')
+# print f.readlines()
+# for line in f.readlines():
+#     merge_dis.append(line.strip())
+
+# merge_dis = [int(x) for x in f.readlines()[0].split('\r')]
+#
+#
+# print merge_dis
 # import matplotlib.pyplot as plt
 #
 # plt.hist(merge_dis, bins=100)

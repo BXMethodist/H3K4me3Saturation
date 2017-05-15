@@ -180,33 +180,52 @@ def plotBestSample(title, output_name, signals, xvalues, outputdir, hide):
     # # ''')
 
 def plot_predict(data, representatives, allocs):
-    fig = plt.figure(figsize=(4, 1))
-    ax = fig.add_subplot(111)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
-    ax.set_xlabel("bp")
-    ax.set_ylabel("Signal")
     xvalues = np.arange(len(data)) * 10
-    ax.set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
-                   cycler('lw', [1, 2, 3, 4]))
+
+    print allocs
+
+    predicted = 0
     for i in range(representatives.shape[0]):
-        ax.plot(xvalues, representatives[i, :], linewidth=1, label='variant'+str(i+1)+" "+str(round(allocs[i],2)))
+        fig = plt.figure(figsize=(5, 2))
+        ax = fig.add_subplot(111)
+        ax.plot(xvalues, representatives[i, :], linewidth=2, label='variant'+str(i+1)+" "+str(round(allocs[i],2)), color='green')
+        # ax.set_prop_cycle(color=['green'])
+        fig.savefig('variant'+str(i)+'.png', dpi=600, facecolor='w', edgecolor='w',
+                orientation='portrait', bbox_inches='tight')
+        predicted += data*allocs[i]
+        # print np.sum(predicted)
+        # print np.sum(representatives[i, :])
+    # print np.sum(predicted)
+    # print np.sum(data)
+    fig = plt.figure(figsize=(5, 2))
+    ax = fig.add_subplot(111)
+    # ax.spines['top'].set_visible(False)
+    # ax.spines['right'].set_visible(False)
+    # ax.xaxis.set_ticks_position('bottom')
+    # ax.yaxis.set_ticks_position('left')
+    # ax.set_xlabel("bp")
+    # ax.set_ylabel("Signal")
+    # ax.set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
+    #                   cycler('lw', [1, 2, 3, 4]))
+    #
+    ax.set_prop_cycle(color=['red'])
+    ax.plot(xvalues, data, linewidth=2, label='actual')
+    fig.savefig("./pictures/sample.png", dpi=600, facecolor='w', edgecolor='w',
+                orientation='portrait', bbox_inches='tight')
 
     ax.set_prop_cycle(color=['blue'])
-    ax.plot(xvalues, data, linewidth=1, label='sample')
-
-    legend = ax.legend(loc='best', prop={'size': 4})
-    legend.draggable()
-    # Set the fontsize
-    for label in legend.get_texts():
-        label.set_fontsize(10)
-
-    for label in legend.get_lines():
-        label.set_linewidth(1.5)  # the legend line width
-
-    fig.savefig("./pictures/test.png", dpi=600, facecolor='w', edgecolor='w',
+    ax.plot(xvalues, predicted, linewidth=2, label='predicted')
+    #
+    # legend = ax.legend(loc='best', prop={'size': 4})
+    # legend.draggable()
+    # # Set the fontsize
+    # for label in legend.get_texts():
+    #     label.set_fontsize(10)
+    #
+    # for label in legend.get_lines():
+    #     label.set_linewidth(1.5)  # the legend line width
+    #
+    fig.savefig("./pictures/predict.png", dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
 
     plt.show()

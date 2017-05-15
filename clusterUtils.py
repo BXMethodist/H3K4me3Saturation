@@ -6,6 +6,7 @@ from splitted wig files, and return the corresponding region with all sample sig
 
 import numpy as np, os, pandas as pd
 from collections import defaultdict
+from multiprocessing import Process, Queue
 
 
 def genome_size_chrom(path="/home/tmhbxx3/archive/ref_data/hg19/hg19_chr_sizes.txt"):
@@ -295,20 +296,49 @@ def get_map(refmap, step=10, sep=",", finished_job=()):
 
     regular_chrs = genome_size_chrom()
 
-    for chr_name in region_map.keys()[25:]:
+    queue = Queue()
+    processes = []
+
+    for i in range(len(regular_chrs.keys())):
+        cur_chr = regular_chrs.keys()[i]
+        p = Process(target=get_map_process,
+                    args=(queue, region_map, cur_chr))
+        processes.append(p)
+        p.start()
+
+    for i in range(len(regular_chrs.keys())):
+        files_read_for_cluster += queue.get()
+
+    for p in processes:
+        p.join()
+
+    # for chr_name in regular_chrs.keys()[20:]:
     # for chr_name in ['chrM']:
-        if chr_name not in regular_chrs.keys():
-            continue
-        for line in region_map[chr_name]:
-            start, end = line
-
-            output_name = chr_name + "_" + str(start) + "_" + str(end) + ".csv"
-
-            if output_name not in finished_job:
-                file_name = get_split_chr(chr_name, start, end)
-                if file_name is not None:
-                    files_read_for_cluster.append(file_name)
+    #     if chr_name not in regular_chrs.keys():
+    #         continue
+    #     for line in region_map[chr_name]:
+    #         start, end = line
+    #
+    #         output_name = chr_name + "_" + str(start) + "_" + str(end) + ".csv"
+    #
+    #         if output_name not in finished_job:
+    #             file_name = get_split_chr(chr_name, start, end)
+    #             if file_name is not None:
+    #                 files_read_for_cluster.append(file_name)
     return files_read_for_cluster
+
+def get_map_process(queue, region_map, chr_name):
+    files_read_for_cluster = []
+    for line in region_map[chr_name]:
+        start, end = line
+
+        output_name = chr_name + "_" + str(start) + "_" + str(end) + ".csv"
+
+        file_name = get_split_chr(chr_name, start, end)
+        if file_name is not None:
+            files_read_for_cluster.append(file_name)
+    queue.put(files_read_for_cluster)
+    return
 
 
 def remove_duplicate(pairs):
@@ -362,4 +392,4 @@ if __name__ == "__main__":
     # plt.ylim((0, 200))
     # plt.hist(widths, bins='auto')
     # plt.show()
-    get_map('./100_extend_10_map/100_extend_10_refmap.csv')
+    get_map('./extend_100_10_2200/100_10_2200_refmap.csv')

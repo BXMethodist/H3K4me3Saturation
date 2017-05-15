@@ -7,6 +7,8 @@ import os, numpy as np, pandas as pd, pickle
 from converter import gene
 from RefRegion import ReferenceRegion, ReferenceVariant, ReferenceUnit
 from simple_region import SimpleRegion
+from collections import defaultdict
+from itertools import combinations
 
 
 def gene_to_region_tss(feature_map, reference_map, reference_index_map, gene_annotation_table):
@@ -591,11 +593,126 @@ def samples_distance(feature_map, feature_index_map, peak_tables_path):
     result_df.to_csv("samples_tss_distance.csv")
     return total_df, up_df, down_df
 
+def distribution_region_distance(refmap):
+    """
+    get the distance distribution between the reference map
+    :return:
+    """
+    input_file = open(refmap, "r")
+
+    distance_distributions = []
+    chr_name = None
+
+    region_map = defaultdict(list)
+
+    for line in input_file.readlines():
+        if line.startswith(">"):
+            chr_name = line.rstrip()[1:]
+        else:
+            line = line.rstrip().split(',')
+            # print line
+            start = int(line[0]) * 10
+            end = int(line[1]) * 10
+            region_map[chr_name].append((start, end))
+
+    for key in region_map.keys():
+        region_map[key] = sorted(region_map[key], key=lambda x:x[0])
+
+    for value in region_map.values():
+        indexes = [x[0] for x in value]
+        for i in range(len(value)-1):
+            cur_start = value[i][0]
+            cur_end_index = bisect(indexes, cur_start + 100000)
+            # cur_peaks = value[i: cur_end_index]
+            cur_peaks = value[i: i+2]
+            # print cur_peaks
+            distance_distributions += peaks_distances(cur_peaks)
+
+    distance_file = open('./region_gap_distance.txt', 'w')
+    for line in distance_distributions:
+        # line = [str(l) for l in line]
+        distance_file.write(str(line)+'\n')
+    distance_file.close()
+    return distance_distributions
+
+def distribution_peaks_distance(danpos_table):
+    """
+    get the distance distribution between peaks from all the samples
+    :return:
+    """
+    peak_table = open(danpos_table, 'r')
+    info1 = peak_table.readlines()
+    peak_table.close()
+
+    peaks = {}
+
+    for line1 in info1:
+        line1 = line1.strip()
+        line1 = line1.split('\t')
+        if line1[1] == "start":
+            continue
+
+        chromosome = line1[0]
+        if chromosome not in peaks:
+            peaks[chromosome] = []
+        peaks[chromosome].append((int(line1[1]), int(line1[2])))
+
+    for chromosome in peaks.keys():
+        peaks[chromosome] = sorted(peaks[chromosome], key=lambda x: x[0])
+
+    distance_distributions = []
+    for value in peaks.values():
+        indexes = [x[0] for x in value]
+        for i in range(len(value)-1):
+            cur_start = value[i][0]
+            cur_end_index = bisect(indexes, cur_start + 100000)
+            # cur_peaks = value[i: cur_end_index]
+            cur_peaks = value[i: i+2]
+            distance_distributions += peaks_distances(cur_peaks)
+
+    return distance_distributions
+
+def peaks_distances(peaks):
+    """
+    :return:
+    """
+    distances = []
+    target_peak = peaks[0]
+    for i in range(1, len(peaks)):
+        cur_peak = peaks[i]
+        distances.append(cur_peak[0] - target_peak[1])
+    return distances
+
+# distances = distribution_region_distance('./100_refmap.csv')
+
+
+
+import os
+#
+# #
+peak_tables = ['/home/tmhbxx3/archive/KFH3K4me3/100cutoff/pooled/' + x for x in
+                    os.listdir('/home/tmhbxx3/archive/KFH3K4me3/100cutoff/pooled/')]
+#
+distances = []
+#
+for i in range(len(peak_tables)):
+    peak_table = peak_tables[i]
+    distances += distribution_peaks_distance(peak_table)
+    print peak_table
+#
+distance_file = open('./100_refmap_peaks_distance.txt', 'w')
+for line in distances:
+    # line = [str(l) for l in line]
+    distance_file.write(str(line)+'\n')
+distance_file.close()
+
+
+
 
 
 #
-gene_to_region_tss('./pkl/hg19_RefSeq_refGenetss_only.pkl', './extend_100_10/extend_100_10_simple_region_distance.pkl', './extend_100_10/extend_100_10_simple_region_distance_index.pkl',
-               './pkl/hg19_RefSeq_refGene.txt')
+# gene_to_region_tss('./pkl/hg19_RefSeq_refGenetss_only.pkl', './extend_100_10/extend_100_10_simple_region_distance.pkl', './extend_100_10/extend_100_10_simple_region_distance_index.pkl',
+#                './pkl/hg19_RefSeq_refGene.txt')
 
 
 # transcript_to_variant_tss('./pkl/hg19_RefSeq_refGenetss_only.pkl', './ref100/100_variant_distance.pkl',
@@ -603,8 +720,8 @@ gene_to_region_tss('./pkl/hg19_RefSeq_refGenetss_only.pkl', './extend_100_10/ext
 #                           './pkl/hg19_RefSeq_refGene.txt')
 
 
-region_to_gene('./pkl/hg19_RefSeq_refGenetss_only.pkl', './pkl/hg19_RefSeq_refGenetss_only_index.pkl',
-               './extend_100_10/extend_100_10_simple_region.pkl')
+# region_to_gene('./pkl/hg19_RefSeq_refGenetss_only.pkl', './pkl/hg19_RefSeq_refGenetss_only_index.pkl',
+#                './extend_100_10/extend_100_10_simple_region.pkl')
 
 # variant_to_transcript_tss('./pkl/hg19_RefSeq_refGenetss_only.pkl', './pkl/hg19_RefSeq_refGenetss_only_index.pkl',
 #                './ref100/100_refregion.pkl')

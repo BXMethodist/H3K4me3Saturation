@@ -115,12 +115,52 @@
 #
 # print sizes
 
-a =[0,1,2,3,4,5]
-b = 6
-from bisect import bisect
+import numpy as np
+import pandas as pd
 
-print bisect(a, b)
-print a
+a = [['a',1,2], ['b',2,1]]
 
+
+
+df = pd.DataFrame(a)
+
+df.columns = ['A','B', 'C']
+
+# df = df.set_index(['A'])
+
+d = {'b': 4, 'a':6, 'c':8}
+
+df['D'] = df['A'].map(d)
+# print df
+
+# print df.loc[:,~df.columns.duplicated()]
+
+
+
+# b = [1,2,1]
+#
+# print np.corrcoef(a, b)[0,1]
+
+# a =[0,1,2,3,4,5]
+# b = 5
+# from bisect import bisect
+#
+# print a[bisect(a, b)]
+# print a
+# for i in range(90, 10, -10):
+#     print i
 # if 1 <=2 <=3 <= 4:
 #     print 'lalaa'
+a = 13.949999999999999
+print float(format(a, '.2f')), type(float(format(a, '.2f')))
+
+import sqlite3
+conn = sqlite3.connect('example.db')
+
+print df
+
+# df.to_sql('test_table', conn)
+
+a = conn.execute('SELECT A FROM test_table')
+
+print a.fetchall()

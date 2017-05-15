@@ -121,7 +121,8 @@ def Annotation(path, output):
                     CC,
                     SH,
                     PT,
-                    SO]
+                    SO,
+                    referenceRegion.plot]
         stats.append(cur_stat)
 
         new_regions.append(referenceRegion)
@@ -184,7 +185,7 @@ def Annotation(path, output):
     variant_df = variant_df.set_index(['variant_id'])
     units_df = pd.DataFrame(units_annotations)
     stats_df = pd.DataFrame(stats, columns=['region_id', 'width', 'number of clusters', 'number of samples',
-                                            'BroadtoNarrow', 'ConcavetoConvex', 'Shift', 'Pattern', 'Other'])
+                                            'BroadtoNarrow', 'ConcavetoConvex', 'Shift', 'Pattern', 'Other', 'Plotable'])
     stats_df = stats_df.set_index(['region_id'])
 
     region_df.to_csv(output+'region.tsv', sep='\t', index=False, header=False)
@@ -202,21 +203,23 @@ def Annotation(path, output):
 
 # if __name__ == "__main__":
 # import os
-# pkls = os.listdir("./pkl_parts")
+# pkls = [x for x in os.listdir("./pkl/") if x.find('100_10_2200') != -1]
 #
 # regions = []
-#
+# count = 1
 # for pkl in pkls:
-#     with open("./pkl_parts/" + pkl, 'rb') as f:
+#     print 'part'+str(count)
+#     count += 1
+#     with open("./pkl/" + pkl, 'rb') as f:
 #         region = pickle.load(f)
 #     regions += region
 #     f.close()
 #
 # import pickle
-#
-# with open('./pkl/100refmap_regions.pkl', 'wb') as f:
+
+# with open('./pkl/100_10_22000_refmap_regions.pkl', 'wb') as f:
 #     pickle.dump(regions, f, pickle.HIGHEST_PROTOCOL)
 #
 # f.close()
 #
-# Annotation("./pkl/100refmap_regions.pkl", "./pkl/100_refregion")
+# Annotation("./pkl/100_10_22000_refmap_regions.pkl", "./pkl/100_10_22000_refregions")

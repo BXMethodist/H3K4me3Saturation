@@ -33,10 +33,10 @@ def get_region_map(map):
     # print regions_distance
     for key in regions_index.keys():
         regions_index[key] = sorted(list(regions_index[key]))
-    with open('extend_100_10_simple_region_distance' + '.pkl', 'wb') as f:
+    with open('extend_100_10_2200_simple_region_distance' + '.pkl', 'wb') as f:
         pickle.dump(regions_distance, f, pickle.HIGHEST_PROTOCOL)
     f.close()
-    with open('extend_100_10_simple_region_distance_index' + '.pkl', 'wb') as f:
+    with open('extend_100_10_2200_simple_region_distance_index' + '.pkl', 'wb') as f:
         pickle.dump(regions_index, f, pickle.HIGHEST_PROTOCOL)
     f.close()
     return
@@ -48,7 +48,7 @@ class SimpleRegion():
         self.end = end
         self.id = chromosome[3:] + '.' + str(start) +'.' +str(end)
 
-# get_region_map('/Users/boxia/PycharmProjects/H3K4me3Saturation/extend_100_10/100_10_418_extend_refmap.csv')
+# get_region_map('/Users/boxia/PycharmProjects/H3K4me3Saturation/extend_100_10_2200/100_10_2200_refmap.csv')
 
 
 
