@@ -170,4 +170,4 @@ def peaks_correlation(signals_table, cols_table, random_pairs):
 
 # close_peak_signals(['/home/tmhbxx3/archive/WigChrSplits/code/extend_100_10/' + x for x in os.listdir('/home/tmhbxx3/archive/WigChrSplits/code/extend_100_10/')])
 
-peaks_correlation('peaks_correlation.csv', 'peaks_correlation_columns.csv', 9827)
+peaks_correlation('peaks_correlation.csv', 'peaks_correlation_columns.csv', None)

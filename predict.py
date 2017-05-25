@@ -11,6 +11,16 @@ def optimize_allocs(data, clusters):
     """
     clusters = np.asarray(clusters)
 
+    norm_factor = clusters.shape[1]*100
+
+    new_clusters = []
+
+    for i in range(clusters.shape[0]):
+        c = clusters[i, :]
+        c = c * norm_factor/np.sum(c)
+        new_clusters.append(c)
+    clusters = np.asarray(new_clusters)
+
     constraints = {'type': 'ineq', 'fun': lambda x: x - 0}
 
     total_signals = np.sum(data)
@@ -21,8 +31,8 @@ def optimize_allocs(data, clusters):
 
     bounds = tuple([(0.0, borders[i]) for i in range(len(borders))])
 
-    options = {'disp': False, 'maxiter': 1000}
-
+    # options = {'disp': False, 'maxiter': 10000}
+    options = {'disp': False}
     allocs = np.asarray([1.0/clusters.shape[0]]*clusters.shape[0])
 
     allocs = spo.minimize(distance, allocs, args=(data, clusters),

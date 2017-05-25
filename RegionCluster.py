@@ -3,7 +3,7 @@
 from DistinctAffinityPropagation import DistinctAffinityPropagation
 from region import Region
 import pandas as pd, os, numpy as np, pickle
-from clusterUtils import get_map
+from clusterUtils import get_map, smooth_normalization
 from visualizationUtils import plotSaturation
 from multiprocessing import Process, Queue
 
@@ -213,16 +213,50 @@ regions = region_cluster(300, directory='./csv', verbose=True, example=False, hi
 
 
 
+
+#### This part is to draw the prediction demo
+from visualizationUtils import plot_predict
+from predict import optimize_allocs
 # this part is for draw the demo for the example of scipy minimizer
-# data = regions[0].variants[0].members[3, :]
-# # print data
-#
-# from visualizationUtils import plot_predict
-# from predict import optimize_allocs
-#
-# allocs = optimize_allocs(data, regions[0].representatives)
-#
-# plot_predict(data, regions[0].representatives, allocs)
+df = pd.read_csv('./csv/chr3_187455150_187464690.csv', sep='\t',index_col=0)
+
+for i in range(df.shape[0]):
+    data = df.ix[i, :]
+
+    data = smooth_normalization(data)
+    # print data
+# print data
+
+    allocs = optimize_allocs(data.T[0], regions[0].representatives)
+    # print allocs
+    predicted = 0
+    for j in range(regions[0].representatives.shape[0]):
+        signal = (np.sum(data)/np.sum(regions[0].representatives[j])) * regions[0].representatives[j]
+        # print np.sum(signal), np.sum(data)
+        predicted += signal * allocs[j]
+    # predicted = predicted * np.sum(data)/np.sum(predicted)
+
+    # print np.sum(predicted), np.sum(data)
+    # print data.T[0]
+    # break
+    # print data[:, 0].shape, predicted.shape
+    error = np.absolute(data.T[0]-predicted).sum()
+    corr = np.corrcoef(predicted, data.T[0])[0,1]
+    if corr < 0.7:
+        print i, corr, error, error/np.sum(data.T[0])
+    #     plot_predict(data, regions[0].representatives, allocs)
+    #     break
+    # print allocs, i, np.sum(predicted), np.sum(data), error
+    # print allocs[1] > 0.8, allocs[1]
+    # if allocs[1] > 0.8:
+    #     print allocs, i, error
+    # print error
+    # if error < 0.4:
+    #     print i
+    #     print allocs
+    if i == 37:
+        plot_predict(data, regions[0].representatives, allocs)
+        break
 
 #####
 

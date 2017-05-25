@@ -115,22 +115,22 @@
 #
 # print sizes
 
-import numpy as np
-import pandas as pd
-
-a = [['a',1,2], ['b',2,1]]
-
-
-
-df = pd.DataFrame(a)
-
-df.columns = ['A','B', 'C']
-
-# df = df.set_index(['A'])
-
-d = {'b': 4, 'a':6, 'c':8}
-
-df['D'] = df['A'].map(d)
+# import numpy as np
+# import pandas as pd
+#
+# a = [['a',1,2], ['b',2,1]]
+#
+#
+#
+# df = pd.DataFrame(a)
+#
+# df.columns = ['A','B', 'C']
+#
+# # df = df.set_index(['A'])
+#
+# d = {'b': 4, 'a':6, 'c':8}
+#
+# df['D'] = df['A'].map(d)
 # print df
 
 # print df.loc[:,~df.columns.duplicated()]
@@ -151,16 +151,47 @@ df['D'] = df['A'].map(d)
 #     print i
 # if 1 <=2 <=3 <= 4:
 #     print 'lalaa'
-a = 13.949999999999999
-print float(format(a, '.2f')), type(float(format(a, '.2f')))
+# a = 13.949999999999999
+# print float(format(a, '.2f')), type(float(format(a, '.2f')))
+#
+# import sqlite3
+# conn = sqlite3.connect('example.db')
+#
+# print df
+#
+# # df.to_sql('test_table', conn)
+#
+# a = conn.execute('SELECT A FROM test_table')
+#
+# print a.fetchall()
 
-import sqlite3
-conn = sqlite3.connect('example.db')
 
-print df
+import json, pickle
+from RefRegion import *
 
-# df.to_sql('test_table', conn)
+with open('./pkl/100_10_22000_refregions.pkl', 'rb') as f:
+    regions = pickle.load(f)
+f.close()
 
-a = conn.execute('SELECT A FROM test_table')
+data = {}
 
-print a.fetchall()
+for region in regions:
+    if region.chromosome in data:
+        if region.plot:
+            data[region.chromosome][int(region.start)] = (int(region.start), int(region.end), 1)
+            data[region.chromosome][int(region.end)] = (int(region.start), int(region.end), 1)
+        else:
+            data[region.chromosome][int(region.start)] = (int(region.start), int(region.end), 0)
+            data[region.chromosome][int(region.end)] = (int(region.start), int(region.end), 0)
+    else:
+        data[region.chromosome] = {}
+        if region.plot:
+            data[region.chromosome][int(region.start)] = (int(region.start), int(region.end), 1)
+            data[region.chromosome][int(region.end)] = (int(region.start), int(region.end), 1)
+        else:
+            data[region.chromosome][int(region.start)] = (int(region.start), int(region.end), 0)
+            data[region.chromosome][int(region.end)] = (int(region.start), int(region.end), 0)
+
+with open('100_10_2200_web_map.txt', 'w') as outfile:
+    json.dump(data, outfile)
+

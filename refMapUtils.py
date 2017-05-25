@@ -26,9 +26,10 @@ def save_obj(obj, name):
 
 
 def load_obj(name):
-    with open(name + '.pkl', 'rb') as f:
-        return pickle.load(f)
-
+    f = open(name + '.pkl', 'rb')
+    result = pickle.load(f)
+    f.close()
+    return result
 
 def coverage_saturation(wig_file_path, start_cutoff, end_cutoff, step_cutoff):
     wig_file = Wig(wig_file_path)
@@ -120,11 +121,41 @@ def super_wig():
 
 
 if __name__ == "__main__":
-    super_wig()
-    # super = load_obj('./wig/superwig')
-    # total_signals=0
-    # for key, value in super.genome.iteritems():
-    #     total_signals += np.sum(value.signals)
-    #
-    # print total_signals
+    # super_wig()
+    total_wig_signals = {}
+    wigs = [x[:-4] for x in os.listdir('./wigs') if x.endswith('.pkl') and x[:-4] != '']
+    # print wigs
+    for wig in wigs:
+        # wig_pkl = load_obj('./wigs/'+wig)
+        # total_signals=0
+        # for key, value in wig_pkl.genome.iteritems():
+        #     total_signals += np.sum(value.signals)
+        # total_wig_signals[wig] = total_signals
+        # print total_signals
+        total_wig_signals[wig] = 5000000000
+
+    FRIP10 = []
+    FRIP100 = []
+    path10 = '/home/tmhbxx3/archive/KFH3K4me3/10cutoff/pooled/'
+    path100 = '/home/tmhbxx3/archive/KFH3K4me3/100cutoff/pooled/'
+    for wig in wigs:
+        peaks_xls10 = path10+'archive_tmhkxc48_BroadH3K4me3_broadpeak201401_H3K4me3_dregion_pooled_'+wig+'.peaks.xls'
+        peaks_xls100 = path100 + 'archive_tmhkxc48_BroadH3K4me3_broadpeak201401_H3K4me3_dregion_pooled_' + wig + '.peaks.xls'
+        df10 = pd.read_csv(peaks_xls10, sep='\t')
+        df100 = pd.read_csv(peaks_xls100, sep='\t')
+        sum10 = df10['total_signal'].sum()
+        sum100 = df100['total_signal'].sum()
+        # print sum10, sum100
+        # print peaks_xls10
+        FRIP10.append((wig, sum10/total_wig_signals[wig]))
+        FRIP100.append((wig, sum100 / total_wig_signals[wig]))
+
+        print 'complete', wig
+
+    result_df10= pd.DataFrame(FRIP10)
+    result_df100 = pd.DataFrame(FRIP100)
+
+    result_df10.to_csv('FRIP_336_10_cutoff.csv', index=None)
+
+    result_df100.to_csv('FRIP_336_100_cutoff.csv', index=None)
     pass

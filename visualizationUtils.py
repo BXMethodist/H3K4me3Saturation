@@ -182,21 +182,29 @@ def plotBestSample(title, output_name, signals, xvalues, outputdir, hide):
 def plot_predict(data, representatives, allocs):
     xvalues = np.arange(len(data)) * 10
 
-    print allocs
+    # print allocs
 
     predicted = 0
     for i in range(representatives.shape[0]):
-        fig = plt.figure(figsize=(5, 2))
-        ax = fig.add_subplot(111)
-        ax.plot(xvalues, representatives[i, :], linewidth=2, label='variant'+str(i+1)+" "+str(round(allocs[i],2)), color='green')
-        # ax.set_prop_cycle(color=['green'])
-        fig.savefig('variant'+str(i)+'.png', dpi=600, facecolor='w', edgecolor='w',
-                orientation='portrait', bbox_inches='tight')
-        predicted += data*allocs[i]
+        # fig = plt.figure(figsize=(5, 2))
+        # ax = fig.add_subplot(111)
+        # ax.plot(xvalues, representatives[i, :], linewidth=2, label='variant'+str(i+1)+" "+str(round(allocs[i],2)), color='green')
+        # # ax.set_prop_cycle(color=['green'])
+        # fig.savefig('variant'+str(i)+'.png', dpi=600, facecolor='w', edgecolor='w',
+        #         orientation='portrait', bbox_inches='tight')
+
+        predicted += (np.sum(data) / np.sum(representatives[i])) * representatives[i] *allocs[i]
+        print np.sum((np.sum(data) / np.sum(representatives[i])) * representatives[i]), np.sum(data)
+        # fig = plt.figure(figsize=(5, 2))
+        # ax = fig.add_subplot(111)
+        # ax.plot(xvalues, predicted, linewidth=2,
+        #         label='variant' + str(i + 1) + " " + str(round(allocs[i], 2)), color='green')
+        # plt.show()
         # print np.sum(predicted)
         # print np.sum(representatives[i, :])
-    # print np.sum(predicted)
-    # print np.sum(data)
+    predicted = predicted * np.sum(data)/np.sum(predicted)
+    # print np.sum(predicted), np.sum(data)
+    # print np.absolute(data - predicted).sum()/np.sum(data)
     fig = plt.figure(figsize=(5, 2))
     ax = fig.add_subplot(111)
     # ax.spines['top'].set_visible(False)
@@ -208,11 +216,17 @@ def plot_predict(data, representatives, allocs):
     # ax.set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
     #                   cycler('lw', [1, 2, 3, 4]))
     #
+    # ax.set_ylim(0,60)
     ax.set_prop_cycle(color=['red'])
     ax.plot(xvalues, data, linewidth=2, label='actual')
     fig.savefig("./pictures/sample.png", dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
+    plt.show()
 
+
+    fig = plt.figure(figsize=(5, 2))
+    ax = fig.add_subplot(111)
+    # ax.set_ylim(0,60)
     ax.set_prop_cycle(color=['blue'])
     ax.plot(xvalues, predicted, linewidth=2, label='predicted')
     #
@@ -225,7 +239,9 @@ def plot_predict(data, representatives, allocs):
     # for label in legend.get_lines():
     #     label.set_linewidth(1.5)  # the legend line width
     #
+
+    plt.show()
     fig.savefig("./pictures/predict.png", dpi=600, facecolor='w', edgecolor='w',
                 orientation='portrait', bbox_inches='tight')
 
-    plt.show()
+    # plt.show()
