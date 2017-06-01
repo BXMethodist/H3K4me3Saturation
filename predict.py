@@ -11,7 +11,7 @@ def optimize_allocs(data, clusters):
     """
     clusters = np.asarray(clusters)
 
-    norm_factor = clusters.shape[1]*100
+    norm_factor = np.sum(data)
 
     new_clusters = []
 
@@ -21,25 +21,25 @@ def optimize_allocs(data, clusters):
         new_clusters.append(c)
     clusters = np.asarray(new_clusters)
 
-    constraints = {'type': 'ineq', 'fun': lambda x: x - 0}
+    constraints = {'type': 'ineq', 'fun': lambda x: x - 0.0}
 
     total_signals = np.sum(data)
 
     variants_signals = np.sum(clusters, axis=1)
 
-    borders = total_signals/variants_signals+1.0
+    borders = total_signals/variants_signals
 
-    bounds = tuple([(0.0, borders[i]) for i in range(len(borders))])
+    bounds = tuple([(0.0, 1.0) for i in range(len(borders))])
 
     # options = {'disp': False, 'maxiter': 10000}
     options = {'disp': False}
     allocs = np.asarray([1.0/clusters.shape[0]]*clusters.shape[0])
 
     allocs = spo.minimize(distance, allocs, args=(data, clusters),
-                          method='SLSQP', constraints=constraints, bounds=bounds,
-                          options=options).x
+                          method='SLSQP', constraints=constraints, bounds=bounds, options=options).x
 
-    allocs = allocs/np.sum(allocs)
+    # print allocs
+    # allocs = allocs/np.sum(allocs)
     return allocs
 
 
@@ -56,5 +56,6 @@ def distance(allocs, data, clusters):
         cluster = clusters[i]
         predict_signal += quote*cluster
     dist = euclidean(data, predict_signal)
+    # dist = abs(np.corrcoef(data, predict_signal)[0, 1] - 1.0)
     return dist
 

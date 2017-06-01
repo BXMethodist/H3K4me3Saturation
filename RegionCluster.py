@@ -30,6 +30,8 @@ def region_cluster(number_sample_used,
     if list_files is None:
         list_files = [x for x in os.listdir(directory) if x.endswith(".csv")]
 
+    list_files = ['chr3_187455150_187464690.csv']
+
     chunks = []
     cur_index = 0
     reminder = len(list_files) % process
@@ -209,17 +211,42 @@ def Region_Cluster_Process(queue,
 # print plt.gcf().canvas.get_supported_filetypes()
 
 
-regions = region_cluster(300, directory='./csv', verbose=True, example=False, hide=False)
+regions = region_cluster(300, directory='./csv', verbose=False, example=False, hide=False)
 
 
 
 
 #### This part is to draw the prediction demo
-from visualizationUtils import plot_predict
+# from visualizationUtils import plot_predict
 from predict import optimize_allocs
 # this part is for draw the demo for the example of scipy minimizer
 df = pd.read_csv('./csv/chr3_187455150_187464690.csv', sep='\t',index_col=0)
+from refMapUtils import load_obj
+def get_wig_signals(wig, regions):
+    cur_wig = load_obj(wig[:-4])
+    results = []
+    for region in regions:
+        if region[0] in cur_wig.genome:
+            cur_signals = cur_wig.genome[region[0]].get_signals(region[1], region[2])
+            # print region
+            # print cur_signals
+            # print type(region[0]), type(region[1])
+            return cur_signals
 
+# wigs = ['./wigs/'+x for x in os.listdir('./wigs') if x.find('BI.CD4+')!=-1]
+
+# signals = []
+# index = []
+
+# for w in wigs:
+#     signals.append([x for x in get_wig_signals(w, [['chr3', 187455150, 187464690]])])
+#     index.append(w[7:])
+#
+# df = pd.DataFrame(signals, index=index)
+
+errors = []
+correlations = []
+results = []
 for i in range(df.shape[0]):
     data = df.ix[i, :]
 
@@ -240,10 +267,21 @@ for i in range(df.shape[0]):
     # print data.T[0]
     # break
     # print data[:, 0].shape, predicted.shape
-    error = np.absolute(data.T[0]-predicted).sum()
+    # print data.T[0]-predicted
+    # print (data.T[0]-predicted).astype(int)
+    # print np.absolute(data.T[0]-predicted).astype(int)
+    # print np.sum(predicted)
+    # print data.T[0].sum()
+    error = np.absolute(data.T[0]-predicted).sum()/np.sum(predicted)
     corr = np.corrcoef(predicted, data.T[0])[0,1]
-    if corr < 0.7:
-        print i, corr, error, error/np.sum(data.T[0])
+    errors.append(error)
+    correlations.append(corr)
+    results.append((df.index[i], error, corr, allocs[0], allocs[1], 1-np.sum(allocs), abs(1-np.sum(allocs))))
+    # break
+    # print error, 'error rate'
+    # print corr, 'correlation'
+    # if corr < 0.7:
+    #     print i, corr, error, error/np.sum(data.T[0])
     #     plot_predict(data, regions[0].representatives, allocs)
     #     break
     # print allocs, i, np.sum(predicted), np.sum(data), error
@@ -254,10 +292,18 @@ for i in range(df.shape[0]):
     # if error < 0.4:
     #     print i
     #     print allocs
-    if i == 37:
-        plot_predict(data, regions[0].representatives, allocs)
-        break
+    # if i == 37:
+    #     plot_predict(data, regions[0].representatives, allocs)
+    #     break
 
+
+df = pd.DataFrame(results)
+df.columns = ['sample_name', 'error', 'correlation', 'alloc1', 'alloc2', 'error towards 1', 'abs error towards 1']
+
+print np.corrcoef(df['correlation'], df['abs error towards 1'])
+df.to_csv('error_correlation_prediction.csv', index=None)
+print np.median(errors)
+print np.median(correlations)
 #####
 
 # regions = region_cluster()
