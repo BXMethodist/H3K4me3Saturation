@@ -1,55 +1,60 @@
 import pandas as pd, os
 
-def FRiP(cutoff, path='./wigs',peak_path='/home/tmhbxx3/archive/KFH3K4me3/'):
+def FRiP(cutoff, path='/home/tmhbxx3/archive/H3K4me3_Encode_wig_splits/code/wigs',peak_path='/home/tmhbxx3/scratch/ENC_H3K4me3/peaks/'):
     total_wig_signals = {}
-    wigs = [x[:-4] for x in os.listdir(path) if x.endswith('.pkl') and x[:-4] != '']
-    # print wigs
+    wigs = [x[:x.find('.')] for x in os.listdir(path) if x.endswith('.wig')]
+
     for wig in wigs:
-        # wig_pkl = load_obj('./wigs/'+wig)
-        # total_signals=0
-        # for key, value in wig_pkl.genome.iteritems():
-        #     total_signals += np.sum(value.signals)
-        # total_wig_signals[wig] = total_signals
-        # print total_signals
         total_wig_signals[wig] = 5000000000
 
-    FRIP10 = []
+    FRIP = []
 
-    peak_path = peak_path + str(cutoff) + 'cutoff/pooled/'
+    peak_path = peak_path + str(cutoff) + '/pooled/'
     for wig in wigs:
-        peaks_xls10 = peak_path + 'archive_tmhkxc48_BroadH3K4me3_broadpeak201401_H3K4me3_dregion_pooled_' + wig + '.peaks.xls'
-        df10 = pd.read_csv(peaks_xls10, sep='\t')
-        sum10 = df10['total_signal'].sum()
+        peaks_xls = peak_path + wig + '.bgsub.Fnor.peaks_' + str(cutoff) + '.xls'
+        df = pd.read_csv(peaks_xls, sep='\t')
+        sum_total_signal = df['total_signal'].sum()
         # print df10.columns
-        FRIP10.append((wig, sum10 / total_wig_signals[wig], df10['width_above_cutoff'].sum(), df10.shape[0]))
+        FRIP.append((wig, sum_total_signal / total_wig_signals[wig], df['width_above_cutoff'].sum(), df.shape[0]))
 
         print 'complete', wig
 
-    result_df10 = pd.DataFrame(FRIP10)
+    result_df = pd.DataFrame(FRIP)
 
-    result_df10.columns = ['sample_name', 'FRiP', 'total_width', 'peak_number']
+    result_df.columns = ['sample_name', 'FRiP', 'total_width', 'peak_number']
 
-    result_df10.to_csv('FRIP_336_'+str(cutoff)+'_cutoff.csv', index=None)
-    return
+    result_df.to_csv('./FRIP_csv/FRIP_ENC369_with_input_'+str(cutoff)+'_cutoff.csv', index=None)
+    return result_df
 
-def FRiP_correlation(cutoff, method='spearman', path='/Users/boxia/Desktop/reference_map/QC/FRIP/'):
-    file_path = path + 'FRIP_336_'+str(cutoff)+'_cutoff.csv'
+def FRiP_correlation(cutoff, method='spearman', path='./FRIP_csv/'):
+    file_path = path + 'FRIP_ENC369_with_input_' + str(cutoff) + '_cutoff.csv'
     df = pd.read_csv(file_path, index_col=0)
     result = df.corr(method=method)
+    # print result
+    # Frip_vs_total_width, Frip_vs_peaknumber, total_width_vs_peak_number
     return [result.ix[0, 1], result.ix[0, 2], result.ix[1, 2]]
 
-def FRiP_mean(cutoff, path='/Users/boxia/Desktop/reference_map/QC/FRIP/'):
-    file_path = path + 'FRIP_336_'+str(cutoff)+'_cutoff.csv'
+def FRiP_mean(cutoff, path='./FRIP_csv/'):
+    file_path = path + 'FRIP_ENC428_with_input_'+str(cutoff)+'_cutoff.csv'
     df = pd.read_csv(file_path, index_col=0)
     return df['FRiP'].mean()
 
-results = []
-for cutoff in [3, 6] + range(10, 310, 10):
-    cur_result = FRiP_mean(cutoff)
-    results.append((cutoff, cur_result))
-
-df = pd.DataFrame(results)
-df.columns = ['cutoff', 'FRiP']
-
-df.to_csv('FRiP_vs_cutoff.csv', index=None)
-
+if __name__ == "__main__":
+    for cutoff in [3,6] + range(10,310,10):
+        FRiP(cutoff)
+    #
+    # results = []
+    # for cutoff in [3, 6] + range(10, 310, 10):
+    #     cur_result = FRiP_mean(cutoff)
+    #     results.append((cutoff, cur_result))
+    #
+    # df = pd.DataFrame(results)
+    # df.columns = ['cutoff', 'FRiP']
+    #
+    # df.to_csv('FRiP_vs_cutoff.csv', index=None)
+    results = []
+    for cutoff in [3, 6] + range(10, 310, 10):
+        results.append(FRiP_correlation(cutoff))
+    df = pd.DataFrame(results)
+    df.columns = ['FrIP_vs_total_width', 'FrIP_vs_peaknumber', 'total_width_vs_peak_number']
+    df.to_csv('FRiP_correlation.csv', index=None)

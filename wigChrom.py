@@ -16,6 +16,11 @@ class WigChrom:
         self.signals = np.zeros(vector_size)
 
     def get_signals(self, start, end):
+        """
+        :param start: the actual position of the chromosome
+        :param end: the actual position of the chromosome
+        :return:
+        """
         if start < 0:
             print "start position need to be bigger than 0"
             return

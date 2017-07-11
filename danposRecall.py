@@ -3,31 +3,27 @@
 import os
 
 def danposRecall():
-    wigPath = "/archive/tmhkxc48/BroadH3K4me3/broadpeak201401/H3K4me3/dregion/pooled/"
+    wigPath = "/home/tmhbxx3/scratch/ENC_H3K4me3/wigs_with_input/"
 
     wigFiles = [wigPath + path for path in os.listdir(wigPath) if path.endswith("wig")]
 
-    for cutoff in range(10, 310, 10) + [3, 6]:
-        os.system('mkdir '+str(cutoff))
+    cutoffs = [str(x) for x in [3,6] + range(10, 310, 10)]
 
+    for wig in wigFiles[1:]:
+        danpos_no_input(wig, cutoffs)
 
-    for wig in wigFiles[:5]:
-        for cutoff in [100]:
-            danpos_no_input(wig, cutoff)
+def danpos_no_input(sample_id, cutoffs):
 
-def danpos_no_input(sample_id, cutoff):
-    'python /archive/tmhkxc48/tools/danposTemp/danpos.py dpeak /archive/tmhkxc48/BroadH3K4me3/broadpeak201401/H3K4me3/dregion/pooled/BI.Adipose_Nuclei.H3K4me3.92.Fnor.wig -q 10 -f 0 -z 0 -o /home/tmhbxx3/archive/test_danpos/10'
-
-    sample_name = sample_id[sample_id.rfind('/') + 1:]
-    danpos_cmd = 'python /archive/tmhkxc48/tools/danposTemp/danpos.py dpeak '
-    danpos_parameters = " -q "+str(cutoff)+" -f 0 -z 0 -o /home/tmhbxx3/archive/test_danpos/"+str(cutoff) + "/" +sample_name
+    sample_name = sample_id[sample_id.rfind('/') + 1:sample_id.find('.')]
+    danpos_cmd = 'python /home/tmhbxx3/archive/tools/danposTemp_multi_q/danpos.py dpeak '
+    danpos_parameters = " -q "+','.join(cutoffs) +" -f 0 --smooth_width 0 -o /home/tmhbxx3/scratch/ENC_H3K4me3/peaks"
 
     cmd = danpos_cmd + sample_id + danpos_parameters
 
-    pbs = open(sample_name + str(cutoff)+ ".pbs", "w")
+    pbs = open(sample_name + ".pbs", "w")
     pbs.write("#!/bin/bash\n")
     pbs.write("#PBS -r n\n")
-    pbs.write("#PBS -N danpos_" + sample_id + str(cutoff)+'\n')
+    pbs.write("#PBS -N danpos_" + sample_id +'\n')
     pbs.write("#PBS -q mediummem\n")
     pbs.write("#PBS -m e\n")
     pbs.write("#PBS -M bxia@houstonmethodist.org\n")
@@ -39,7 +35,7 @@ def danpos_no_input(sample_id, cutoff):
     pbs.write("module load R/3.2.1\n")
     pbs.write(cmd + '\n')
     pbs.close()
-    os.system('qsub ' + sample_name + str(cutoff)+ ".pbs")
+    os.system('qsub ' + sample_name + ".pbs")
     return
 
 

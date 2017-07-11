@@ -1,14 +1,13 @@
 import os, pandas as pd
 
 def unique_counts(i, bowties, path):
-    # bowties = [x for x in os.listdir(path) if x.endswith('.bowtie')]
     results = []
-    for bowtie in bowties[i*10: (i+1)*10]:
+    for bowtie in bowties[i*100: (i+1)*100]:
         fname = bowtie[:-7]
 
         os.system('cp '+path+bowtie+' ./')
 
-        bowtie_f = open('./' + bowtie, 'r')
+        bowtie_f = open(path + bowtie, 'r')
 
         if fname.find('_') != -1:
             fname = '_'.join(sorted(fname.split('_')))
@@ -41,7 +40,6 @@ def unique_counts(i, bowties, path):
         results.append((fname, unique_reads_count))
 
         print fname, unique_reads_count
-        os.system("rm "+bowtie)
 
         # break
     df = pd.DataFrame(results)
@@ -50,10 +48,12 @@ def unique_counts(i, bowties, path):
 
     df.to_csv('NRF' + str(i) + '.csv', index=None)
 
-df = pd.read_csv('ENC_H3K4me3_sample_pairs.csv', index_col=0)
+# df = pd.read_csv('ENC_H3K4me3_sample_pairs.csv', index_col=0)
+#
+# df = df[pd.notnull(df['input'])]
+#
+# bowties = [index + '.bowtie' for index in df.index]
 
-df = df[pd.notnull(df['input'])]
+bowties = [x for x in os.listdir('/archive2/tmhbxx3/H3K4me3/GEO_sample_with_input/bowtie/') if x.endswith('.bowtie')]
 
-bowties = [index + '.bowtie' for index in df.index]
-
-unique_counts(1, bowties, path='/archive2/tmhbxx3/H3K4me3/ENCODE_sample_with_input/bowtie2/')
+unique_counts(1, bowties, path='/archive2/tmhbxx3/H3K4me3/GEO_sample_with_input/bowtie/')

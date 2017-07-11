@@ -182,7 +182,7 @@ def CallVariantsProcess(wigchrome, refmap, queue):
             for variant in region.variants:
                 cur_ids.append(variant.id)
                 cur_variant_representatives.append(variant.representative)
-            cur_allocs = optimize_allocs(cur_data, cur_variant_representatives)
+            cur_allocs, cur_predicted = optimize_allocs(cur_data, cur_variant_representatives)
 
             cur_total_signals = np.sum(cur_data)
             predict_signals = 0
@@ -194,7 +194,7 @@ def CallVariantsProcess(wigchrome, refmap, queue):
                 cur_variant_results.append((cur_ids[i], cur_normalized_signals, region.id))
                 predict_signals += cur_var_signal
                 normalized_signals += cur_normalized_signals
-            error = abs(cur_total_signals-predict_signals)/cur_total_signals
+            error = np.corrcoef(cur_predicted, cur_data)[0,1]
             # print (region.id, cur_total_signals, predict_signals, error)
             cur_region_results_error.append((region.id, error))
             cur_region_results.append((region.id, normalized_signals))
@@ -259,7 +259,7 @@ def variant_length_FPKM(variant):
     total_length = 0
     for unit in variant.units:
         total_length += unit.end - unit.start
-    FPKM_facotr = 1.0 * total_length/1000000
+    FPKM_facotr = 1.0 * total_length * variant.step/1000
     return FPKM_facotr
 
 # Annotation('./75refmap_combined_3kb_regions.pkl','75_combined_3kb')

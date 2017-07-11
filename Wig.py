@@ -67,7 +67,7 @@ class Wig:
 
             self.splitted_chroms[chr_name][start] = chromosome.signals[start:end]
 
-    def save_split_chr(self, split_vector_size, path="/home/tmhbxx3/archive/WigChrSplits/"):
+    def save_split_chr(self, split_vector_size, path="/home/tmhbxx3/archive/H3K4me3_Encode_wig_splits/"):
         # save the splited array to corresponding folder, the first line of file will always be
         # fixedStep chrom=chrX start=1  step=10 span=10
         # create map size for splited file
@@ -92,7 +92,7 @@ class Wig:
 
                 output_file_name = final_output_path + self.file_name + "_" + chr_name + "_" + start \
                                         + "_" + end + "_" + step + ".txt"
-                np.savetxt(output_file_name, value, delimiter=",")
+                np.savetxt(output_file_name, value, delimiter=",", fmt='%1.1f')
 
     def get_coverage(self, cutoff):
         coverage = 0

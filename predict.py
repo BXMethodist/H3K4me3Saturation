@@ -40,7 +40,14 @@ def optimize_allocs(data, clusters):
 
     # print allocs
     # allocs = allocs/np.sum(allocs)
-    return allocs
+
+    predicted = 0
+    for j in range(clusters.shape[0]):
+        signal = (np.sum(data) / np.sum(clusters[j, :])) * clusters[j, :]
+        # print np.sum(signal), np.sum(data)
+        predicted += signal * allocs[j]
+
+    return allocs, predicted
 
 
 def distance(allocs, data, clusters):
